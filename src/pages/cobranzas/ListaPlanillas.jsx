@@ -133,9 +133,8 @@ function ListaPlanillas({ title }) {
                         </Flex>
                     </li>
                 ))}
-
                 <Form
-                    onSubmit={() => handleSubmit(years[years.length - 1] ? years[years.length - 1].year + 1 : 2023)}>
+                    onSubmit={() => handleSubmit(years.at(0) ? years.at(0).year + 1 : 2023)}>
                     {error ?
                         (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
                         (<Button color="grass" variant="surface" size="4" type="submit" ml="6">
