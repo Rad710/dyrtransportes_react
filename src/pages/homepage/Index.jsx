@@ -21,7 +21,12 @@ function Index({ title }) {
 
   const [statistics, setStatistics] = useState({})
 
-  const [barData, setBarData] = useState({})
+  const [barData, setBarData] = useState({
+    viajes: 0, kgDestino: 0, kgOrigen: 0, totalFletes: 0,
+    totalGastoFacturado: 0, totalGastoNoFacturado: 0,
+    totalLiquidacionViajes: 0, totalPerdidas: 0,
+  })
+
 
   const today = new Date()
   // Tomorrow
@@ -109,7 +114,7 @@ function Index({ title }) {
       ],
     }
 
-    return {options, data}
+    return { options, data }
   }
 
   const barProperties = useMemo(() => setUpChart(), [statistics])
@@ -119,7 +124,7 @@ function Index({ title }) {
     currency: "PYG"
   })
 
-  const ganancia = barData.totalFletes ? barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas) : 0
+  const ganancia = barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)
   return (
     <>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
@@ -159,19 +164,19 @@ function Index({ title }) {
               <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0">
                 <Text size="6" className="font-black">
                   Total <em className="text-blue-700">Ingresos:{' '}
-                    {currencyFormatter.format(barData.totalFletes ?? 0)}
+                    {currencyFormatter.format(barData.totalFletes)}
                   </em>
                 </Text>
 
                 <Text size="6" className="font-black">
                   Total <em className="text-orange-600">Egresos:{' '}
-                    {currencyFormatter.format(barData.totalLiquidacionViajes ?? 0)}
+                    {currencyFormatter.format(barData.totalLiquidacionViajes)}
                   </em>
                 </Text>
 
                 <Text size="6" className="font-black">
                   Total <em className="text-red-600">Pérdidas:{' '}
-                    {currencyFormatter.format(barData.totalPerdidas ?? 0)}
+                    {currencyFormatter.format(barData.totalPerdidas)}
                   </em>
                 </Text>
 
@@ -179,6 +184,10 @@ function Index({ title }) {
                   Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
                     {currencyFormatter.format(ganancia)}
                   </em>
+                </Text>
+
+                <Text size="6" className="font-black">
+                  Total Viajes: {barData.viajes}
                 </Text>
               </div>
             </div>
