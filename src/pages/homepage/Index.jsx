@@ -2,7 +2,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 
 import { DownloadIcon } from "@radix-ui/react-icons";
 import { Tabs, Box, Text, Button } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDatabaseBackup, getStatistics } from "../../utils/homepage";
 
 
@@ -23,10 +23,8 @@ function Index({ title }) {
 
   const [barData, setBarData] = useState({})
 
-  const [legend, setLegend] = useState('')
-
   const today = new Date()
-    // Tomorrow
+  // Tomorrow
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
@@ -53,16 +51,6 @@ function Index({ title }) {
     loadStatistics()
   }, [])
 
-  useEffect(() => {
-    const newLegend = `Resumen de Ganancias de ${startDate.toLocaleDateString("es-ES", {
-      year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
-    })} hasta ${endDate.toLocaleDateString("es-ES", {
-      year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
-    })}`
-
-    setLegend(newLegend)
-  }, [statistics])
-
   const handleDescargar = async () => {
     await getDatabaseBackup()
   }
@@ -71,50 +59,60 @@ function Index({ title }) {
     await loadStatistics()
   }
 
-  const options = {
-    indexAxis: 'y',
-    elements: {
-      bar: {
-        borderWidth: 2,
+  const setUpChart = () => {
+    const options = {
+      indexAxis: 'y',
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
       },
-    },
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'right',
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: `Resumen de Ganancias de ${startDate.toLocaleDateString("es-ES", {
+            year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+          })} hasta ${endDate.toLocaleDateString("es-ES", {
+            year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+          })}`,
+        },
       },
-      title: {
-        display: true,
-        text: legend,
-      },
-    },
-  };
+    };
 
-  const data = {
-    labels: ['Resumen'],
-    datasets: [
-      {
-        label: 'Ingresos',
-        data: [barData.totalFletes],
-        backgroundColor: 'rgba(53, 162, 235, 0.8)',
-      },
-      {
-        label: 'Egresos',
-        data: [barData.totalLiquidacionViajes],
-        backgroundColor: 'rgba(255, 150, 80, 0.8)',
-      },
-      {
-        label: 'Pérdidas',
-        data: [barData.totalPerdidas],
-        backgroundColor: 'rgba(255, 80, 80, 0.8)',
-      },
-      {
-        label: 'Ganancias',
-        data: [barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)],
-        backgroundColor: 'rgba(74, 184, 68, 0.8)',
-      },
-    ],
-  };
+    const data = {
+      labels: ['Resumen'],
+      datasets: [
+        {
+          label: 'Ingresos',
+          data: [barData.totalFletes],
+          backgroundColor: 'rgba(53, 162, 235, 0.8)',
+        },
+        {
+          label: 'Egresos',
+          data: [barData.totalLiquidacionViajes],
+          backgroundColor: 'rgba(255, 150, 80, 0.8)',
+        },
+        {
+          label: 'Pérdidas',
+          data: [barData.totalPerdidas],
+          backgroundColor: 'rgba(255, 80, 80, 0.8)',
+        },
+        {
+          label: 'Ganancias',
+          data: [barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)],
+          backgroundColor: 'rgba(74, 184, 68, 0.8)',
+        },
+      ],
+    }
+
+    return {options, data}
+  }
+
+  const barProperties = useMemo(() => setUpChart(), [statistics])
 
   const currencyFormatter = new Intl.NumberFormat("es-PY", {
     style: "currency",
@@ -140,21 +138,22 @@ function Index({ title }) {
 
         <Box px="4" pt="3" pb="2">
           <Tabs.Content value="ganancias">
-              <FormDate
-                startDate={startDate}
-                setStartDate={setStartDate}
-                endDate={endDate}
-                setEndDate={setEndDate}
-                onClick={onClick}
-              />
+            <FormDate
+              startDate={startDate}
+              setStartDate={setStartDate}
+              endDate={endDate}
+              setEndDate={setEndDate}
+              onClick={onClick}
+            />
 
 
             <div className="flex flex-col md:flex-row">
               <div className="md:w-3/5">
                 <Bar
-                  options={options}
-                  data={data}
-                  updateMode="resize"
+                  options={barProperties.options}
+                  data={barProperties.data}
+                  redraw={true}
+                  updateMode='resize'
                 />
               </div>
               <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0">
@@ -186,13 +185,13 @@ function Index({ title }) {
           </Tabs.Content>
 
           <Tabs.Content value="estadisticas">
-              <FormDate
-                startDate={startDate}
-                setStartDate={setStartDate}
-                endDate={endDate}
-                setEndDate={setEndDate}
-                onClick={onClick}
-              />
+            <FormDate
+              startDate={startDate}
+              setStartDate={setStartDate}
+              endDate={endDate}
+              setEndDate={setEndDate}
+              onClick={onClick}
+            />
 
             <TableStatistics
               statistics={statistics}
