@@ -154,7 +154,6 @@ function Index({ title }) {
                 <Bar
                   options={options}
                   data={data}
-                  redraw={true}
                   updateMode="reset"
                 />
               </div>
