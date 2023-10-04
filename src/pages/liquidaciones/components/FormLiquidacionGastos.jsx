@@ -65,7 +65,7 @@ function FormLiquidacionGastos({
 
         // Iterate over the keys of formData
         for (const field in formData) {
-            if (formData[field] === '') {
+            if (formData[field] === '' || (formData[field] === null && select === 'conBoleta')) {
                 newInputStyles[field] = { color: 'red', variant: 'soft' };
             }
         }
@@ -75,7 +75,7 @@ function FormLiquidacionGastos({
             ...newInputStyles,
         }));
 
-        if (Object.keys(newInputStyles).length > 2) {
+        if (Object.keys(newInputStyles).length > 1) {
             setError('Complete todos los campos');
             setSuccess('')
             return

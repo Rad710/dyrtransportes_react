@@ -74,6 +74,55 @@ function TableLiquidacionViajes({ liquidacionViajes, setLiquidacionViajes }) {
                         </Table.Cell>
                     </Table.Row>
                 ))}
+
+                {liquidacionViajes.length > 0 && (
+                    <Table.Row className="bg-gray-200">
+                        <Table.Cell></Table.Cell>
+
+                        <Table.RowHeaderCell>
+                            <em className="font-bold">TOTAL:</em>
+                        </Table.RowHeaderCell>
+                        <Table.Cell></Table.Cell>
+                        <Table.Cell></Table.Cell>
+                        <Table.Cell></Table.Cell>
+                        <Table.Cell></Table.Cell>
+                        <Table.Cell>
+                            <em className="font-bold">
+                                {liquidacionViajes.reduce((total, viaje) => viaje.kgOrigen + total, 0)
+                                    .toLocaleString("es-ES")}
+                            </em>
+                        </Table.Cell>
+
+                        <Table.Cell>
+                            <em className="font-bold">
+                                {liquidacionViajes.reduce((total, viaje) => viaje.kgDestino + total, 0)
+                                    .toLocaleString("es-ES")}
+                            </em>
+                        </Table.Cell>
+
+                        <Table.Cell>
+                            <em className="font-bold">
+                                {liquidacionViajes.reduce((total, viaje) => (viaje.kgDestino - viaje.kgOrigen) + total, 0)
+                                    .toLocaleString("es-ES")}
+                            </em>
+                        </Table.Cell>
+
+                        <Table.Cell></Table.Cell>
+
+                        <Table.Cell>
+                            <em className="font-bold">
+                                {liquidacionViajes.reduce((total, viaje) => (
+                                    (Number(viaje.precioLiquidacion) * viaje.kgDestino) + total), 0)
+                                    .toLocaleString("es-ES", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 1,
+                                    })
+                                }
+                            </em>
+                        </Table.Cell>
+
+                    </Table.Row>
+                )}
             </Table.Body>
         </Table.Root>
     )

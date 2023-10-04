@@ -43,10 +43,31 @@ function TableLiquidacionGastos({ liquidacionGastos, setLiquidacionGastos }) {
                     })}
                   </Table.RowHeaderCell>
                   <Table.Cell>{gasto.boleta}</Table.Cell>
-                  <Table.Cell>{gasto.importe}</Table.Cell>
+                  <Table.Cell>{gasto.importe.toLocaleString("es-ES")}</Table.Cell>
                   <Table.Cell>{gasto.razon}</Table.Cell>
                 </Table.Row>
               ))}
+              {liquidacionGastos.conBoleta.length > 0 && (
+                <Table.Row className="bg-gray-200">
+                  <Table.Cell></Table.Cell>
+
+                  <Table.RowHeaderCell>
+                    <em className="font-bold">Subtotal:</em>
+                  </Table.RowHeaderCell>
+
+                  <Table.Cell></Table.Cell>
+
+                  <Table.Cell>
+                    <em className="font-bold">
+                      {liquidacionGastos.conBoleta.reduce((total, gasto) => gasto.importe + total, 0)
+                        .toLocaleString("es-ES")}
+                    </em>
+                  </Table.Cell>
+
+                  <Table.Cell></Table.Cell>
+                </Table.Row>
+              )}
+
             </Table.Body>
           </Table.Root>
         </div>
@@ -86,10 +107,29 @@ function TableLiquidacionGastos({ liquidacionGastos, setLiquidacionGastos }) {
                       year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
                     })}
                   </Table.RowHeaderCell>
-                  <Table.Cell>{gasto.importe}</Table.Cell>
+                  <Table.Cell>{gasto.importe.toLocaleString("es-ES")}</Table.Cell>
                   <Table.Cell>{gasto.razon}</Table.Cell>
                 </Table.Row>
               ))}
+
+              {liquidacionGastos.sinBoleta.length > 0 && (
+                <Table.Row className="bg-gray-200">
+                  <Table.Cell></Table.Cell>
+
+                  <Table.RowHeaderCell>
+                    <em className="font-bold">Subtotal:</em>
+                  </Table.RowHeaderCell>
+
+                  <Table.Cell>
+                    <em className="font-bold">
+                      {liquidacionGastos.sinBoleta.reduce((total, gasto) => gasto.importe + total, 0)
+                        .toLocaleString("es-ES")}
+                    </em>
+                  </Table.Cell>
+
+                  <Table.Cell></Table.Cell>
+                </Table.Row>
+              )}
             </Table.Body>
           </Table.Root>
           {liquidacionGastos.sinBoleta.length === 0 && (

@@ -1,6 +1,6 @@
 import { FileIcon, PlusIcon } from "@radix-ui/react-icons"
 import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes"
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-router-dom";
 
 import { getCobranza, getKeywords, postCobranza, putCobranza } from "../../../utils/cobranza";
@@ -46,7 +46,7 @@ function FormCobranzas({
 
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
 
-    const [suggestions, setSuggestions] = useState({})
+    const [suggestions, setSuggestions] = useState({ chofer: [], destino: [], origen: [], producto: [] })
 
     useEffect(() => {
         const queryKeywords = async () => {
@@ -54,11 +54,10 @@ function FormCobranzas({
 
             setSuggestions(result)
         }
-
         queryKeywords()
     }, [cobranzas])
 
-    
+
     const handleKeyDown = async (e, index) => {
         const fieldName = e.target.name
         if (e.key === 'Enter') {
@@ -73,7 +72,7 @@ function FormCobranzas({
                         const result = await getNomina()
 
                         const nomina = result.filter(nomina => (
-                            nomina.chofer === formData.chofer || 
+                            nomina.chofer === formData.chofer ||
                             nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
                         ))
                         const [chapaNomina] = nomina
@@ -121,7 +120,7 @@ function FormCobranzas({
                 return
             }
         }
-        
+
         if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
             const newToSuggest = suggestions[fieldName].filter(suggested =>
                 (string !== '' && new RegExp('^' + string).test(suggested))
@@ -223,7 +222,7 @@ function FormCobranzas({
         }
         setFormData({
             ...viaje,
-            fechaCreacion: fechaCreacion, 
+            fechaCreacion: fechaCreacion,
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10),
             precio: Number(viaje.precio).toFixed(2)
         })
@@ -239,7 +238,6 @@ function FormCobranzas({
             setSelectedSuggestion(0)
         }
     };
-
 
 
     return (
@@ -295,7 +293,13 @@ function FormCobranzas({
                                         value={formData.chofer}
                                         color={inputStyles.chofer.color}
                                         variant={inputStyles.chofer.variant}
+                                        list="suggestedChofer"
                                     />
+                                    <datalist id="suggestedChofer">
+                                        {[... new Set(suggestions.chofer)].sort().map(entry => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
+                                    </datalist>
 
                                     <div className="absolute top-1.5">
                                         <Text
@@ -359,7 +363,14 @@ function FormCobranzas({
                                         value={formData.producto}
                                         color={inputStyles.producto.color}
                                         variant={inputStyles.producto.variant}
+                                        list="suggestedProducto"
                                     />
+
+                                    <datalist id="suggestedProducto">
+                                        {[... new Set(suggestions.producto)].sort().map(entry => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
+                                    </datalist>
 
                                     <div className="absolute top-1.5">
                                         <Text
@@ -391,7 +402,14 @@ function FormCobranzas({
                                         value={formData.origen}
                                         color={inputStyles.origen.color}
                                         variant={inputStyles.origen.variant}
+                                        list="suggestedOrigen"
                                     />
+
+                                    <datalist id="suggestedOrigen">
+                                        {[... new Set(suggestions.origen)].sort().map(entry => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
+                                    </datalist>
 
                                     <div className="absolute top-1.5">
                                         <Text
@@ -420,7 +438,14 @@ function FormCobranzas({
                                         value={formData.destino}
                                         color={inputStyles.destino.color}
                                         variant={inputStyles.destino.variant}
+                                        list="suggestedDestino"
                                     />
+
+                                    <datalist id="suggestedDestino">
+                                        {[... new Set(suggestions.destino)].sort().map(entry => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
+                                    </datalist>
 
                                     <div className="absolute top-1.5">
                                         <Text

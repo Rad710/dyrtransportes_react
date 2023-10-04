@@ -43,9 +43,7 @@ function Index({ title }) {
     if (!result?.response) {
       setStatistics(result.choferes)
 
-      const totalGastos = (result.totales.totalGastoFacturado + result.totales.totalGastoNoFacturado)
-      const totalPerdidas = totalGastos > result.totales.totalLiquidacionViajes ? Math.abs(totalGastos) : 0
-      setBarData({ ...result.totales, totalPerdidas: totalPerdidas })
+      setBarData(result.totales)
     }
   }
 
@@ -115,7 +113,7 @@ function Index({ title }) {
     currency: "PYG"
   })
 
-  
+  const ganancia = barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)
   return (
     <>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
@@ -172,8 +170,8 @@ function Index({ title }) {
                 </Text>
 
                 <Text size="6" className="font-black">
-                  Total <em className="text-green-600">Ganancias:{' '}
-                    {currencyFormatter.format(barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas))}
+                  Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
+                    {currencyFormatter.format(ganancia)}
                   </em>
                 </Text>
               </div>

@@ -151,7 +151,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                         </Table.Row>
                     </React.Fragment>
                 ))}
-                {Object.keys(cobranzas).length !== 0 && (
+                {Object.keys(cobranzas).length > 0 && (
                     <Table.Row className="bg-gray-200">
                         <Table.Cell></Table.Cell>
 
