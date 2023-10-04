@@ -11,7 +11,7 @@ const getDatabaseBackup = async () => {
             const timestamp = new Date().toISOString().replace(/[-:.]/g, '_');
 
             const blob = new Blob([data], { type: 'application/octet-stream' });
-            saveAs(blob, `backup_${timestamp}.db`);
+            saveAs(blob, `backup_${timestamp}.sql`);
 
         }).catch(function (error) {
             alert('No se pudo descargar el archivo')
