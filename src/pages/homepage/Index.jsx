@@ -23,6 +23,8 @@ function Index({ title }) {
 
   const [barData, setBarData] = useState({})
 
+  const [legend, setLegend] = useState('')
+
   const today = new Date()
     // Tomorrow
   const tomorrow = new Date(today);
@@ -51,6 +53,16 @@ function Index({ title }) {
     loadStatistics()
   }, [])
 
+  useEffect(() => {
+    const newLegend = `Resumen de Ganancias de ${startDate.toLocaleDateString("es-ES", {
+      year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+    })} hasta ${endDate.toLocaleDateString("es-ES", {
+      year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+    })}`
+
+    setLegend(newLegend)
+  }, [statistics])
+
   const handleDescargar = async () => {
     await getDatabaseBackup()
   }
@@ -73,11 +85,7 @@ function Index({ title }) {
       },
       title: {
         display: true,
-        text: `Resumen de Ganancias de ${startDate.toLocaleDateString("es-ES", {
-          year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
-        })} hasta ${endDate.toLocaleDateString("es-ES", {
-          year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
-        })}`,
+        text: legend,
       },
     },
   };
