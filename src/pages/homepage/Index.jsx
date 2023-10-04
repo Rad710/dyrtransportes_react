@@ -154,7 +154,7 @@ function Index({ title }) {
                 <Bar
                   options={options}
                   data={data}
-                  updateMode="reset"
+                  updateMode="resize"
                 />
               </div>
               <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0">
