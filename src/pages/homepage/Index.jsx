@@ -153,25 +153,25 @@ function Index({ title }) {
               <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0">
                 <Text size="6" className="font-black">
                   Total <em className="text-blue-700">Ingresos:{' '}
-                    {currencyFormatter.format(barData.totalFletes)}
+                    {currencyFormatter.format(barData.totalFletes) ?? 0}
                   </em>
                 </Text>
 
                 <Text size="6" className="font-black">
                   Total <em className="text-orange-600">Egresos:{' '}
-                    {currencyFormatter.format(barData.totalLiquidacionViajes)}
+                    {currencyFormatter.format(barData.totalLiquidacionViajes) ?? 0}
                   </em>
                 </Text>
 
                 <Text size="6" className="font-black">
                   Total <em className="text-red-600">Pérdidas:{' '}
-                    {currencyFormatter.format(barData.totalPerdidas)}
+                    {currencyFormatter.format(barData.totalPerdidas) ?? 0}
                   </em>
                 </Text>
 
                 <Text size="6" className="font-black">
-                  Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
-                    {currencyFormatter.format(ganancia)}
+                  Total <em className={ganancia > 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
+                    {currencyFormatter.format(ganancia) ?? 0}
                   </em>
                 </Text>
               </div>
