@@ -113,7 +113,7 @@ function Index({ title }) {
     currency: "PYG"
   })
 
-  const ganancia = barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)
+  const ganancia = barData.totalFletes ? barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas) : 0
   return (
     <>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
@@ -171,7 +171,7 @@ function Index({ title }) {
 
                 <Text size="6" className="font-black">
                   Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
-                    {currencyFormatter.format(ganancia ?? 0)}
+                    {currencyFormatter.format(ganancia)}
                   </em>
                 </Text>
               </div>
