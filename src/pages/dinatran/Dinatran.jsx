@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 
-import FormDate from "../../components/formDate";
 import TableDinatran from "./components/TableDinatran";
 import { getInformeDinatran } from "../../utils/dinatran";
+import FormDate from "../../components/FormDate";
 
 function Dinatran({ title }) {
   useEffect(() => {

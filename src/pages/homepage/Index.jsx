@@ -7,7 +7,7 @@ import { getDatabaseBackup, getStatistics } from "../../utils/homepage";
 
 
 import { Bar } from 'react-chartjs-2';
-import FormDate from "../../components/formDate";
+import FormDate from "../../components/FormDate";
 import TableStatistics from "./components/TableStatistics";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
