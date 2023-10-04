@@ -28,7 +28,6 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
 
         const response = await postLiquidacion(chofer)
 
-        console.log(response)
         if (!response?.response) {
             setSuccess(`Entrada añadida correctamente`);
             setError('');

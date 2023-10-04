@@ -15,7 +15,6 @@ export async function loader({ params }) {
     if (!result?.response) {
         return result.map(planilla => ({ fecha: planilla, checked: false }))
     } else {
-        console.log('Errrror')
         setError(data.response.data)
         return []
     }

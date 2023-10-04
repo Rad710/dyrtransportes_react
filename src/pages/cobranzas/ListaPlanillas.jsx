@@ -89,10 +89,8 @@ function ListaPlanillas({ title }) {
         if (checkedYears.length === 1) {
             const [toExport] = checkedYears
 
-            console.log('Exportando...')
             const fechaInicio = new Date(toExport.year, 0, 1).toISOString().slice(0, 10)
             const fechaFin = new Date(toExport.year, 11, 31).toISOString().slice(0, 10)
-            console.log(fechaInicio, fechaFin)
             await getExportarInforme(fechaInicio, fechaFin)
         }
     }

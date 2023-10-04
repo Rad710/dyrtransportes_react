@@ -3,8 +3,6 @@ import { Table, Checkbox } from "@radix-ui/themes"
 
 function TableLiquidacionViajes({ liquidacionViajes, setLiquidacionViajes }) {
 
-    const tolPercent = 0.002
-
     const handleCheckedChange = (index) => {
         const newViajes = liquidacionViajes.map((viaje, i) => (
             i === index ? { ...viaje, checked: !viaje.checked } : viaje
@@ -47,29 +45,20 @@ function TableLiquidacionViajes({ liquidacionViajes, setLiquidacionViajes }) {
                             })}
                         </Table.RowHeaderCell>
                         <Table.Cell>
-                            {Number(viaje.tiquet).toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                            })}
+                            {Number(viaje.tiquet).toLocaleString("es-ES")}
                         </Table.Cell>
                         <Table.Cell>{viaje.producto}</Table.Cell>
                         <Table.Cell>{viaje.origen}</Table.Cell>
                         <Table.Cell>{viaje.destino}</Table.Cell>
                         <Table.Cell>
-                            {Number(viaje.kgOrigen).toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                            })}
+                            {Number(viaje.kgOrigen).toLocaleString("es-ES")}
                         </Table.Cell>
                         <Table.Cell>
-                            {Number(viaje.kgDestino).toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                            })}
+                            {Number(viaje.kgDestino).toLocaleString("es-ES")}
                         </Table.Cell>
 
                         <Table.Cell>
-                            {(viaje.kgDestino - viaje.kgOrigen).toLocaleString(undefined)}
+                            {(viaje.kgDestino - viaje.kgOrigen).toLocaleString("es-ES")}
                         </Table.Cell>
 
                         <Table.Cell>{Number(viaje.precioLiquidacion).toLocaleString("es-ES", {

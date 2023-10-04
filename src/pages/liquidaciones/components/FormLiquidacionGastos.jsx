@@ -61,7 +61,6 @@ function FormLiquidacionGastos({
         e.preventDefault()
 
         // Create a new object for styles based on validation
-        console.log('Submit...')
         const newInputStyles = {};
 
         // Iterate over the keys of formData

@@ -57,8 +57,6 @@ function LiquidacionesChofer({ title }) {
     const toDelete = liquidaciones.filter(liquidacion => liquidacion.checked)
     .map(liquidacion => liquidacion.fecha)
 
-    console.log(toDelete)
-
     const deletePromises = toDelete.map(async (fecha) => (await deleteLiquidacionesChofer(chofer, fecha)))
 
     const confirmDelete = await Promise.all(deletePromises);

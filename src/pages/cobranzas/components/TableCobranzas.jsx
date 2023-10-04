@@ -80,22 +80,13 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                                 <Table.Cell>{cobranza.viaje.origen}</Table.Cell>
                                 <Table.Cell>{cobranza.viaje.destino}</Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.tiquet).toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                    })}
+                                    {Number(cobranza.viaje.tiquet).toLocaleString("es-ES")}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.kgOrigen).toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                    })}
+                                    {Number(cobranza.viaje.kgOrigen).toLocaleString("es-ES")}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.kgDestino).toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                    })}
+                                    {Number(cobranza.viaje.kgDestino).toLocaleString("es-ES")}
                                 </Table.Cell>
                                 <Table.Cell>{cobranza.viaje.kgDestino - cobranza.viaje.kgOrigen}</Table.Cell>
                                 <Table.Cell>{Number(cobranza.viaje.precio).toLocaleString("es-ES", {

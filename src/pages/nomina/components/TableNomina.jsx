@@ -30,13 +30,6 @@ function TableNomina({ nomina, setNomina }) {
 
                         <Table.RowHeaderCell>{entrada.chofer}</Table.RowHeaderCell>
                         <Table.Cell>{entrada.chapa}</Table.Cell>
-                        {/* <Table.Cell>
-                            {Number(entrada.precio).toLocaleString("es-ES", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}
-                        </Table.Cell> */}
-
                     </Table.Row>
                 ))}
 

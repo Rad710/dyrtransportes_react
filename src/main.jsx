@@ -15,7 +15,7 @@ import { loader as nominaLoader } from './pages/nomina/Nomina'
 
 
 import Layout from './components/Layout'
-import Index from './pages/Index'
+import Index from './pages/homepage/Index';
 import Cobranzas from './pages/cobranzas/Cobranzas'
 import LiquidacionesChofer from './pages/liquidaciones/LiquidacionesChofer'
 import Precios from './pages/precios/Precios'

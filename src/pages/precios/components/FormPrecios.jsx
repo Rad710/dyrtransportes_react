@@ -80,12 +80,10 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
         if (formData.id === '') {
             response = await postPrecio(formData)
         } else {
-            console.log(formData)
             response = await putPrecio(formData.id, formData)
             setButtonText('Agregar')
         }
 
-        console.log(response)
         if (!response?.response) {
             setSuccess(`Entrada ${formData.id === '' ? 'añadida' : 'editada'} correctamente`);
             setError('');
@@ -118,7 +116,6 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
         for (const attribute in toEdit) {
             newFormData[attribute] = String(toEdit[attribute])
         }
-        console.log(newFormData)
         setFormData({...newFormData, checked: Boolean(newFormData.checked)})
     }
 
