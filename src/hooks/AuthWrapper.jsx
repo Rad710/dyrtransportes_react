@@ -1,7 +1,7 @@
 // AuthWrapper.js
 import { useEffect, useState } from 'react'
 import netlifyIdentity from 'netlify-identity-widget'
-import Login from '../components/Login';
+import LoginPage from '../components/LoginPage';
 
 const AuthWrapper = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -33,7 +33,7 @@ const AuthWrapper = ({ children }) => {
 
   return (
     <>
-      {user ? children : <Login />}
+      {user ? children : <LoginPage />}
     </>
   )
 };
