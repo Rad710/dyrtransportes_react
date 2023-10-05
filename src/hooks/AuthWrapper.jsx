@@ -9,7 +9,6 @@ const AuthWrapper = ({ children }) => {
   useEffect(() => {
     // Initialize the Netlify Identity widget
     netlifyIdentity.init({
-      container: '#netlify-modal', // defaults to document.body
       locale: 'es' // defaults to 'en'
     })
 
