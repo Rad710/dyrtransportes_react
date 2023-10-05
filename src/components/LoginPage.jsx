@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import netlifyIdentity from 'netlify-identity-widget';
 import { Button } from '@radix-ui/themes';
 
 const LoginPage = () => {
+    useEffect(() => {
+        netlifyIdentity.open()
+    }, [])
+
   const handleLogin = () => {
     // Open the login/signup modal
     netlifyIdentity.open();
