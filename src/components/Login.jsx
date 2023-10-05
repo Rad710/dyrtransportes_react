@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
-
+import { AvatarIcon } from '@radix-ui/react-icons';
+import { Button } from '@radix-ui/themes'
 import netlifyIdentity from 'netlify-identity-widget'
 
 const Login = () => {
-
-  useEffect(() => {
+  const handleLogin = () => {
+    // Open the login/signup modal
     netlifyIdentity.open()
-  }, [])
+  };
 
   return (
-    <div className='bg-gray-400'>
+    <div>
+      <h1>Login Page</h1>
+      <Button onClick={handleLogin}>Log In</Button>
     </div>
   );
 };
