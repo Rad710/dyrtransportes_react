@@ -3,15 +3,15 @@ import { Button } from '@radix-ui/themes'
 import netlifyIdentity from 'netlify-identity-widget'
 
 const Login = () => {
-  const handleLogin = () => {
-    // Open the login/signup modal
-    netlifyIdentity.open();
-  };
+
 
   return (
     <div>
-      <h1>Login Page</h1>
-      <Button onClick={handleLogin}>Log In</Button>
+      <Button color="indigo" variant="solid" size="4"
+        onClick={() => netlifyIdentity.open()}
+      >
+        <AvatarIcon width="20" height="20" />Iniciar Sesión
+      </Button>
     </div>
   );
 };

@@ -32,7 +32,7 @@ const AuthWrapper = ({ children }) => {
 
   return (
     <>
-      {user ? children : <LoginPage />}
+      {user ? children : <Login />}
     </>
   )
 };
