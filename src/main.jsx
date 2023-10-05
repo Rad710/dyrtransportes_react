@@ -26,6 +26,7 @@ import YearlyPlanillas from './pages/cobranzas/YearlyPlanillas'
 import ListaLiquidaciones from './pages/liquidaciones/ListaLiquidaciones'
 import Liquidacion from './pages/liquidaciones/Liquidacion'
 import Dinatran from './pages/dinatran/Dinatran'
+import AuthWrapper from './hooks/AuthWrapper';
 
 
 const router = createBrowserRouter([
@@ -96,6 +97,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthWrapper>
+      <RouterProvider router={router} />
+    </AuthWrapper>
   </React.StrictMode>,
 )
