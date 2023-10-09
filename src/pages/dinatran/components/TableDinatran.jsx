@@ -2,6 +2,8 @@ import { Table } from "@radix-ui/themes"
 
 function TableDinatran({ statistics }) {
 
+    const formatter = new Intl.NumberFormat("es-PY")
+
     return (
         <Table.Root variant="surface">
             <Table.Header>
@@ -29,23 +31,23 @@ function TableDinatran({ statistics }) {
                             <Table.Cell>{viajes}</Table.Cell>
 
                             <Table.Cell>
-                                {totalOrigen.toLocaleString("es-ES")}
+                                {formatter.format(totalOrigen)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalDestino.toLocaleString("es-ES")}
+                                {formatter.format(totalDestino)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {(totalDestino - totalOrigen).toLocaleString("es-ES")}
+                                {formatter.format(totalDestino - totalOrigen)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalFlete.toLocaleString("es-ES")}
+                                {formatter.format(totalFlete)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalLiquidacion.toLocaleString("es-ES")}
+                                {formatter.format(totalLiquidacion)}
                             </Table.Cell>
                         </Table.Row>
                     )

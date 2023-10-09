@@ -2,6 +2,8 @@ import { Table } from "@radix-ui/themes"
 
 function TableStatistics({ statistics }) {
 
+    const formatter = new Intl.NumberFormat("es-PY")
+
     return (
         <Table.Root variant="surface">
             <Table.Header>
@@ -39,43 +41,43 @@ function TableStatistics({ statistics }) {
                             <Table.Cell>{viajes}</Table.Cell>
 
                             <Table.Cell>
-                                {totalOrigen.toLocaleString("es-ES")}
+                                {formatter.format(totalOrigen)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalDestino.toLocaleString("es-ES")}
+                                {formatter.format(totalDestino)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {(totalDestino - totalOrigen).toLocaleString("es-ES")}
+                                {formatter.format(totalDestino - totalOrigen)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalFlete.toLocaleString("es-ES")}
+                                {formatter.format(totalFlete)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalLiquidacion.toLocaleString("es-ES")}
+                                {formatter.format(totalLiquidacion)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalFacturado.toLocaleString("es-ES")}
+                                {formatter.format(totalFacturado)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {totalNoFacturado.toLocaleString("es-ES")}
+                                {formatter.format(totalNoFacturado)}
                             </Table.Cell>
 
                             <Table.Cell>
-                                {gastoTotal.toLocaleString("es-ES")}
+                                {formatter.format(gastoTotal)}
                             </Table.Cell>
 
                             <Table.Cell className="text-red-600 font-black">
-                                {perdida.toLocaleString("es-ES")}
+                                {formatter.format(perdida)}
                             </Table.Cell>
 
                             <Table.Cell className="text-green-600 font-black">
-                                {(totalFlete - totalLiquidacion + perdida).toLocaleString("es-ES")}
+                                {formatter.format(totalFlete - totalLiquidacion + perdida)}
                             </Table.Cell>
                         </Table.Row>
                     )
