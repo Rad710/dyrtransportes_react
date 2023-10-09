@@ -58,6 +58,41 @@ function FormCobranzas({
     }, [cobranzas])
 
 
+    const autocompleteField = async (fieldName) => {
+        if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
+            if (toSuggest[fieldName].at(selectedSuggestion)) {
+                if (fieldName === 'chofer') {
+                    const result = await getNomina()
+
+                    const nomina = result.filter(nomina => (
+                        nomina.chofer === formData.chofer ||
+                        nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
+                    ))
+                    const [chapaNomina] = nomina
+
+                    if (chapaNomina !== undefined) {
+                        setFormData({
+                            ...formData,
+                            chofer: toSuggest.chofer.at(selectedSuggestion),
+                            chapa: chapaNomina.chapa
+                        })
+                    }
+                } else if ('destino' === fieldName) {
+                    const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
+
+                    setFormData({
+                        ...formData,
+                        destino: toSuggest.destino.at(selectedSuggestion),
+                        precio: String(result?.precio ?? '')
+                    })
+                } else {
+                    setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
+                }
+            }
+        }
+    }
+
+
     const handleKeyDown = async (e, index) => {
         const fieldName = e.target.name
         if (e.key === 'Enter') {
@@ -65,38 +100,7 @@ function FormCobranzas({
             if (index < inputRefs.length - 1) {
                 inputRefs[index + 1].current.focus();
             }
-
-            if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
-                if (toSuggest[fieldName].at(selectedSuggestion)) {
-                    if (fieldName === 'chofer') {
-                        const result = await getNomina()
-
-                        const nomina = result.filter(nomina => (
-                            nomina.chofer === formData.chofer ||
-                            nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
-                        ))
-                        const [chapaNomina] = nomina
-
-                        if (chapaNomina !== undefined) {
-                            setFormData({
-                                ...formData,
-                                chofer: toSuggest.chofer.at(selectedSuggestion),
-                                chapa: chapaNomina.chapa
-                            })
-                        }
-                    } else if ('destino' === fieldName) {
-                        const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
-
-                        setFormData({
-                            ...formData,
-                            destino: toSuggest.destino.at(selectedSuggestion),
-                            precio: String(result?.precio ?? '')
-                        })
-                    } else {
-                        setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
-                    }
-                }
-            }
+            autocompleteField(fieldName)
         }
 
         if (e.key === 'ArrowDown') {
@@ -158,9 +162,10 @@ function FormCobranzas({
         }
         resetFormStyle(inputStyles, setInputStyles)
 
+        console.log(formData)
         let response = null
         if (formData.id === '') {
-            response = await postCobranza(formData)
+            // response = await postCobranza(formData)
         } else {
             response = await putCobranza(formData)
             setButtonText('Agregar')
@@ -233,6 +238,7 @@ function FormCobranzas({
 
     const handleBlur = (e) => {
         const fieldName = e.target.name
+        autocompleteField(fieldName)
         if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
             setToSuggest({ ...toSuggest, [fieldName]: [] })
             setSelectedSuggestion(0)

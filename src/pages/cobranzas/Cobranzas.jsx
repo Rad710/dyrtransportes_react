@@ -46,11 +46,11 @@ function Cobranzas({ title }) {
 
   const [formData, setFormData] = useState({
     id: "", fechaCreacion: planillaDate.toISOString().slice(0, 10),
-    fechaViaje: "", chofer: "", chapa: "", producto: "",
+    fechaViaje: new Date().toISOString().slice(0, 10), chofer: "", chapa: "", producto: "",
     origen: "", destino: "", tiquet: "", precio: "",
     kgOrigen: "", kgDestino: ""
   })
-
+  console.log(formData)
   const [tracker, setTracker] = useState([])
 
 
