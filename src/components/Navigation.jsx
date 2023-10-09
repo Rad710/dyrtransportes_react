@@ -17,7 +17,11 @@ const Navigation = () => {
         const result = await postPlanilla(currentFecha)
 
         if (result?.response) {
-            alert(result.response.data)
+            toast({
+                variant: "destructive",
+                description: `Error: ${result.response.data}`,
+              })
+              return
         } else {
             const url = `/cobranzas/${currentFecha.toISOString().slice(0, 4)}/${currentFecha.toISOString().slice(5, 10)}`
             navigate(url)
@@ -32,7 +36,7 @@ const Navigation = () => {
         <nav>
             <Flex gap="5" justify="between" wrap="wrap">
                 <Box >
-                    <div className="container flex items-center text-left">
+                    <div className="flex items-center text-left">
                         <Flex gap="1"
                             className={`${path === '/' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
                         >

@@ -1,4 +1,3 @@
-// AuthWrapper.js
 import { useEffect, useState } from 'react'
 import netlifyIdentity from 'netlify-identity-widget'
 import LoginPage from '../components/LoginPage';

@@ -63,7 +63,6 @@ function YearlyPlanillas({ title }) {
         const currentFecha = new Date()
         const newFecha = new Date(year, currentFecha.getMonth(), currentFecha.getDate())
         const result = await postPlanilla(newFecha)
-
         if (!result?.response) {
             setPlanillas([{ fecha: newFecha, checked: false }, ...planillas])
         } else {

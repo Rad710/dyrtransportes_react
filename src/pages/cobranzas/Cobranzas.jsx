@@ -10,6 +10,7 @@ import FormCobranzas from "./components/FormCobranzas";
 
 import { getCobranza, getExportarCobranza, deleteCobranza } from "../../utils/cobranza";
 import TableCobranzas from "./components/TableCobranzas"
+import { toast } from "@/components/ui/use-toast";
 
 
 export async function loader({ params }) {
@@ -64,7 +65,11 @@ function Cobranzas({ title }) {
 
     results.forEach(element => {
       if (element?.response) {
-        alert(element.response.data)
+        toast({
+          variant: "destructive",
+          description: `Error: ${element.response.data}`,
+        })
+        return
       }
     });
 
@@ -87,7 +92,8 @@ function Cobranzas({ title }) {
         <h2 className="text-3xl font-bold text-left md:w-1/3">{`Cobranza del 
           ${(planillaDate.toLocaleDateString("es-ES",
           { year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT" }))
-          }`}</h2>
+          }`}
+        </h2>
 
         <div className="gap-5 md:flex justify-end md:2/3">
           <FormCobranzas
@@ -112,17 +118,13 @@ function Cobranzas({ title }) {
         </div>
       </div>
 
-      {/* <ScrollArea
-        style={{ height: "60vh" }}
-        size="2"
-      > */}
       <TableCobranzas
         cobranzas={cobranzas}
         setCobranzas={setCobranzas}
         tracker={tracker}
         setTracker={setTracker}
       />
-      {/* </ScrollArea> */}
+
       {Object.keys(cobranzas).length === 0 && (
         <p className="text-center p-4 text-lg">
           No hay datos ingresados

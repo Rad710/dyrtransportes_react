@@ -161,7 +161,7 @@ function Index({ title }) {
                   updateMode='resize'
                 />
               </div>
-              <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0">
+              <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0 md:w-2/5">
                 <Text size="6" className="font-black">
                   Total <em className="text-blue-700">Ingresos:{' '}
                     {currencyFormatter.format(barData.totalFletes)}

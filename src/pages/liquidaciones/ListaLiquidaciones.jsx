@@ -5,6 +5,7 @@ import { deleteLiquidaciones, getLiquidaciones } from "../../utils/liquidaciones
 
 import AlertButton from "../../components/AlertButton"
 import FormListaLiquidaciones from "./components/FormListaLiquidaciones"
+import { toast } from "@/components/ui/use-toast"
 
 export async function loader() {
   const response = await getLiquidaciones()
@@ -38,9 +39,11 @@ function ListaLiquidaciones({ title }) {
     const confirmDelete = await Promise.all(deletePromises);
 
     confirmDelete.forEach(element => {
-      if (element?.response) {
-        alert(`Error${element.response.data}`)
-      }
+      toast({
+        variant: "destructive",
+        description: `Error: ${element.response.data}`,
+      })
+      return
     });
 
     const newLiquidaciones = liquidaciones.filter(liquidacion => liquidacion.checked !== true)

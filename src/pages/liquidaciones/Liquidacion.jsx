@@ -15,6 +15,8 @@ import { getPrecios } from "../../utils/precio";
 import { deleteLiquidacionGasto, deleteLiquidacionViaje, getExportarLiquidacion, 
     getLiquidacion, getLiquidacionGastos, getLiquidacionViajes, 
     postLiquidacion, putLiquidacion, putLiquidacionViaje } from "../../utils/liquidaciones";
+import { toast } from "@/components/ui/use-toast";
+import AlertSwitch from "./components/AlertSwitch";
 
 
 function Liquidacion({ title }) {
@@ -78,7 +80,10 @@ function Liquidacion({ title }) {
 
             results.forEach(element => {
                 if (element?.response) {
-                    alert(element.response.data)
+                    toast({
+                        variant: "destructive",
+                        description: `Error: ${element.response.data}`,
+                      })
                     return
                 }
             });
@@ -97,7 +102,10 @@ function Liquidacion({ title }) {
 
             results.forEach(element => {
                 if (element?.response) {
-                    alert(element.response.data)
+                    toast({
+                        variant: "destructive",
+                        description: `Error: ${element.response.data}`,
+                      })
                     return
                 }
             });
@@ -118,17 +126,14 @@ function Liquidacion({ title }) {
         const newLiquidacion = { ...liquidacion, pagado: !liquidacion.pagado }
         await putLiquidacion(newLiquidacion)
 
-        if (!liquidacion.pagado &&
-            !alert('Se agregará una nueva entrada de Liquidación (en caso de no haber ninguna No Pagada) y todos los nuevos datos se agregarán allí')
-        ) {
-
-            const result = await postLiquidacion(chofer)
-            if (result?.response) {
-                newLiquidacion.pagado = false
-                await putLiquidacion(newLiquidacion)
-
-                alert('No se pudo crear nueva Liquidación. Intente más tarde')
-            }
+        const result = await postLiquidacion(chofer)
+        if (result?.response) {
+            newLiquidacion.pagado = false
+            await putLiquidacion(newLiquidacion)
+            toast({
+                variant: "destructive",
+                description: 'No se pudo crear nueva Liquidación. Intente más tarde',
+                })
         }
         setLiquidacion(newLiquidacion)
     }
@@ -154,7 +159,10 @@ function Liquidacion({ title }) {
 
         result.forEach(element => {
             if (element?.response) {
-                alert(`Error ${element.response.data}`)
+                toast({
+                    variant: "destructive",
+                    description: `Error: ${element.response.data}`,
+                  })
                 return
             }
         })
@@ -163,7 +171,10 @@ function Liquidacion({ title }) {
 
         const newViajes = resultViajes?.map(viaje => ({ ...viaje, checked: false }))
         setLiquidacionViajes(newViajes ?? [])
-        alert('Precios actualizados exitosamente')
+        toast({
+            description: 'Precios actualizados exitosamente',
+            variant: 'success',
+          })
     }
 
 
@@ -229,8 +240,7 @@ function Liquidacion({ title }) {
                         <Text size="3">
                             <Strong>Pagado: </Strong>
                         </Text>
-                        <Switch
-                            color="grass"
+                        <AlertSwitch
                             checked={liquidacion.pagado}
                             onCheckedChange={onCheckedChange}
                         />

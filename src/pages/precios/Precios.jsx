@@ -8,6 +8,7 @@ import FormPrecios from "./components/FormPrecios"
 import TablePrecios from "./components/TablePrecios"
 import AlertButton from "../../components/AlertButton"
 import { deletePrecio, getExportarPrecios, getPrecios } from "../../utils/precio"
+import { toast } from "@/components/ui/use-toast"
 
 
 export async function loader() {
@@ -43,7 +44,10 @@ function Precios({ title }) {
 
     results.forEach(element => {
       if (element?.response) {
-        alert(element.response.data)
+        toast({
+          variant: "destructive",
+          description: `Error: ${element.response.data}`,
+        })
         return
       }
     });

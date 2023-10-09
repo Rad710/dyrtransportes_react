@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom"
 import { Theme } from '@radix-ui/themes';
 
 import Navigation from "./Navigation";
+import { Toaster } from "./ui/toaster";
 
 
 function Layout() {
@@ -17,6 +18,8 @@ function Layout() {
             </header>
 
             <Outlet />
+            
+            <Toaster />
         </Theme>
     )
 }

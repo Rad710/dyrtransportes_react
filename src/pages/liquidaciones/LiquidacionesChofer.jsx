@@ -6,6 +6,7 @@ import { Link, useMatch } from "react-router-dom";
 
 import AlertButton from "../../components/AlertButton"
 import { deleteLiquidacionesChofer, getLiquidacionesChofer, postLiquidacion } from "../../utils/liquidaciones";
+import { toast } from "@/components/ui/use-toast";
 
 
 function LiquidacionesChofer({ title }) {
@@ -35,10 +36,11 @@ function LiquidacionesChofer({ title }) {
 
   const handleAdd = async () => {
     const response = await postLiquidacion(chofer)
-
     if (response?.response) {
-      alert('Error')
-      return
+      toast({
+        variant: "destructive",
+        description: `Error: ${response.response.data}`,
+      })
     }
     loadLiquidaciones(chofer)
   }
@@ -63,7 +65,11 @@ function LiquidacionesChofer({ title }) {
 
     confirmDelete.forEach(element => {
         if (element?.response) {
-            alert(`Error ${element.response.data}`)
+          toast({
+            variant: "destructive",
+            description: `Error: ${element.response.data}`,
+          })
+          return
         }
     });
 

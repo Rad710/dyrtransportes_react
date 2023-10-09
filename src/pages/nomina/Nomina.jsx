@@ -6,6 +6,7 @@ import { TableIcon } from "@radix-ui/react-icons"
 import AlertButton from "../../components/AlertButton"
 import { deleteNomina, getNomina } from "../../utils/nomina"
 import TableNomina from "./components/TableNomina"
+import { toast } from "@/components/ui/use-toast"
 
 export async function loader() {
   const response = await getNomina()
@@ -31,7 +32,10 @@ function Nomina({ title }) {
 
     results.forEach(element => {
       if (element?.response) {
-        alert(element.response.data)
+        toast({
+          variant: "destructive",
+          description: `Error: ${element.response.data}`,
+        })
         return
       }
     });

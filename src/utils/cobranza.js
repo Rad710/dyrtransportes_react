@@ -1,3 +1,4 @@
+import { toast } from "@/components/ui/use-toast"
 import axios from "axios"
 import { saveAs } from "file-saver"
 
@@ -75,7 +76,10 @@ const getExportarInforme = async (fechaInicio, fechaFin) => {
             saveAs(new Blob([data]), `informe_${fechaInicio}-${fechaFin}.xlsx`);
             
         }).catch(function (error) {
-            alert('No se pudo descargar el archivo')
+            toast({
+                variant: "destructive",
+                description: 'Error: no se pudo descargar el archivo',
+              })
             return error
         })
 
@@ -122,9 +126,12 @@ const getExportarCobranza = async (fecha) => {
         .then(function (response) {
             const { data } = response
             saveAs(new Blob([data]), `cobranza_${fecha}.xlsx`);
-            
+
         }).catch(function (error) {
-            alert('No se pudo descargar el archivo')
+            toast({
+                variant: "destructive",
+                description: 'Error: no se pudo descargar el archivo',
+              })
             return error
         })
 
