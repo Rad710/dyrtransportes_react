@@ -8,6 +8,7 @@ import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormData, resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
 import { getPrecio } from "../../../utils/precio";
+import { debounce } from "lodash";
 
 
 function FormCobranzas({
@@ -137,10 +138,7 @@ function FormCobranzas({
     }
 
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        // Create a new object for styles based on validation
+    const debouncedSubmit = debounce(async () => {
         const newInputStyles = {};
 
         // Iterate over the keys of formData
@@ -162,7 +160,6 @@ function FormCobranzas({
         }
         resetFormStyle(inputStyles, setInputStyles)
 
-        console.log(formData)
         let response = null
         if (formData.id === '') {
             response = await postCobranza(formData)
@@ -202,6 +199,15 @@ function FormCobranzas({
             setSuccess('')
             setError('A ocurrido un error');
         }
+    }, 500)
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+
+        debouncedSubmit()
+        // Create a new object for styles based on validation
+        
     }
 
 
