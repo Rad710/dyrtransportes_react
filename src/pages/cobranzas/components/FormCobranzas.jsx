@@ -165,7 +165,7 @@ function FormCobranzas({
         console.log(formData)
         let response = null
         if (formData.id === '') {
-            // response = await postCobranza(formData)
+            response = await postCobranza(formData)
         } else {
             response = await putCobranza(formData)
             setButtonText('Agregar')
