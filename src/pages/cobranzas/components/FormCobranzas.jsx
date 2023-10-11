@@ -139,6 +139,7 @@ function FormCobranzas({
 
 
     const debouncedSubmit = debounce(async () => {
+        // Create a new object for styles based on validation
         const newInputStyles = {};
 
         // Iterate over the keys of formData
@@ -205,9 +206,7 @@ function FormCobranzas({
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        debouncedSubmit()
-        // Create a new object for styles based on validation
-        
+        await debouncedSubmit()        
     }
 
 
