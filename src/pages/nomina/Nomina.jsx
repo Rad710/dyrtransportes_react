@@ -6,10 +6,14 @@ import AlertButton from "../../components/AlertButton"
 import { deleteNomina, getNomina } from "../../utils/nomina"
 import TableNomina from "./components/TableNomina"
 
+import { ColorRing } from "react-loader-spinner"
 
 function Nomina({ title }) {
 
   const [nomina, setNomina] = useState([])
+
+  const [loading, setLoading] = useState(true)
+
 
   useEffect(() => {
     document.title = title;
@@ -20,6 +24,7 @@ function Nomina({ title }) {
       if (!response?.response && !response?.message) {
         setNomina(response.map(entrada => ({ ...entrada, checked: false })))
       }
+      setLoading(false)
     }
 
     loadNomina()
@@ -71,16 +76,29 @@ function Nomina({ title }) {
         </div>
       </div>
 
-      <TableNomina
-        nomina={nomina}
-        setNomina={setNomina}
-      />
+      {!loading && (
+        <>
+          <TableNomina
+            nomina={nomina}
+            setNomina={setNomina}
+          />
 
-      {nomina.length === 0 && (
-        <p className="text-center p-4 text-lg">
-          No hay datos ingresados
-        </p>
+          {nomina.length === 0 && (
+            <p className="text-center p-4 text-lg">
+              No hay datos ingresados
+            </p>
+          )}
+        </>
       )}
+
+      <ColorRing
+        visible={loading}
+        height="80"
+        width="80"
+        ariaLabel="blocks-loading"
+        wrapperClass="w-1/3 h-1/3 m-auto"
+        colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+      />
     </div>
   )
 }

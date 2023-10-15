@@ -11,6 +11,7 @@ import FormCobranzas from "./components/FormCobranzas";
 import { getCobranza, getExportarCobranza, deleteCobranza } from "../../utils/cobranza";
 import TableCobranzas from "./components/TableCobranzas"
 
+import { ColorRing } from "react-loader-spinner";
 
 function Cobranzas({ title }) {
 
@@ -31,6 +32,8 @@ function Cobranzas({ title }) {
 
   const [tracker, setTracker] = useState([])
 
+  const [loading, setLoading] = useState(true)
+
 
   useEffect(() => {
     document.title = title;
@@ -47,6 +50,7 @@ function Cobranzas({ title }) {
         }
         setCobranzas(result)
       }
+      setLoading(false)
     }
 
     fetchData()
@@ -118,18 +122,31 @@ function Cobranzas({ title }) {
         </div>
       </div>
 
-      <TableCobranzas
-        cobranzas={cobranzas}
-        setCobranzas={setCobranzas}
-        tracker={tracker}
-        setTracker={setTracker}
-      />
+      {!loading && (
+        <>
+          <TableCobranzas
+            cobranzas={cobranzas}
+            setCobranzas={setCobranzas}
+            tracker={tracker}
+            setTracker={setTracker}
+          />
 
-      {Object.keys(cobranzas).length === 0 && (
-        <p className="text-center p-4 text-lg">
-          No hay datos ingresados
-        </p>
+          {Object.keys(cobranzas).length === 0 && (
+            <p className="text-center p-4 text-lg">
+              No hay datos ingresados
+            </p>
+          )}
+        </>
       )}
+
+      <ColorRing
+        visible={loading}
+        height="80"
+        width="80"
+        ariaLabel="blocks-loading"
+        wrapperClass="w-1/3 h-1/3 m-auto"
+        colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+      />
     </div>
   )
 }

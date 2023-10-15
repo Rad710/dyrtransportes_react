@@ -64,36 +64,40 @@ function FormCobranzas({
 
 
     const autocompleteField = async (fieldName) => {
-        if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
-            if (toSuggest[fieldName].at(selectedSuggestion)) {
-                if (fieldName === 'chofer') {
-                    const result = await getNomina()
+        if (!['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
+            return
+        }
 
-                    const nomina = result?.filter(nomina => (
-                        nomina.chofer === formData.chofer ||
-                        nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
-                    ))
-                    const [chapaNomina] = nomina
+        if (!toSuggest[fieldName].at(selectedSuggestion)) {
+            return
+        }
 
-                    if (chapaNomina !== undefined) {
-                        setFormData({
-                            ...formData,
-                            chofer: toSuggest.chofer.at(selectedSuggestion),
-                            chapa: chapaNomina.chapa
-                        })
-                    }
-                } else if ('destino' === fieldName) {
-                    const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
+        if (fieldName === 'chofer') {
+            const result = await getNomina()
 
-                    setFormData({
-                        ...formData,
-                        destino: toSuggest.destino.at(selectedSuggestion),
-                        precio: String(result?.precio ?? '')
-                    })
-                } else {
-                    setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
-                }
+            const nomina = result?.filter(nomina => (
+                nomina.chofer === formData.chofer ||
+                nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
+            ))
+            const [chapaNomina] = nomina
+
+            if (chapaNomina !== undefined) {
+                setFormData({
+                    ...formData,
+                    chofer: toSuggest.chofer.at(selectedSuggestion),
+                    chapa: chapaNomina.chapa
+                })
             }
+        } else if ('destino' === fieldName) {
+            const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
+
+            setFormData({
+                ...formData,
+                destino: toSuggest.destino.at(selectedSuggestion),
+                precio: String(result?.precio ?? '')
+            })
+        } else {
+            setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
         }
     }
 
@@ -269,7 +273,7 @@ function FormCobranzas({
             setToSuggest({ ...toSuggest, [fieldName]: [] })
             setSelectedSuggestion(0)
         }
-    };
+    }
 
 
     return (

@@ -17,6 +17,7 @@ import { deleteLiquidacionGasto, deleteLiquidacionViaje, getExportarLiquidacion,
     postLiquidacion, putLiquidacion, putLiquidacionViaje } from "../../utils/liquidaciones";
 import { toast } from "@/components/ui/use-toast";
 import AlertSwitch from "./components/AlertSwitch";
+import { ColorRing } from "react-loader-spinner";
 
 
 function Liquidacion({ title }) {
@@ -48,6 +49,9 @@ function Liquidacion({ title }) {
 
     const [liquidacion, setLiquidacion] = useState({})
 
+    const [loading, setLoading] = useState(true)
+
+
     useEffect(() => {
         const loadLiquidacion = async () => {
             const [resultViajes, resultGastos, resultLiquidacion] = await Promise.all([
@@ -64,6 +68,7 @@ function Liquidacion({ title }) {
             setLiquidacionGastos({ conBoleta: conBoleta ?? [], sinBoleta: sinBoleta ?? []})
 
             setLiquidacion(resultLiquidacion)
+            setLoading(false)
         }
 
         loadLiquidacion()
@@ -237,27 +242,37 @@ function Liquidacion({ title }) {
                     </div>
                 </Tabs.List>
 
-
+                {!loading && (
                 <Box px="4" pt="3" pb="2">
-                    <Tabs.Content value="viajes">
-                        <TableLiquidacionViajes
-                            liquidacionViajes={liquidacionViajes}
-                            setLiquidacionViajes={setLiquidacionViajes}
-                        />
-                        {liquidacionViajes.length === 0 && (
-                            <p className="text-center p-4 text-lg">
-                                No hay datos ingresados
-                            </p>
-                        )}
-                    </Tabs.Content>
+                <Tabs.Content value="viajes">
+                    <TableLiquidacionViajes
+                        liquidacionViajes={liquidacionViajes}
+                        setLiquidacionViajes={setLiquidacionViajes}
+                    />
+                    {liquidacionViajes.length === 0 && (
+                        <p className="text-center p-4 text-lg">
+                            No hay datos ingresados
+                        </p>
+                    )}
+                </Tabs.Content>
 
-                    <Tabs.Content value="gastos">
-                        <TableLiquidacionGastos
-                            liquidacionGastos={liquidacionGastos}
-                            setLiquidacionGastos={setLiquidacionGastos}
-                        />
-                    </Tabs.Content>
-                </Box>
+                <Tabs.Content value="gastos">
+                    <TableLiquidacionGastos
+                        liquidacionGastos={liquidacionGastos}
+                        setLiquidacionGastos={setLiquidacionGastos}
+                    />
+                </Tabs.Content>
+            </Box>
+                )}
+
+                <ColorRing
+                visible={loading}
+                height="80"
+                width="80"
+                ariaLabel="blocks-loading"
+                wrapperClass="w-1/3 h-1/3 m-auto"
+                colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+            />
             </Tabs.Root>
         </div>
     )

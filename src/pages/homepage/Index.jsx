@@ -5,6 +5,7 @@ import { Tabs, Box, Text, Button } from "@radix-ui/themes";
 import { useEffect, useMemo, useState } from "react";
 import { getDatabaseBackup, getStatistics } from "../../utils/homepage";
 
+import { ColorRing } from 'react-loader-spinner';
 
 import { Bar } from 'react-chartjs-2';
 import FormDate from "../../components/FormDate";
@@ -27,6 +28,8 @@ function Index({ title }) {
     totalLiquidacionViajes: 0, totalPerdidas: 0,
   })
 
+  const [loading, setLoading] = useState(true)
+
 
   const today = new Date()
   // Tomorrow
@@ -42,7 +45,7 @@ function Index({ title }) {
 
 
   const loadStatistics = async () => {
-
+    setLoading(true)
     const result = await getStatistics(startDate.toISOString().slice(0, 10),
       endDate.toISOString().slice(0, 10))
     if (!result?.response && !result?.message) {
@@ -50,6 +53,7 @@ function Index({ title }) {
 
       setBarData(result.totales)
     }
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -128,6 +132,7 @@ function Index({ title }) {
   return (
     <>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
+
         <Tabs.List>
           <Tabs.Trigger value="ganancias">
             <span className="text-xl">Ganancias</span>
@@ -140,91 +145,101 @@ function Index({ title }) {
           </Tabs.Trigger>
         </Tabs.List>
 
+        {!loading && (
+          <Box px="4" pt="3" pb="2">
+            <Tabs.Content value="ganancias">
+              <FormDate
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                onClick={onClick}
+              />
 
-        <Box px="4" pt="3" pb="2">
-          <Tabs.Content value="ganancias">
-            <FormDate
-              startDate={startDate}
-              setStartDate={setStartDate}
-              endDate={endDate}
-              setEndDate={setEndDate}
-              onClick={onClick}
-            />
 
+              <div className="flex flex-col md:flex-row">
+                <div className="md:w-3/5">
+                  <Bar
+                    options={barProperties.options}
+                    data={barProperties.data}
+                    redraw={true}
+                    updateMode='resize'
+                  />
+                </div>
+                <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0 md:w-2/5">
+                  <Text size="6" className="font-black">
+                    Total <em className="text-blue-700">Ingresos:{' '}
+                      {currencyFormatter.format(barData.totalFletes)}
+                    </em>
+                  </Text>
 
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-3/5">
-                <Bar
-                  options={barProperties.options}
-                  data={barProperties.data}
-                  redraw={true}
-                  updateMode='resize'
-                />
+                  <Text size="6" className="font-black">
+                    Total <em className="text-orange-600">Egresos:{' '}
+                      {currencyFormatter.format(barData.totalLiquidacionViajes)}
+                    </em>
+                  </Text>
+
+                  <Text size="6" className="font-black">
+                    Total <em className="text-red-600">Pérdidas:{' '}
+                      {currencyFormatter.format(barData.totalPerdidas)}
+                    </em>
+                  </Text>
+
+                  <Text size="6" className="font-black">
+                    Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
+                      {currencyFormatter.format(ganancia)}
+                    </em>
+                  </Text>
+
+                  <Text size="6" className="font-black">
+                    Total Viajes: {barData.viajes}
+                  </Text>
+                </div>
               </div>
-              <div className="flex flex-col gap-10 ml-12 md:mt-10 mt-0 md:w-2/5">
-                <Text size="6" className="font-black">
-                  Total <em className="text-blue-700">Ingresos:{' '}
-                    {currencyFormatter.format(barData.totalFletes)}
-                  </em>
-                </Text>
+            </Tabs.Content>
 
-                <Text size="6" className="font-black">
-                  Total <em className="text-orange-600">Egresos:{' '}
-                    {currencyFormatter.format(barData.totalLiquidacionViajes)}
-                  </em>
-                </Text>
+            <Tabs.Content value="estadisticas">
+              <FormDate
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                onClick={onClick}
+              />
 
-                <Text size="6" className="font-black">
-                  Total <em className="text-red-600">Pérdidas:{' '}
-                    {currencyFormatter.format(barData.totalPerdidas)}
-                  </em>
-                </Text>
+              <TableStatistics
+                statistics={statistics}
+              />
+              {Object.keys(statistics).length === 0 && (
+                <p className="text-center p-4 text-lg">
+                  No hay datos
+                </p>
+              )}
+            </Tabs.Content>
 
-                <Text size="6" className="font-black">
-                  Total <em className={ganancia >= 0 ? "text-green-600" : "text-red-600"}>Ganancias:{' '}
-                    {currencyFormatter.format(ganancia)}
-                  </em>
-                </Text>
+            <Tabs.Content value="baseDeDatos">
+              <div className="mt-10 text-center">
+                <Text size="7">Crea una Copia de Seguridad para respaldar los datos</Text>
 
-                <Text size="6" className="font-black">
-                  Total Viajes: {barData.viajes}
-                </Text>
+                <br />
+                <Button mt="6" color="grass" variant="solid" size="4"
+                  onClick={handleDescargar}
+                >
+                  <DownloadIcon width="20" height="20" /> Descargar Copia
+                </Button>
               </div>
-            </div>
-          </Tabs.Content>
+            </Tabs.Content>
+          </Box>
+        )}
 
-          <Tabs.Content value="estadisticas">
-            <FormDate
-              startDate={startDate}
-              setStartDate={setStartDate}
-              endDate={endDate}
-              setEndDate={setEndDate}
-              onClick={onClick}
-            />
-
-            <TableStatistics
-              statistics={statistics}
-            />
-            {Object.keys(statistics).length === 0 && (
-              <p className="text-center p-4 text-lg">
-                No hay datos
-              </p>
-            )}
-          </Tabs.Content>
-
-          <Tabs.Content value="baseDeDatos">
-            <div className="mt-10 text-center">
-              <Text size="7">Crea una Copia de Seguridad para respaldar los datos</Text>
-
-              <br />
-              <Button mt="6" color="grass" variant="solid" size="4"
-                onClick={handleDescargar}
-              >
-                <DownloadIcon width="20" height="20" /> Descargar Copia
-              </Button>
-            </div>
-          </Tabs.Content>
-        </Box>
+        <ColorRing
+          visible={loading}
+          height="80"
+          width="80"
+          ariaLabel="blocks-loading"
+          wrapperClass="w-1/3 h-1/3 m-auto"
+          colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+        />
       </Tabs.Root>
     </>
   );

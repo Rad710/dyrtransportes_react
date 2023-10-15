@@ -9,6 +9,8 @@ import CalloutMessage from "../../components/CalloutMessage";
 
 import { getPlanillasOfYear, deletePlanilla, postPlanilla, getExportarInforme } from "../../utils/cobranza";
 
+import { ColorRing } from "react-loader-spinner";
+
 function ListaPlanillas({ title }) {
 
     const [planillas, setPlanillas] = useState([])
@@ -18,6 +20,8 @@ function ListaPlanillas({ title }) {
     const { year } = match.params;
 
     const [disableButton, setDisableButton] = useState(false)
+
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         document.title = title;
@@ -30,6 +34,7 @@ function ListaPlanillas({ title }) {
             } else {
                 setError(response?.response?.data)
             }
+            setLoading(false)
         }
         fetchData()
     }, [match]);
@@ -65,11 +70,11 @@ function ListaPlanillas({ title }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setDisableButton(true)
-        
+
         const currentFecha = new Date()
         const newFecha = new Date(year, currentFecha.getMonth(), currentFecha.getDate())
         const result = await postPlanilla(newFecha)
-        if (!result?.response  && !result?.message) {
+        if (!result?.response && !result?.message) {
             setPlanillas([{ fecha: newFecha, checked: false }, ...planillas])
         } else {
             setError(result?.response?.data)
@@ -109,40 +114,51 @@ function ListaPlanillas({ title }) {
                 </div>
             </div>
 
-            <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
-                {planillas.map(planilla => (
-                    <li className="flex"
-                        key={planilla.fecha}>
-                        <Flex align="center">
-                            <Checkbox mr="4"
-                                checked={planilla.checked}
-                                onCheckedChange={() => handleCheckboxChange(planilla.fecha)} />
-                            <Link
-                                className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                to={`/cobranzas/${year}/${(new Date(planilla.fecha).toISOString().slice(5, 10))}`}
-                            >{new Date(planilla.fecha).toLocaleDateString("es-ES",
-                                { month: "long", day: "numeric", timeZone: "GMT" })}</Link>
-                        </Flex>
-                    </li>
-                ))}
+            {!loading && (
+                <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
+                    {planillas.map(planilla => (
+                        <li className="flex"
+                            key={planilla.fecha}>
+                            <Flex align="center">
+                                <Checkbox mr="4"
+                                    checked={planilla.checked}
+                                    onCheckedChange={() => handleCheckboxChange(planilla.fecha)} />
+                                <Link
+                                    className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
+                                    to={`/cobranzas/${year}/${(new Date(planilla.fecha).toISOString().slice(5, 10))}`}
+                                >{new Date(planilla.fecha).toLocaleDateString("es-ES",
+                                    { month: "long", day: "numeric", timeZone: "GMT" })}</Link>
+                            </Flex>
+                        </li>
+                    ))}
 
-                <Form
-                    onSubmit={handleSubmit}>
-                    {error ?
-                        (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
-                        (<Button 
-                            color="grass" 
-                            variant="surface" 
-                            size="4" 
-                            type="submit" 
-                            ml="6"
-                            disabled={disableButton}
-                        >
-                            <PlusIcon width="20" height="20" />Agregar Planilla
-                        </Button>)
-                    }
-                </Form>
-            </ul>
+                    <Form
+                        onSubmit={handleSubmit}>
+                        {error ?
+                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
+                            (<Button
+                                color="grass"
+                                variant="surface"
+                                size="4"
+                                type="submit"
+                                ml="6"
+                                disabled={disableButton}
+                            >
+                                <PlusIcon width="20" height="20" />Agregar Planilla
+                            </Button>)
+                        }
+                    </Form>
+                </ul>
+            )}
+
+            <ColorRing
+                visible={loading}
+                height="80"
+                width="80"
+                ariaLabel="blocks-loading"
+                wrapperClass="w-1/3 h-1/3 m-auto"
+                colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+            />
         </div>
     )
 }
