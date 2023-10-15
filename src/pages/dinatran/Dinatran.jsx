@@ -4,6 +4,8 @@ import TableDinatran from "./components/TableDinatran";
 import { getInformeDinatran } from "../../utils/dinatran";
 import FormDate from "../../components/FormDate";
 
+import { ColorRing } from "react-loader-spinner";
+
 function Dinatran({ title }) {
   useEffect(() => {
     document.title = title;
@@ -23,6 +25,8 @@ function Dinatran({ title }) {
   const [startDate, setStartDate] = useState(lastMonthAgo)
   const [endDate, setEndDate] = useState(tomorrow)
 
+  const [loading, setLoading] = useState(true)
+
 
   const loadStatistics = async () => {
     const result = await getInformeDinatran(startDate.toISOString().slice(0, 10),
@@ -31,6 +35,7 @@ function Dinatran({ title }) {
     if (!result?.response  && !result?.message) {
       setStatistics(result)
     }
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -52,7 +57,9 @@ function Dinatran({ title }) {
         onClick={onClick}
       />
 
-      <TableDinatran
+{!loading && (
+  <>
+        <TableDinatran
         statistics={statistics}
       />
       {Object.keys(statistics).length === 0 && (
@@ -60,6 +67,17 @@ function Dinatran({ title }) {
           No hay datos
         </p>
       )}
+  </>
+)}
+
+<ColorRing
+        visible={loading}
+        height="80"
+        width="80"
+        ariaLabel="blocks-loading"
+        wrapperClass="w-1/3 h-1/3 m-auto"
+        colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+      />
     </div>
   )
 }

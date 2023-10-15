@@ -6,10 +6,13 @@ import { deleteLiquidaciones, getLiquidaciones } from "../../utils/liquidaciones
 import AlertButton from "../../components/AlertButton"
 import FormListaLiquidaciones from "./components/FormListaLiquidaciones"
 
+import { ColorRing } from "react-loader-spinner"
 
 function ListaLiquidaciones({ title }) {
 
   const [liquidaciones, setLiquidaciones] = useState([])
+
+  const [loading, setLoading] = useState(true)
 
 
   useEffect(() => {
@@ -21,6 +24,7 @@ function ListaLiquidaciones({ title }) {
       if (!response?.response && !response?.message) {
         setLiquidaciones(response.map(liquidacion => ({ chofer: liquidacion, checked: false })))
       }
+      setLoading(false)
     }
 
     loadLiquidaciones()
@@ -74,23 +78,33 @@ function ListaLiquidaciones({ title }) {
         </div>
       </div>
 
+      {!loading && (
       <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
-        {liquidaciones.map(liquidacion => (
-          <li className="flex"
-            key={liquidacion.chofer}>
-            <Flex align="center">
-              <Checkbox mr="4"
-                checked={liquidacion.checked}
-                onCheckedChange={() => handleCheckboxChange(liquidacion.chofer)} />
-              <Link
-                className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                to={`/liquidaciones/${liquidacion.chofer}`}
-              >{liquidacion.chofer}</Link>
-            </Flex>
-          </li>
-        ))}
-      </ul>
+      {liquidaciones.map(liquidacion => (
+        <li className="flex"
+          key={liquidacion.chofer}>
+          <Flex align="center">
+            <Checkbox mr="4"
+              checked={liquidacion.checked}
+              onCheckedChange={() => handleCheckboxChange(liquidacion.chofer)} />
+            <Link
+              className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
+              to={`/liquidaciones/${liquidacion.chofer}`}
+            >{liquidacion.chofer}</Link>
+          </Flex>
+        </li>
+      ))}
+    </ul>
+      )}
 
+      <ColorRing
+                visible={loading}
+                height="80"
+                width="80"
+                ariaLabel="blocks-loading"
+                wrapperClass="w-1/3 h-1/3 m-auto"
+                colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+            />
     </div>
   )
 }

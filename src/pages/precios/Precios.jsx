@@ -8,11 +8,13 @@ import TablePrecios from "./components/TablePrecios"
 import AlertButton from "../../components/AlertButton"
 import { deletePrecio, getExportarPrecios, getPrecios } from "../../utils/precio"
 
+import { ColorRing } from "react-loader-spinner"
 
 function Precios({ title }) {
 
   const [listaPrecios, setListaPrecios] = useState([])
 
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     document.title = title;
@@ -23,6 +25,7 @@ function Precios({ title }) {
       if (!response?.response && !response?.message) {
         setListaPrecios(response.map(entrada => ({ ...entrada, checked: false })))
       }
+      setLoading(false)
     }
 
     loadPrecios()
@@ -80,16 +83,29 @@ function Precios({ title }) {
         </div>
       </div>
 
-      <TablePrecios
-        listaPrecios={listaPrecios}
-        setListaPrecios={setListaPrecios}
-      />
+      {!loading && (
+        <>
+          <TablePrecios
+            listaPrecios={listaPrecios}
+            setListaPrecios={setListaPrecios}
+          />
 
-      {listaPrecios.length === 0 && (
-        <p className="text-center p-4 text-lg">
-          No hay datos ingresados
-        </p>
+          {listaPrecios.length === 0 && (
+            <p className="text-center p-4 text-lg">
+              No hay datos ingresados
+            </p>
+          )}
+        </>
       )}
+
+      <ColorRing
+        visible={loading}
+        height="80"
+        width="80"
+        ariaLabel="blocks-loading"
+        wrapperClass="w-1/3 h-1/3 m-auto"
+        colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
+      />
     </div>
   )
 }
