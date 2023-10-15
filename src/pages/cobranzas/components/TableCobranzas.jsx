@@ -3,6 +3,33 @@ import React from "react"
 
 
 function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
+
+    const groupsAndProducts = Object.keys(cobranzas).map(group => {
+        const [origen, destino] = group.split('/')
+
+        return {
+            group: group, origen: origen, destino: destino,
+            product: cobranzas[group].viajes.at(0)?.viaje?.producto
+        }
+    })
+
+    const orderedGroups = groupsAndProducts
+        .sort((a, b) => ['product', 'origen', 'destino'].reduce((acc, key) => acc || a[key].localeCompare(b[key]), 0))
+        .map(item => item.group)
+
+    const totalOrigen = Object.keys(cobranzas)
+        .reduce((total, grupo) => cobranzas[grupo].subtotalOrigen + total, 0)
+
+    const totalDestino = Object.keys(cobranzas)
+        .reduce((total, grupo) => cobranzas[grupo].subtotalDestino + total, 0)
+
+    const totalDiferencia = Object.keys(cobranzas)
+        .reduce((total, grupo) => cobranzas[grupo].subtotalDiferencia + total, 0)
+
+    const totalGS = Object.keys(cobranzas)
+        .reduce((total, grupo) => cobranzas[grupo].subtotalGS + total, 0)
+
+
     const handleChange = (grupo, index) => {
         const newViaje = {
             ...cobranzas[grupo].viajes[index],
@@ -25,17 +52,6 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
         setCobranzas({ ...cobranzas, [grupo]: newCobranza })
     }
 
-    const totalOrigen = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalOrigen + total, 0)
-
-    const totalDestino = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalDestino + total, 0)
-
-    const totalDiferencia = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalDiferencia + total, 0)
-
-    const totalGS = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalGS + total, 0)
 
     return (
         <Table.Root variant="surface">
@@ -58,7 +74,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
             </Table.Header>
 
             <Table.Body>
-                {Object.keys(cobranzas).map(grupo => (
+                {orderedGroups.map(grupo => (
                     <React.Fragment key={grupo}>
                         {cobranzas[grupo].viajes.map((cobranza, index) => (
                             <Table.Row key={cobranza.viaje.id}>

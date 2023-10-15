@@ -3,12 +3,13 @@ import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes"
 import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-router-dom";
 
+import { isMobile } from "react-device-detect";
+
 import { getCobranza, getKeywords, postCobranza, putCobranza } from "../../../utils/cobranza";
 import CalloutMessage from "../../../components/CalloutMessage";
-import { resetFormData, resetFormStyle } from "../../../utils/utils";
+import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
 import { getPrecio } from "../../../utils/precio";
-import { debounce } from "lodash";
 
 
 function FormCobranzas({
@@ -40,6 +41,7 @@ function FormCobranzas({
     const [success, setSuccess] = useState('')
 
     const [buttonText, setButtonText] = useState('')
+    const [disableButton, setDisableButton] = useState(false)
 
     const [toSuggest, setToSuggest] = useState({
         chofer: [], producto: [], origen: [], destino: []
@@ -51,9 +53,11 @@ function FormCobranzas({
 
     useEffect(() => {
         const queryKeywords = async () => {
-            const result = await getKeywords()
+            const response = await getKeywords()
 
-            setSuggestions(result)
+            if (!response?.response && !response?.message) {
+                setSuggestions(response)
+            }
         }
         queryKeywords()
     }, [cobranzas])
@@ -65,7 +69,7 @@ function FormCobranzas({
                 if (fieldName === 'chofer') {
                     const result = await getNomina()
 
-                    const nomina = result.filter(nomina => (
+                    const nomina = result?.filter(nomina => (
                         nomina.chofer === formData.chofer ||
                         nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
                     ))
@@ -137,8 +141,10 @@ function FormCobranzas({
         setFormData(newFormData)
     }
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
 
-    const debouncedSubmit = debounce(async () => {
+        setDisableButton(true)
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -157,6 +163,7 @@ function FormCobranzas({
         if (Object.keys(newInputStyles).length > 1) {
             setError('Complete todos los campos');
             setSuccess('')
+            setDisableButton(false)
             return
         }
         resetFormStyle(inputStyles, setInputStyles)
@@ -176,6 +183,11 @@ function FormCobranzas({
             //actualizar state
             const responseUpdate = await getCobranza(fechaCreacion.toISOString().slice(0, 10))
 
+            if (responseUpdate?.response) {
+                setDisableButton(false)
+                return
+            }
+
             const result = {}
             for (const grupo in responseUpdate) {
                 result[grupo] = {
@@ -186,7 +198,14 @@ function FormCobranzas({
             setCobranzas(result)
 
             //reset form data and suggestions
-            resetFormData(formData, setFormData, fechaCreacion)
+            const resetFormData = {}
+            for (const field in formData) {
+                resetFormData[field] = ''
+            }
+            setFormData({
+                ...resetFormData, fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
+                fechaViaje: new Date().toISOString().slice(0, 10)
+            })
 
             const resetToSuggest = {}
 
@@ -200,31 +219,33 @@ function FormCobranzas({
             setSuccess('')
             setError('A ocurrido un error');
         }
-    }, 500)
-
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        await debouncedSubmit()        
+        setDisableButton(false)
     }
 
 
     const handleCerrar = () => {
         // resetear el form
-        resetFormData(formData, setFormData, fechaCreacion)
+        const resetFormData = {}
+        for (const field in formData) {
+            resetFormData[field] = ''
+        }
+        setFormData({
+            ...resetFormData, fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
+            fechaViaje: new Date().toISOString().slice(0, 10)
+        })
 
         resetFormStyle(inputStyles, setInputStyles)
 
         setError('');
         setSuccess('')
+        setDisableButton(false)
     }
 
 
     const handleEditar = () => {
         setButtonText('Editar')
 
-        const { grupo, index } = tracker[0]
+        const { grupo, index } = tracker.at(0)
 
         const viaje = {}
         for (const attribute in cobranzas[grupo].viajes[index].viaje) {
@@ -286,8 +307,7 @@ function FormCobranzas({
 
 
                     <Flex direction="column" gap="3">
-                        <Flex direction="row" gap="3">
-
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chofer
@@ -341,7 +361,7 @@ function FormCobranzas({
                                 />
                             </label>
                         </Flex>
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chapa
@@ -396,7 +416,7 @@ function FormCobranzas({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Origen
@@ -471,7 +491,7 @@ function FormCobranzas({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Tiquet
@@ -508,7 +528,7 @@ function FormCobranzas({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Kg. Origen
@@ -552,7 +572,11 @@ function FormCobranzas({
                             </Button>
                         </Dialog.Close>
 
-                        <Button type="submit" color={buttonText === "Editar" ? "teal" : "indigo"}>
+                        <Button
+                            type="submit"
+                            color={buttonText === "Editar" ? "teal" : "indigo"}
+                            disabled={disableButton}
+                        >
                             {buttonText}
                         </Button>
                     </Flex>

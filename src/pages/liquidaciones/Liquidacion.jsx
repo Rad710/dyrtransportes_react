@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMatch } from "react-router-dom";
 
-import { Box, Button, Strong, Switch, Tabs, Text } from "@radix-ui/themes"
+import { Box, Button, Strong, Tabs, Text } from "@radix-ui/themes"
 import { TableIcon, UpdateIcon } from "@radix-ui/react-icons"
 
 
@@ -61,7 +61,7 @@ function Liquidacion({ title }) {
 
             const conBoleta = resultGastos?.filter(gasto => gasto.boleta !== null)?.map(gasto => ({ ...gasto, checked: false }))
             const sinBoleta = resultGastos?.filter(gasto => gasto.boleta === null)?.map(gasto => ({ ...gasto, checked: false }))
-            setLiquidacionGastos({ conBoleta: conBoleta, sinBoleta: sinBoleta })
+            setLiquidacionGastos({ conBoleta: conBoleta ?? [], sinBoleta: sinBoleta ?? []})
 
             setLiquidacion(resultLiquidacion)
         }
@@ -79,11 +79,7 @@ function Liquidacion({ title }) {
             const results = await Promise.all(deletePromises);
 
             results.forEach(element => {
-                if (element?.response) {
-                    toast({
-                        variant: "destructive",
-                        description: `Error: ${element.response.data}`,
-                      })
+                if (element?.response || element?.message) {
                     return
                 }
             });
@@ -101,11 +97,7 @@ function Liquidacion({ title }) {
             const results = await Promise.all([...deletePromisesConBoleta, ...deletePromisesSinBoleta])
 
             results.forEach(element => {
-                if (element?.response) {
-                    toast({
-                        variant: "destructive",
-                        description: `Error: ${element.response.data}`,
-                      })
+                if (element?.response || element?.message) {
                     return
                 }
             });
@@ -127,13 +119,9 @@ function Liquidacion({ title }) {
         await putLiquidacion(newLiquidacion)
 
         const result = await postLiquidacion(chofer)
-        if (result?.response) {
+        if (result?.response || result?.message) {
             newLiquidacion.pagado = false
             await putLiquidacion(newLiquidacion)
-            toast({
-                variant: "destructive",
-                description: 'No se pudo crear nueva Liquidación. Intente más tarde',
-                })
         }
         setLiquidacion(newLiquidacion)
     }
@@ -142,6 +130,10 @@ function Liquidacion({ title }) {
     const sincronizePrecios = async () => {
 
         const newPrecios = await getPrecios()
+
+        if (newPrecios?.response || newPrecios?.message) {
+            return
+        }
 
         const preciosJSON = {}
         for (const entrada of newPrecios) {
@@ -158,23 +150,21 @@ function Liquidacion({ title }) {
         const result = await Promise.all(putPromises)
 
         result.forEach(element => {
-            if (element?.response) {
-                toast({
-                    variant: "destructive",
-                    description: `Error: ${element.response.data}`,
-                  })
+            if (element?.response || element?.message) {
                 return
             }
         })
 
         const resultViajes = await getLiquidacionViajes(chofer, fecha)
 
-        const newViajes = resultViajes?.map(viaje => ({ ...viaje, checked: false }))
-        setLiquidacionViajes(newViajes ?? [])
-        toast({
-            description: 'Precios actualizados exitosamente',
-            variant: 'success',
-          })
+        if (!resultViajes?.response && !resultViajes?.message) {
+            const newViajes = resultViajes.map(viaje => ({ ...viaje, checked: false }))
+            setLiquidacionViajes(newViajes)
+            toast({
+                description: 'Precios actualizados exitosamente',
+                variant: 'success',
+              })
+        }
     }
 
 

@@ -1,25 +1,31 @@
 import { useState, useEffect } from "react"
 import { Checkbox, Flex } from "@radix-ui/themes"
-import { Link, useLoaderData } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { deleteLiquidaciones, getLiquidaciones } from "../../utils/liquidaciones"
 
 import AlertButton from "../../components/AlertButton"
 import FormListaLiquidaciones from "./components/FormListaLiquidaciones"
-import { toast } from "@/components/ui/use-toast"
-
-export async function loader() {
-  const response = await getLiquidaciones()
-
-  return response.map(liquidacion => ({ chofer: liquidacion, checked: false }))
-}
 
 
 function ListaLiquidaciones({ title }) {
+
+  const [liquidaciones, setLiquidaciones] = useState([])
+
+
   useEffect(() => {
     document.title = title;
+
+    const loadLiquidaciones = async () => {
+      const response = await getLiquidaciones()
+
+      if (!response?.response && !response?.message) {
+        setLiquidaciones(response.map(liquidacion => ({ chofer: liquidacion, checked: false })))
+      }
+    }
+
+    loadLiquidaciones()
   }, []);
 
-  const [liquidaciones, setLiquidaciones] = useState(useLoaderData())
 
   const handleCheckboxChange = (chofer) => {
     const newLiquidaciones = liquidaciones.map(liquidacion => (
@@ -39,11 +45,9 @@ function ListaLiquidaciones({ title }) {
     const confirmDelete = await Promise.all(deletePromises);
 
     confirmDelete.forEach(element => {
-      toast({
-        variant: "destructive",
-        description: `Error: ${element.response.data}`,
-      })
-      return
+      if (element?.response || element?.message) {
+        return
+      }
     });
 
     const newLiquidaciones = liquidaciones.filter(liquidacion => liquidacion.checked !== true)

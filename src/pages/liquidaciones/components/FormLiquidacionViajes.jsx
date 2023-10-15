@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { isMobile } from "react-device-detect";
 
 import { FileIcon, PlusIcon } from "@radix-ui/react-icons"
 import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes"
@@ -35,6 +36,7 @@ function FormLiquidacionViajes({
     const [success, setSuccess] = useState('')
 
     const [buttonText, setButtonText] = useState('')
+    const [disableButton, setDisableButton] = useState(false)
 
 
     const handleKeyDown = async (e, index) => {
@@ -65,6 +67,7 @@ function FormLiquidacionViajes({
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        setDisableButton(true)
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -83,6 +86,7 @@ function FormLiquidacionViajes({
         if (Object.keys(newInputStyles).length > 1) {
             setError('Complete todos los campos');
             setSuccess('')
+            setDisableButton(false)
             return
         }
         resetFormStyle(inputStyles, setInputStyles)
@@ -96,7 +100,7 @@ function FormLiquidacionViajes({
             setButtonText('Agregar')
         }
 
-        if (!response?.response) {
+        if (!response?.response && !response?.message) {
             setSuccess(`Entrada ${formData.id === '' ? 'añadida' : 'editada'} correctamente`);
             setError('');
 
@@ -116,11 +120,11 @@ function FormLiquidacionViajes({
             setSuccess('')
             setError('A ocurrido un error');
         }
+        setDisableButton(false)
     }
 
 
     const handleCerrar = () => {
-        // resetear el form
         const resetFormData = {}
         for (const field in formData) {
             resetFormData[field] = ''
@@ -131,6 +135,7 @@ function FormLiquidacionViajes({
 
         setError('');
         setSuccess('')
+        setDisableButton(false)
     }
 
 
@@ -188,7 +193,7 @@ function FormLiquidacionViajes({
 
 
                     <Flex direction="column" gap="3">
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Tiquet
@@ -221,7 +226,7 @@ function FormLiquidacionViajes({
                                 />
                             </label>
                         </Flex>
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chapa
@@ -255,7 +260,7 @@ function FormLiquidacionViajes({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Origen
@@ -290,7 +295,7 @@ function FormLiquidacionViajes({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Precio
@@ -326,7 +331,7 @@ function FormLiquidacionViajes({
                             </label>
                         </Flex>
 
-                        <Flex direction="row" gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Kg. Origen
@@ -368,7 +373,11 @@ function FormLiquidacionViajes({
                             </Button>
                         </Dialog.Close>
 
-                        <Button type="submit" color={buttonText === "Editar" ? "teal" : "indigo"}>
+                        <Button 
+                            type="submit" 
+                            color={buttonText === "Editar" ? "teal" : "indigo"}
+                            disabled={disableButton}
+                        >
                             {buttonText}
                         </Button>
                     </Flex>

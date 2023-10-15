@@ -15,20 +15,24 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
+    const [disableButton, setDisableButton] = useState(false)
+
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setDisableButton(true)
 
         if (chofer === '') {
             setError('Complete todos los campos');
             setInputStyle({ color: 'red', variant: 'soft' })
             setSuccess('')
+            setDisableButton(false)
             return
         }
         setInputStyle({ color: 'indigo', variant: 'surface' })
 
         const response = await postLiquidacion(chofer)
 
-        if (!response?.response) {
+        if (!response?.response  && !response?.message) {
             setSuccess(`Entrada añadida correctamente`);
             setError('');
 
@@ -38,6 +42,7 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
             setSuccess('')
             setError('A ocurrido un error: ');
         }
+        setDisableButton(false)
     }
 
     return (
@@ -88,7 +93,11 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
                             </Button>
                         </Dialog.Close>
 
-                        <Button type="submit" color="indigo">
+                        <Button 
+                            type="submit" 
+                            color="indigo"
+                            disabled={disableButton}
+                        >
                             Agregar
                         </Button>
                     </Flex>

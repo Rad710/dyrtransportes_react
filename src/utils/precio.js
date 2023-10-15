@@ -12,7 +12,11 @@ const postPrecio = async (formData) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -27,7 +31,11 @@ const getPrecios = async () => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 
@@ -43,7 +51,13 @@ const getPrecio = async (origen, destino) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            if (error?.response?.status !== 404) {
+                console.log('Error', error)
+                toast({
+                    variant: "destructive",
+                    description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+                })
+            }
             return error
         })
 
@@ -53,13 +67,17 @@ const getPrecio = async (origen, destino) => {
 const putPrecio = async (id, formData) => {
     const url = `${import.meta.env.VITE_API_URL}/precios/${id}`
 
-    const result = await axios.put(url, {viaje: formData})
+    const result = await axios.put(url, { viaje: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -74,7 +92,11 @@ const deletePrecio = async (id) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -89,10 +111,11 @@ const getExportarPrecios = async () => {
             saveAs(new Blob([data]), 'lista_de_precios.xlsx');
 
         }).catch(function (error) {
+            console.log('Error', error)
             toast({
                 variant: "destructive",
-                description: 'Error: no se pudo descargar el archivo',
-              })
+                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
+            })
             return error
         })
 

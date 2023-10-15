@@ -1,12 +1,3 @@
-
-const resetFormData = (formData, setFormData, fechaCreacion) => {
-    const resetFormData = {}
-    for (const field in formData) {
-        resetFormData[field] = ''
-    }
-    setFormData({ ...resetFormData, fechaCreacion: fechaCreacion.toISOString().slice(0, 10) })
-}
-
 const resetFormStyle = (inputStyles, setInputStyles) => {
     const defaultStyles = {};
 
@@ -19,5 +10,5 @@ const resetFormStyle = (inputStyles, setInputStyles) => {
 
 
 export {
-    resetFormData, resetFormStyle
+    resetFormStyle
 }

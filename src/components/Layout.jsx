@@ -7,6 +7,7 @@ import { Toaster } from "./ui/toaster";
 
 
 function Layout() {
+
     return (
         <Theme
             accentColor="indigo"

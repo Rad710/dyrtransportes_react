@@ -15,10 +15,11 @@ const getDatabaseBackup = async () => {
             saveAs(blob, `backup_${timestamp}.sql`);
 
         }).catch(function (error) {
+            console.log('Error', error)
             toast({
                 variant: "destructive",
-                description: 'Error: no se pudo descargar el archivo',
-              })
+                description: `Error: no se pudo descargar el archivo ${error?.response?.data?.text()} | ${error?.message}`,
+            })
             return error
         })
 
@@ -34,7 +35,11 @@ const getStatistics = async (fecha_inicio, fecha_fin) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 

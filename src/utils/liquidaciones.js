@@ -6,13 +6,17 @@ import { saveAs } from "file-saver"
 const postLiquidacion = async (chofer) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion`
 
-    const result = await axios.post(url, {chofer: chofer})
+    const result = await axios.post(url, { chofer: chofer })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -27,7 +31,11 @@ const getLiquidacion = async (chofer, fecha) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 
@@ -37,13 +45,17 @@ const getLiquidacion = async (chofer, fecha) => {
 const putLiquidacion = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion/${formData.id}`
 
-    const result = await axios.put(url, {liquidacion: formData})
+    const result = await axios.put(url, { liquidacion: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -58,7 +70,11 @@ const getLiquidaciones = async () => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 
@@ -74,7 +90,11 @@ const getLiquidacionesChofer = async (chofer) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 
@@ -91,7 +111,11 @@ const deleteLiquidaciones = async (chofer) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -106,7 +130,11 @@ const deleteLiquidacionesChofer = async (chofer, fecha) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -116,13 +144,17 @@ const deleteLiquidacionesChofer = async (chofer, fecha) => {
 const postLiquidacionViaje = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion_viaje`
 
-    const result = await axios.post(url, {liquidacionViaje: formData})
+    const result = await axios.post(url, { liquidacionViaje: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -138,7 +170,11 @@ const getLiquidacionViajes = async (chofer, fecha_liquidacion) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -147,13 +183,17 @@ const getLiquidacionViajes = async (chofer, fecha_liquidacion) => {
 const putLiquidacionViaje = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion_viajes/${formData.id}`
 
-    const result = await axios.put(url, {liquidacionViaje: formData})
+    const result = await axios.put(url, { liquidacionViaje: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -168,7 +208,11 @@ const deleteLiquidacionViaje = async (id) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -178,13 +222,17 @@ const deleteLiquidacionViaje = async (id) => {
 const postLiquidacionGasto = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion_gasto`
 
-    const result = await axios.post(url, {gasto: formData})
+    const result = await axios.post(url, { gasto: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -199,7 +247,11 @@ const getLiquidacionGastos = async (chofer, fecha_liquidacion) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -208,13 +260,17 @@ const getLiquidacionGastos = async (chofer, fecha_liquidacion) => {
 const putLiquidacionGasto = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/liquidacion_gasto/${formData.id}`
 
-    const result = await axios.put(url, {gasto: formData})
+    const result = await axios.put(url, { gasto: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
+            console.log('Error', error)
             return error
         })
     return result
@@ -229,7 +285,12 @@ const deleteLiquidacionGasto = async (id) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
+            })
             return error
         })
     return result
@@ -244,10 +305,11 @@ const getExportarLiquidacion = async (chofer, fecha) => {
             saveAs(new Blob([data]), `${chofer}_Liquidacion_${fecha}.xlsx`);
 
         }).catch(function (error) {
+            console.log('Error', error)
             toast({
                 variant: "destructive",
-                description: 'Error: no se pudo descargar el archivo',
-              })
+                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
+            })
             return error
         })
 
@@ -256,7 +318,7 @@ const getExportarLiquidacion = async (chofer, fecha) => {
 
 export {
     postLiquidacion, getLiquidacion, putLiquidacion,
-    getLiquidaciones, deleteLiquidaciones, 
+    getLiquidaciones, deleteLiquidaciones,
     getLiquidacionesChofer, deleteLiquidacionesChofer,
     postLiquidacionViaje, getLiquidacionViajes,
     putLiquidacionViaje, deleteLiquidacionViaje,
