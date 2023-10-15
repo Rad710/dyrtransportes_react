@@ -1,27 +1,30 @@
 import { useState, useEffect } from "react"
-import { useLoaderData } from "react-router-dom"
 import { Button } from "@radix-ui/themes"
 import { TableIcon } from "@radix-ui/react-icons"
 
 import AlertButton from "../../components/AlertButton"
 import { deleteNomina, getNomina } from "../../utils/nomina"
 import TableNomina from "./components/TableNomina"
-import { toast } from "@/components/ui/use-toast"
-
-export async function loader() {
-  const response = await getNomina()
-
-  return response.map(entrada => ({ ...entrada, checked: false }))
-}
-
 
 
 function Nomina({ title }) {
+
+  const [nomina, setNomina] = useState([])
+
   useEffect(() => {
     document.title = title;
+
+    const loadNomina = async () => {
+      const response = await getNomina()
+
+      if (!response?.response && !response?.message) {
+        setNomina(response.map(entrada => ({ ...entrada, checked: false })))
+      }
+    }
+
+    loadNomina()
   }, []);
 
-  const [nomina, setNomina] = useState(useLoaderData())
 
   const handleDelete = async () => {
     const toDelete = nomina.filter(entry => entry.checked)
@@ -31,11 +34,7 @@ function Nomina({ title }) {
     const results = await Promise.all(deletePromises);
 
     results.forEach(element => {
-      if (element?.response) {
-        toast({
-          variant: "destructive",
-          description: `Error: ${element.response.data}`,
-        })
+      if (element?.response || element?.message) {
         return
       }
     });
@@ -60,7 +59,7 @@ function Nomina({ title }) {
 
           <Button color="grass" variant="solid" size="4"
             onClick={() => { }}
-            disabled={true}  
+            disabled={true}
           >
             <TableIcon width="20" height="20" />Exportar
           </Button>

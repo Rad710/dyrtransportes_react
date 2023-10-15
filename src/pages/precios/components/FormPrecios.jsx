@@ -24,6 +24,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
     const [success, setSuccess] = useState('')
 
     const [buttonText, setButtonText] = useState('')
+    const [disableButton, setDisableButton] = useState(false)
 
 
     const handleKeyDown = (e, index) => {
@@ -52,7 +53,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-
+        setDisableButton(true)
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -71,6 +72,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
         if (Object.keys(newInputStyles).length > 1) {
             setError('Complete todos los campos');
             setSuccess('')
+            setDisableButton(false)
             return
         }
 
@@ -84,14 +86,14 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
             setButtonText('Agregar')
         }
 
-        if (!response?.response) {
+        if (!response?.response && !response?.message) {
             setSuccess(`Entrada ${formData.id === '' ? 'añadida' : 'editada'} correctamente`);
             setError('');
 
             // actualizar state
             const responseUpdate = await getPrecios()
 
-            setListaPrecios(responseUpdate.map(entrada => ({ ...entrada, checked: false })))
+            setListaPrecios(responseUpdate?.map(entrada => ({ ...entrada, checked: false })) ?? [])
 
             // resetear el form
             const resetFormData = {}
@@ -104,6 +106,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
             setSuccess('')
             setError('A ocurrido un error: ');
         }
+        setDisableButton(false)
     }
 
 
@@ -116,7 +119,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
         for (const attribute in toEdit) {
             newFormData[attribute] = String(toEdit[attribute])
         }
-        setFormData({...newFormData, checked: Boolean(newFormData.checked)})
+        setFormData({ ...newFormData, checked: Boolean(newFormData.checked) })
     }
 
     const handleCerrar = () => {
@@ -131,6 +134,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
 
         setError('');
         setSuccess('')
+        setDisableButton(false)
     }
 
 
@@ -230,7 +234,6 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
                                     type="number"
                                     placeholder="Precio"
                                     ref={inputRefs[3]}
-                                    onKeyDown={(e) => handleKeyDown(e, 3)}
                                     onChange={onChange}
                                     value={formData.precioLiquidacion}
                                     color={inputStyles.precioLiquidacion.color}
@@ -249,7 +252,11 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
                             </Button>
                         </Dialog.Close>
 
-                        <Button type="submit" color={buttonText === "Editar" ? "teal" : "indigo"}>
+                        <Button
+                            type="submit"
+                            color={buttonText === "Editar" ? "teal" : "indigo"}
+                            disabled={disableButton}
+                        >
                             {buttonText}
                         </Button>
                     </Flex>

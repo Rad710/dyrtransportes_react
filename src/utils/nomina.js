@@ -1,4 +1,6 @@
 import axios from "axios"
+import { toast } from "@/components/ui/use-toast"
+
 
 const getNomina = async () => {
     const url = `${import.meta.env.VITE_API_URL}/nomina/`
@@ -9,7 +11,11 @@ const getNomina = async () => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
 
@@ -25,7 +31,11 @@ const deleteNomina = async (id) => {
             return data
         })
         .catch(function (error) {
-            console.log('Error', error.response.data)
+            console.log('Error', error)
+            toast({
+                variant: "destructive",
+                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
+            })
             return error
         })
     return result

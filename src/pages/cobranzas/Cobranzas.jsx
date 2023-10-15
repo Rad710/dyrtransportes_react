@@ -1,4 +1,4 @@
-import { useLoaderData, useMatch } from "react-router-dom"
+import { useMatch } from "react-router-dom"
 import { useState, useEffect } from "react"
 
 import { Button } from "@radix-ui/themes"
@@ -10,31 +10,9 @@ import FormCobranzas from "./components/FormCobranzas";
 
 import { getCobranza, getExportarCobranza, deleteCobranza } from "../../utils/cobranza";
 import TableCobranzas from "./components/TableCobranzas"
-import { toast } from "@/components/ui/use-toast";
-
-
-export async function loader({ params }) {
-  const year = params.year
-  const [month, day] = params.date.split('-')
-  const fecha = new Date(year, month - 1, day).toISOString().slice(0, 10)
-
-  const response = await getCobranza(fecha)
-
-  const result = {}
-  for (const grupo in response) {
-    result[grupo] = {
-      ...response[grupo], viajes: response[grupo].viajes.map((viaje) => ({ viaje: viaje, checked: false }))
-    }
-  }
-
-  return result
-}
 
 
 function Cobranzas({ title }) {
-  useEffect(() => {
-    document.title = title;
-  }, []);
 
   const match = useMatch("/cobranzas/:year/:date");
   const { year, date } = match.params;
@@ -42,7 +20,7 @@ function Cobranzas({ title }) {
   const [month, day] = date.split("-")
   const planillaDate = new Date(year, month - 1, day)
 
-  const [cobranzas, setCobranzas] = useState(useLoaderData())
+  const [cobranzas, setCobranzas] = useState({})
 
   const [formData, setFormData] = useState({
     id: "", fechaCreacion: planillaDate.toISOString().slice(0, 10),
@@ -50,8 +28,30 @@ function Cobranzas({ title }) {
     origen: "", destino: "", tiquet: "", precio: "",
     kgOrigen: "", kgDestino: ""
   })
-  console.log(formData)
+
   const [tracker, setTracker] = useState([])
+
+
+  useEffect(() => {
+    document.title = title;
+
+    const fetchData = async () => {
+      const response = await getCobranza(planillaDate.toISOString().slice(0, 10))
+
+      if (!response?.response && !response?.message) {
+        const result = {}
+        for (const grupo in response) {
+          result[grupo] = {
+            ...response[grupo], viajes: response[grupo].viajes.map((viaje) => ({ viaje: viaje, checked: false }))
+          }
+        }
+        setCobranzas(result)
+      }
+    }
+
+    fetchData()
+  }, [match]);
+
 
 
   const handleExportar = async () => {
@@ -65,15 +65,15 @@ function Cobranzas({ title }) {
 
     results.forEach(element => {
       if (element?.response) {
-        toast({
-          variant: "destructive",
-          description: `Error: ${element.response.data}`,
-        })
         return
       }
     });
 
     const responseUpdate = await getCobranza(planillaDate.toISOString().slice(0, 10))
+    if (responseUpdate?.response) {
+      return
+    }
+
     const result = {}
     for (const grupo in responseUpdate) {
       result[grupo] = {

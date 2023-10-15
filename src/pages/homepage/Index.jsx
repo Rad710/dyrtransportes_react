@@ -45,7 +45,7 @@ function Index({ title }) {
 
     const result = await getStatistics(startDate.toISOString().slice(0, 10),
       endDate.toISOString().slice(0, 10))
-    if (!result?.response) {
+    if (!result?.response && !result?.message) {
       setStatistics(result.choferes)
 
       setBarData(result.totales)

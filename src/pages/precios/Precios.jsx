@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { useLoaderData } from "react-router-dom"
 
 import { Button } from "@radix-ui/themes"
 import { TableIcon } from "@radix-ui/react-icons"
@@ -8,24 +7,27 @@ import FormPrecios from "./components/FormPrecios"
 import TablePrecios from "./components/TablePrecios"
 import AlertButton from "../../components/AlertButton"
 import { deletePrecio, getExportarPrecios, getPrecios } from "../../utils/precio"
-import { toast } from "@/components/ui/use-toast"
-
-
-export async function loader() {
-  const response = await getPrecios()
-  
-  const result = response.map(entrada => ({ ...entrada, checked: false }))
-
-  return result
-}
 
 
 function Precios({ title }) {
+
+  const [listaPrecios, setListaPrecios] = useState([])
+
+
   useEffect(() => {
     document.title = title;
+
+    const loadPrecios = async () => {
+      const response = await getPrecios()
+
+      if (!response?.response && !response?.message) {
+        setListaPrecios(response.map(entrada => ({ ...entrada, checked: false })))
+      }
+    }
+
+    loadPrecios()
   }, []);
 
-  const [listaPrecios, setListaPrecios] = useState(useLoaderData())
 
   const [formData, setFormData] = useState({
     origen: '', destino: '', precio: '', precioLiquidacion: '', id: ''
@@ -43,11 +45,7 @@ function Precios({ title }) {
     const results = await Promise.all(deletePromises);
 
     results.forEach(element => {
-      if (element?.response) {
-        toast({
-          variant: "destructive",
-          description: `Error: ${element.response.data}`,
-        })
+      if (element?.response || element?.message) {
         return
       }
     });
@@ -86,7 +84,7 @@ function Precios({ title }) {
         listaPrecios={listaPrecios}
         setListaPrecios={setListaPrecios}
       />
-      
+
       {listaPrecios.length === 0 && (
         <p className="text-center p-4 text-lg">
           No hay datos ingresados

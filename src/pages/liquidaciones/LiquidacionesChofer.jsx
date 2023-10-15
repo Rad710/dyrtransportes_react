@@ -6,14 +6,13 @@ import { Link, useMatch } from "react-router-dom";
 
 import AlertButton from "../../components/AlertButton"
 import { deleteLiquidacionesChofer, getLiquidacionesChofer, postLiquidacion } from "../../utils/liquidaciones";
-import { toast } from "@/components/ui/use-toast";
 
 
 function LiquidacionesChofer({ title }) {
   useEffect(() => {
     document.title = title;
   }, []);
-  
+
   const match = useMatch("/liquidaciones/:chofer");
   const { chofer } = match.params;
 
@@ -22,11 +21,14 @@ function LiquidacionesChofer({ title }) {
 
   const loadLiquidaciones = async (chofer) => {
     const result = await getLiquidacionesChofer(chofer)
-    const formattedResult = result.map(fecha => (
-      { fecha: new Date(fecha).toISOString().slice(0, 10), checked: false }
-    ))
 
-    setLiquidaciones(formattedResult)
+    if (!result?.response && !result?.message) {
+      const formattedResult = result.map(fecha => (
+        { fecha: new Date(fecha).toISOString().slice(0, 10), checked: false }
+      ))
+
+      setLiquidaciones(formattedResult)
+    }
   }
 
   useEffect(() => {
@@ -36,16 +38,12 @@ function LiquidacionesChofer({ title }) {
 
   const handleAdd = async () => {
     const response = await postLiquidacion(chofer)
-    if (response?.response) {
-      toast({
-        variant: "destructive",
-        description: `Error: ${response.response.data}`,
-      })
+    if (!response?.response && !response?.message) {
+      loadLiquidaciones(chofer)
     }
-    loadLiquidaciones(chofer)
   }
 
-  
+
   const handleCheckboxChange = (fecha) => {
     const newLiquidaciones = liquidaciones.map(liquidacion => (
       liquidacion.fecha === fecha ? { ...liquidacion, checked: !liquidacion.checked } : liquidacion
@@ -57,20 +55,16 @@ function LiquidacionesChofer({ title }) {
 
   const handleDelete = async () => {
     const toDelete = liquidaciones.filter(liquidacion => liquidacion.checked)
-    .map(liquidacion => liquidacion.fecha)
+      .map(liquidacion => liquidacion.fecha)
 
     const deletePromises = toDelete.map(async (fecha) => (await deleteLiquidacionesChofer(chofer, fecha)))
 
     const confirmDelete = await Promise.all(deletePromises);
 
     confirmDelete.forEach(element => {
-        if (element?.response) {
-          toast({
-            variant: "destructive",
-            description: `Error: ${element.response.data}`,
-          })
-          return
-        }
+      if (element?.response || element?.message) {
+        return
+      }
     });
 
     const newLiquidaciones = liquidaciones.filter(liquidacion => liquidacion.checked !== true)
