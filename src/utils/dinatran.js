@@ -1,5 +1,6 @@
 import axios from "axios"
-import { toast } from "@/components/ui/use-toast"
+import { toastError } from "./utils"
+
 
 const getInformeDinatran = async (fecha_inicio, fecha_fin) => {
     const url = `${import.meta.env.VITE_API_URL}/dinatran/${fecha_inicio}/${fecha_fin}`
@@ -11,10 +12,7 @@ const getInformeDinatran = async (fecha_inicio, fecha_fin) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
 

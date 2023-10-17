@@ -68,6 +68,7 @@ function FormLiquidacionViajes({
         e.preventDefault()
 
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -87,6 +88,7 @@ function FormLiquidacionViajes({
             setError('Complete todos los campos');
             setSuccess('')
             setDisableButton(false)
+            document.body.style.cursor = 'default'
             return
         }
         resetFormStyle(inputStyles, setInputStyles)
@@ -106,7 +108,7 @@ function FormLiquidacionViajes({
 
             const result = await getLiquidacionViajes(chofer, fecha)
 
-            const newViajes = result?.map(viaje => ({...viaje, checked: false}))
+            const newViajes = result?.map(viaje => ({ ...viaje, checked: false }))
             setLiquidacionViajes(newViajes ?? [])
 
             // resetear el form
@@ -121,6 +123,7 @@ function FormLiquidacionViajes({
             setError('A ocurrido un error');
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -136,6 +139,7 @@ function FormLiquidacionViajes({
         setError('');
         setSuccess('')
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -146,12 +150,12 @@ function FormLiquidacionViajes({
 
         const newFormData = {
             id: toEdit.id, fechaCreacion: null, tiquet: String(toEdit.tiquet),
-            fechaViaje: new Date(toEdit.fechaViaje).toISOString().slice(0, 10), 
+            fechaViaje: new Date(toEdit.fechaViaje).toISOString().slice(0, 10),
             chofer: chofer, chapa: toEdit.chapa, producto: toEdit.producto,
-            origen: toEdit.origen, destino: toEdit.destino, 
-            precio: Number(toEdit.precio).toFixed(2), 
+            origen: toEdit.origen, destino: toEdit.destino,
+            precio: Number(toEdit.precio).toFixed(2),
             precioLiquidacion: Number(toEdit.precioLiquidacion).toFixed(2),
-            kgOrigen: String(toEdit.kgOrigen), kgDestino: String(toEdit.kgDestino), 
+            kgOrigen: String(toEdit.kgOrigen), kgDestino: String(toEdit.kgDestino),
             fechaLiquidacion: new Date(fecha).toISOString().slice(0, 10)
         }
         setFormData(newFormData)
@@ -373,8 +377,8 @@ function FormLiquidacionViajes({
                             </Button>
                         </Dialog.Close>
 
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             color={buttonText === "Editar" ? "teal" : "indigo"}
                             disabled={disableButton}
                         >

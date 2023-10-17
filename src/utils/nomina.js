@@ -1,5 +1,6 @@
 import axios from "axios"
-import { toast } from "@/components/ui/use-toast"
+
+import { toastError } from "./utils"
 
 
 const getNomina = async () => {
@@ -12,10 +13,7 @@ const getNomina = async () => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -32,10 +30,7 @@ const deleteNomina = async (id) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result

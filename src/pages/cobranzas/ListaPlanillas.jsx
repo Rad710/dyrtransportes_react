@@ -31,10 +31,10 @@ function ListaPlanillas({ title }) {
 
             if (!response?.response && !response?.message) {
                 setPlanillas(response.map(planilla => ({ fecha: planilla, checked: false })))
+                setLoading(false)
             } else {
                 setError(response?.response?.data)
             }
-            setLoading(false)
         }
         fetchData()
     }, [match]);
@@ -70,6 +70,7 @@ function ListaPlanillas({ title }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
 
         const currentFecha = new Date()
         const newFecha = new Date(year, currentFecha.getMonth(), currentFecha.getDate())
@@ -80,6 +81,7 @@ function ListaPlanillas({ title }) {
             setError(result?.response?.data)
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
     const handleExportar = async () => {

@@ -6,7 +6,7 @@ import { Form } from "react-router-dom";
 import CalloutMessage from "../../../components/CalloutMessage";
 import { postLiquidacion } from "../../../utils/liquidaciones";
 
-function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
+function FormListaLiquidaciones({ liquidaciones, setLiquidaciones }) {
 
     const [chofer, setChofer] = useState('')
 
@@ -20,29 +20,32 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
 
         if (chofer === '') {
             setError('Complete todos los campos');
             setInputStyle({ color: 'red', variant: 'soft' })
             setSuccess('')
             setDisableButton(false)
+            document.body.style.cursor = 'default'
             return
         }
         setInputStyle({ color: 'indigo', variant: 'surface' })
 
         const response = await postLiquidacion(chofer)
 
-        if (!response?.response  && !response?.message) {
+        if (!response?.response && !response?.message) {
             setSuccess(`Entrada añadida correctamente`);
             setError('');
 
-            setLiquidaciones([...liquidaciones, {chofer: chofer, checked: false}])
+            setLiquidaciones([...liquidaciones, { chofer: chofer, checked: false }])
             setChofer('')
         } else {
             setSuccess('')
             setError('A ocurrido un error: ');
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
     return (
@@ -69,19 +72,19 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
 
 
                     <Flex direction="column" gap="3">
-                            <label>
-                                <Text as="div" size="2" mb="1" weight="bold">
-                                    Chofer
-                                </Text>
-                                <TextField.Input
-                                    name="chofer"
-                                    placeholder="Chofer"
-                                    onChange={(e) => setChofer(e.target.value)}
-                                    value={chofer}
-                                    color={inputStyle.color}
-                                    variant={inputStyle.variant}
-                                />
-                            </label>
+                        <label>
+                            <Text as="div" size="2" mb="1" weight="bold">
+                                Chofer
+                            </Text>
+                            <TextField.Input
+                                name="chofer"
+                                placeholder="Chofer"
+                                onChange={(e) => setChofer(e.target.value)}
+                                value={chofer}
+                                color={inputStyle.color}
+                                variant={inputStyle.variant}
+                            />
+                        </label>
                     </Flex>
 
                     <Flex gap="3" mt="4" justify="end">
@@ -93,8 +96,8 @@ function FormListaLiquidaciones({liquidaciones, setLiquidaciones }) {
                             </Button>
                         </Dialog.Close>
 
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             color="indigo"
                             disabled={disableButton}
                         >

@@ -1,4 +1,5 @@
-import { toast } from "@/components/ui/use-toast"
+import { toastError } from "./utils"
+
 import axios from "axios"
 import { saveAs } from "file-saver"
 
@@ -13,10 +14,7 @@ const postPrecio = async (formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -32,10 +30,7 @@ const getPrecios = async () => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -53,10 +48,7 @@ const getPrecio = async (origen, destino) => {
         .catch(function (error) {
             if (error?.response?.status !== 404) {
                 console.log('Error', error)
-                toast({
-                    variant: "destructive",
-                    description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-                })
+                toastError(error)
             }
             return error
         })
@@ -74,10 +66,7 @@ const putPrecio = async (id, formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -93,10 +82,7 @@ const deletePrecio = async (id) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -112,10 +98,7 @@ const getExportarPrecios = async () => {
 
         }).catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 

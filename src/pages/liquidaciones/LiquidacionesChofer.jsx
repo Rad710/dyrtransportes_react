@@ -30,8 +30,8 @@ function LiquidacionesChofer({ title }) {
       ))
 
       setLiquidaciones(formattedResult)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {

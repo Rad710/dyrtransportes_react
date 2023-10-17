@@ -1,3 +1,5 @@
+import React from "react"
+
 import { Table, Checkbox } from "@radix-ui/themes"
 
 
@@ -128,4 +130,9 @@ function TableLiquidacionViajes({ liquidacionViajes, setLiquidacionViajes }) {
     )
 }
 
-export default TableLiquidacionViajes
+export default React.memo(TableLiquidacionViajes, (prevProps, nextProps) => {
+    // Only re-render when cobranzas or tracker change
+    return (
+        prevProps.liquidacionViajes === nextProps.liquidacionViajes
+    );
+  });

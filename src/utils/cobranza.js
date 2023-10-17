@@ -1,6 +1,7 @@
-import { toast } from "@/components/ui/use-toast"
 import axios from "axios"
 import { saveAs } from "file-saver"
+
+import { toastError } from "./utils"
 
 //creates a new planilla entry
 const postPlanilla = async (fecha) => {
@@ -13,10 +14,7 @@ const postPlanilla = async (fecha) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -33,10 +31,7 @@ const getPlanillas = async () => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -53,10 +48,7 @@ const getPlanillasOfYear = async (year) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -73,10 +65,7 @@ const deletePlanilla = async (fecha) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -90,13 +79,10 @@ const getExportarInforme = async (fechaInicio, fechaFin) => {
         .then(function (response) {
             const { data } = response
             saveAs(new Blob([data]), `informe_${fechaInicio}-${fechaFin}.xlsx`);
-            
+
         }).catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -115,10 +101,7 @@ const postCobranza = async (cobranza) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -134,10 +117,7 @@ const getCobranza = async (fecha) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
 
@@ -154,10 +134,7 @@ const getExportarCobranza = async (fecha) => {
 
         }).catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -167,17 +144,14 @@ const getExportarCobranza = async (fecha) => {
 const putCobranza = async (formData) => {
     const url = `${import.meta.env.VITE_API_URL}/cobranzas/${formData.id}`
 
-    const result = await axios.put(url, {cobranza: formData})
+    const result = await axios.put(url, { cobranza: formData })
         .then(function (response) {
             const { data } = response
             return data
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -193,10 +167,7 @@ const deleteCobranza = async (id) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
     return result
@@ -214,10 +185,7 @@ const getKeywords = async () => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-              })
+            toastError(error)
             return error
         })
 
@@ -227,6 +195,6 @@ const getKeywords = async () => {
 
 export {
     postPlanilla, getPlanillas, deletePlanilla, getPlanillasOfYear, getExportarInforme,
-    postCobranza, getCobranza, putCobranza, deleteCobranza, getExportarCobranza, 
+    postCobranza, getCobranza, putCobranza, deleteCobranza, getExportarCobranza,
     getKeywords
 }
