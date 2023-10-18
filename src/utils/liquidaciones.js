@@ -1,4 +1,5 @@
-import { toast } from "@/components/ui/use-toast"
+import { toastError } from "./utils"
+
 import axios from "axios"
 import { saveAs } from "file-saver"
 
@@ -13,10 +14,7 @@ const postLiquidacion = async (chofer) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -32,10 +30,7 @@ const getLiquidacion = async (chofer, fecha) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -52,10 +47,7 @@ const putLiquidacion = async (formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -71,10 +63,7 @@ const getLiquidaciones = async () => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -91,10 +80,7 @@ const getLiquidacionesChofer = async (chofer) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -112,10 +98,7 @@ const deleteLiquidaciones = async (chofer) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -131,10 +114,7 @@ const deleteLiquidacionesChofer = async (chofer, fecha) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -151,10 +131,7 @@ const postLiquidacionViaje = async (formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -171,10 +148,7 @@ const getLiquidacionViajes = async (chofer, fecha_liquidacion) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -190,10 +164,7 @@ const putLiquidacionViaje = async (formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -209,10 +180,7 @@ const deleteLiquidacionViaje = async (id) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -229,10 +197,7 @@ const postLiquidacionGasto = async (formData) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -248,10 +213,7 @@ const getLiquidacionGastos = async (chofer, fecha_liquidacion) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -266,10 +228,7 @@ const putLiquidacionGasto = async (formData) => {
             return data
         })
         .catch(function (error) {
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+            toastError(error)
             console.log('Error', error)
             return error
         })
@@ -287,10 +246,7 @@ const deleteLiquidacionGasto = async (id) => {
         .catch(function (error) {
             console.log('Error', error)
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
     return result
@@ -306,10 +262,7 @@ const getExportarLiquidacion = async (chofer, fecha) => {
 
         }).catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 

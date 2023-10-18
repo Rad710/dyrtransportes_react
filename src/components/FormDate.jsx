@@ -11,8 +11,16 @@ function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
                 <TextField.Input
                     name="startDate"
                     type="date"
-                    onChange={e => setStartDate(new Date(e.target.value))}
-                    value={startDate.toISOString().slice(0, 10)}
+                    onChange={e => {
+                        const inputDate = new Date(e.target.value);
+
+                        if (!isNaN(inputDate)) {
+                            setStartDate(inputDate);
+                        } else {
+                            setStartDate(null)
+                        }
+                    }}
+                    value={startDate?.toISOString()?.slice(0, 10)}
                 />
             </label>
             <label>
@@ -22,14 +30,22 @@ function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
                 <TextField.Input
                     name="endDate"
                     type="date"
-                    onChange={e => setEndDate(new Date(e.target.value))}
-                    value={endDate.toISOString().slice(0, 10)}
+                    onChange={e => {
+                        const inputDate = new Date(e.target.value);
+
+                        if (!isNaN(inputDate)) {
+                            setEndDate(inputDate);
+                        } else {
+                            setEndDate(null)
+                        }
+                    }}
+                    value={endDate?.toISOString()?.slice(0, 10)}
                 />
             </label>
             <div className="mt-4">
-            <IconButton size="3" onClick={onClick}>
-                <MagnifyingGlassIcon width="20" height="20" />
-            </IconButton>
+                <IconButton size="3" onClick={onClick}>
+                    <MagnifyingGlassIcon width="20" height="20" />
+                </IconButton>
             </div>
         </div>
     )

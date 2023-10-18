@@ -24,8 +24,8 @@ function Precios({ title }) {
 
       if (!response?.response && !response?.message) {
         setListaPrecios(response.map(entrada => ({ ...entrada, checked: false })))
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     loadPrecios()

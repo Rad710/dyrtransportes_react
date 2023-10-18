@@ -23,8 +23,8 @@ function Nomina({ title }) {
 
       if (!response?.response && !response?.message) {
         setNomina(response.map(entrada => ({ ...entrada, checked: false })))
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     loadNomina()

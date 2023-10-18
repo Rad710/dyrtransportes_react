@@ -1,11 +1,12 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 
-import { DownloadIcon } from "@radix-ui/react-icons";
-import { Tabs, Box, Text, Button } from "@radix-ui/themes";
-import { useEffect, useMemo, useState } from "react";
-import { getDatabaseBackup, getStatistics } from "../../utils/homepage";
+import { DownloadIcon, UploadIcon } from "@radix-ui/react-icons";
+import { Tabs, Box, Text, Button, TextField } from "@radix-ui/themes";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getDatabaseBackup, getExportarFormato, getStatistics, uploadCobranzas } from "../../utils/homepage";
 
 import { ColorRing } from 'react-loader-spinner';
+import { toast } from "@/components/ui/use-toast"
 
 import { Bar } from 'react-chartjs-2';
 import FormDate from "../../components/FormDate";
@@ -29,6 +30,7 @@ function Index({ title }) {
   })
 
   const [loading, setLoading] = useState(true)
+  const [disableUpload, setDisableUpload] = useState(true)
 
 
   const today = new Date()
@@ -43,30 +45,25 @@ function Index({ title }) {
   const [startDate, setStartDate] = useState(lastMonthAgo)
   const [endDate, setEndDate] = useState(tomorrow)
 
+  const [uploadDate, setUploadDate] = useState(null)
+
+  const fileInputRef = useRef(null)
 
   const loadStatistics = async () => {
     setLoading(true)
-    const result = await getStatistics(startDate.toISOString().slice(0, 10),
-      endDate.toISOString().slice(0, 10))
+    const result = await getStatistics(startDate?.toISOString()?.slice(0, 10),
+      endDate?.toISOString()?.slice(0, 10))
     if (!result?.response && !result?.message) {
       setStatistics(result.choferes)
-
       setBarData(result.totales)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {
     loadStatistics()
   }, [])
 
-  const handleDescargar = async () => {
-    await getDatabaseBackup()
-  }
-
-  const onClick = async () => {
-    await loadStatistics()
-  }
 
   const setUpChart = () => {
     const options = {
@@ -123,12 +120,44 @@ function Index({ title }) {
 
   const barProperties = useMemo(() => setUpChart(), [statistics])
 
+
+  const handleFileChange = async (event) => {
+    setDisableUpload(true)
+    document.body.style.cursor = 'wait'
+    const file = event.target.files[0];
+
+    if (file && uploadDate) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fechaCreacion", uploadDate.toISOString().slice(0, 10));
+
+      const response = await uploadCobranzas(formData)
+
+      if (!response?.response && !response?.message) {
+        toast({
+          description: 'Archivo subido exitosamente',
+          variant: 'success',
+        })
+      }
+    }
+    document.body.style.cursor = 'default'
+    setDisableUpload(false)
+  }
+
+
+  const handleDownloadFormat = async () => {
+    await getExportarFormato()
+  }
+
+
   const currencyFormatter = new Intl.NumberFormat("es-PY", {
     style: "currency",
     currency: "PYG"
   })
 
+
   const ganancia = barData.totalFletes - (barData.totalLiquidacionViajes + barData.totalPerdidas)
+
   return (
     <>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
@@ -139,6 +168,9 @@ function Index({ title }) {
           </Tabs.Trigger>
           <Tabs.Trigger value="estadisticas">
             <span className="text-xl">Estadisticas</span>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="cargarPlanillas">
+            <span className="text-xl">Cargar Planillas</span>
           </Tabs.Trigger>
           <Tabs.Trigger value="baseDeDatos">
             <span className="text-xl">Base de Datos</span>
@@ -153,7 +185,7 @@ function Index({ title }) {
                 setStartDate={setStartDate}
                 endDate={endDate}
                 setEndDate={setEndDate}
-                onClick={onClick}
+                onClick={async () => { await loadStatistics() }}
               />
 
 
@@ -204,7 +236,7 @@ function Index({ title }) {
                 setStartDate={setStartDate}
                 endDate={endDate}
                 setEndDate={setEndDate}
-                onClick={onClick}
+                onClick={async () => { await loadStatistics() }}
               />
 
               <TableStatistics
@@ -217,13 +249,65 @@ function Index({ title }) {
               )}
             </Tabs.Content>
 
+            <Tabs.Content value="cargarPlanillas">
+              <div className="mt-10 text-center">
+                <Text size="7">Cargar Cobranzas</Text>
+                <br />
+                <Text
+                  size="2"
+                  className=' text-blue-600 underline hover:cursor-pointer'
+                  onClick={handleDownloadFormat}
+                >
+                  Descargar formato
+                </Text>
+
+                <div className='flex flex-row gap-6 justify-center mt-10'>
+                  <Text as="div" size="3" mb="1" weight="bold" mt="1">
+                    Ingrese Fecha de Planilla
+                  </Text>
+                  <TextField.Input
+                    name="uploadDate"
+                    type="date"
+                    onChange={e => {
+                      const inputDate = new Date(e.target.value);
+                      if (!isNaN(inputDate)) {
+                        setUploadDate(inputDate)
+                        setDisableUpload(false)
+                      } else {
+                        setUploadDate(null)
+                        setDisableUpload(true)
+                      }
+                    }}
+                    value={uploadDate?.toISOString()?.slice(0, 10)}
+                  />
+                </div>
+
+
+                <div className='mt-9'>
+                  <Button color="grass" variant="solid" size="4"
+                    onClick={() => { fileInputRef.current.click() }}
+                    disabled={disableUpload}
+                  >
+                    <UploadIcon width="20" height="20" /> Subir Planilla
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className='hidden'
+                    onChange={handleFileChange}
+                  />
+                </div>
+
+              </div>
+            </Tabs.Content>
+
             <Tabs.Content value="baseDeDatos">
               <div className="mt-10 text-center">
                 <Text size="7">Crea una Copia de Seguridad para respaldar los datos</Text>
 
                 <br />
                 <Button mt="6" color="grass" variant="solid" size="4"
-                  onClick={handleDescargar}
+                  onClick={async () => { await getDatabaseBackup() }}
                 >
                   <DownloadIcon width="20" height="20" /> Descargar Copia
                 </Button>

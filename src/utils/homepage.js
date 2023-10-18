@@ -1,6 +1,8 @@
-import { toast } from "@/components/ui/use-toast"
 import axios from "axios"
 import { saveAs } from "file-saver"
+
+import { toastError } from "./utils"
+
 
 const getDatabaseBackup = async () => {
     const url = `${import.meta.env.VITE_API_URL}/database_backup`
@@ -16,10 +18,7 @@ const getDatabaseBackup = async () => {
 
         }).catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: no se pudo descargar el archivo ${error?.response?.data?.text()} | ${error?.message}`,
-            })
+            toastError(error)
             return error
         })
 
@@ -36,10 +35,45 @@ const getStatistics = async (fecha_inicio, fecha_fin) => {
         })
         .catch(function (error) {
             console.log('Error', error)
-            toast({
-                variant: "destructive",
-                description: `Error: ${error?.response?.data?.error} | ${error?.message}`,
-            })
+
+            toastError(error)
+            return error
+        })
+
+    return result
+}
+
+const uploadCobranzas = async (formData) => {
+    const url = `${import.meta.env.VITE_API_URL}/importar_cobranza`
+
+    const result = await axios.post(url, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        }
+    })
+        .then(function (response) {
+            const { data } = response
+            return data
+        })
+        .catch(function (error) {
+            console.log('Error', error)
+            toastError(error)
+            return error
+        })
+    return result
+}
+
+const getExportarFormato = async () => {
+    const url = `${import.meta.env.VITE_API_URL}/exportar_formato_cobranza`
+
+    const result = await axios.get(url, { responseType: 'blob' })
+        .then(function (response) {
+            const { data } = response
+            saveAs(new Blob([data]), 'planilla_formato.xlsx');
+
+        }).catch(function (error) {
+            console.log('Error', error)
+            toastError(error)
             return error
         })
 
@@ -47,5 +81,5 @@ const getStatistics = async (fecha_inicio, fecha_fin) => {
 }
 
 export {
-    getDatabaseBackup, getStatistics
+    getDatabaseBackup, getStatistics, uploadCobranzas, getExportarFormato
 }

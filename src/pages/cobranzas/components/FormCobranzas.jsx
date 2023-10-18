@@ -15,7 +15,7 @@ import { getPrecio } from "../../../utils/precio";
 function FormCobranzas({
     fechaCreacion, cobranzas, setCobranzas,
     formData, setFormData,
-    tracker, setTracker,
+    tracker,
 }) {
 
     const inputRefs = [
@@ -149,6 +149,7 @@ function FormCobranzas({
         e.preventDefault()
 
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -168,6 +169,7 @@ function FormCobranzas({
             setError('Complete todos los campos');
             setSuccess('')
             setDisableButton(false)
+            document.body.style.cursor = 'default'
             return
         }
         resetFormStyle(inputStyles, setInputStyles)
@@ -189,16 +191,11 @@ function FormCobranzas({
 
             if (responseUpdate?.response) {
                 setDisableButton(false)
+                document.body.style.cursor = 'default'
                 return
             }
 
-            const result = {}
-            for (const grupo in responseUpdate) {
-                result[grupo] = {
-                    ...responseUpdate[grupo], viajes: responseUpdate[grupo].viajes
-                        .map((viaje) => ({ viaje: viaje, checked: false }))
-                }
-            }
+            const result = responseUpdate.map(grupo => ({ ...grupo, viajes: grupo.viajes.map((viaje) => ({ viaje: viaje, checked: false })) }))
             setCobranzas(result)
 
             //reset form data and suggestions
@@ -224,6 +221,7 @@ function FormCobranzas({
             setError('A ocurrido un error');
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -250,7 +248,6 @@ function FormCobranzas({
         setButtonText('Editar')
 
         const { grupo, index } = tracker.at(0)
-
         const viaje = {}
         for (const attribute in cobranzas[grupo].viajes[index].viaje) {
             viaje[attribute] = String(cobranzas[grupo].viajes[index].viaje[attribute] ?? '')
@@ -261,8 +258,6 @@ function FormCobranzas({
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10),
             precio: Number(viaje.precio).toFixed(2)
         })
-
-        setTracker([])
     }
 
 

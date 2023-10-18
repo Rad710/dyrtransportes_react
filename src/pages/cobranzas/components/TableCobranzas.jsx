@@ -4,55 +4,35 @@ import React from "react"
 
 function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
 
-    const groupsAndProducts = Object.keys(cobranzas).map(group => {
-        const [origen, destino] = group.split('/')
+    const totalOrigen = cobranzas.reduce((total, grupo) => grupo.subtotalOrigen + total, 0)
 
-        return {
-            group: group, origen: origen, destino: destino,
-            product: cobranzas[group].viajes.at(0)?.viaje?.producto
-        }
-    })
+    const totalDestino = cobranzas.reduce((total, grupo) => grupo.subtotalDestino + total, 0)
 
-    const orderedGroups = groupsAndProducts
-        .sort((a, b) => ['product', 'origen', 'destino'].reduce((acc, key) => acc || a[key].localeCompare(b[key]), 0))
-        .map(item => item.group)
+    const totalDiferencia = cobranzas.reduce((total, grupo) => grupo.subtotalDiferencia + total, 0)
 
-    const totalOrigen = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalOrigen + total, 0)
+    const totalGS = cobranzas.reduce((total, grupo) => grupo.subtotalGS + total, 0)
 
-    const totalDestino = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalDestino + total, 0)
+    const handleChange = (indexGrupo, indexViaje) => {
 
-    const totalDiferencia = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalDiferencia + total, 0)
+        const newCobranzas = cobranzas.map((grupo, indexCobranzas) => (
+            indexCobranzas === indexGrupo ? (
+                {
+                    ...grupo, viajes: grupo.viajes.map((viaje, index) => (index === indexViaje) ? (
+                        { ...viaje, checked: !viaje.checked }
+                    ) : viaje)
+                }
+            ) : grupo))
 
-    const totalGS = Object.keys(cobranzas)
-        .reduce((total, grupo) => cobranzas[grupo].subtotalGS + total, 0)
-
-
-    const handleChange = (grupo, index) => {
-        const newViaje = {
-            ...cobranzas[grupo].viajes[index],
-            checked: !cobranzas[grupo].viajes[index].checked
-        }
-
-        const newCobranza = {
-            ...cobranzas[grupo],
-            viajes: cobranzas[grupo].viajes.map((viaje, i) => (
-                i === index ? newViaje : viaje
-            ))
-        }
-
-        if (!cobranzas[grupo].viajes[index].checked) {
-            setTracker([...tracker, { id: cobranzas[grupo].viajes[index].viaje.id, grupo: grupo, index: index }])
+        if (!cobranzas[indexGrupo].viajes[indexViaje].checked) {
+            setTracker([...tracker, { id: cobranzas[indexGrupo].viajes[indexViaje].viaje.id, grupo: indexGrupo, index: indexViaje }])
         } else {
-            setTracker(tracker.filter(viaje => viaje.id !== cobranzas[grupo].viajes[index].viaje.id))
+            setTracker(tracker.filter(viaje => viaje.id !== cobranzas[indexGrupo].viajes[indexViaje].viaje.id))
         }
 
-        setCobranzas({ ...cobranzas, [grupo]: newCobranza })
+        setCobranzas(newCobranzas)
     }
 
-
+    
     return (
         <Table.Root variant="surface">
             <Table.Header>
@@ -74,100 +54,102 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
             </Table.Header>
 
             <Table.Body>
-                {orderedGroups.map(grupo => (
-                    <React.Fragment key={grupo}>
-                        {cobranzas[grupo].viajes.map((cobranza, index) => (
-                            <Table.Row key={cobranza.viaje.id}>
-                                <Table.Cell>
-                                    <Checkbox
-                                        checked={cobranza.checked}
-                                        onCheckedChange={() => handleChange(grupo, index)}
-                                    />
-                                </Table.Cell>
+                {cobranzas.map((grupo, index) => {
+                    const { producto, origen, destino } = grupo.viajes.at(0).viaje
+                    return (
+                        <React.Fragment key={`${producto}|${origen}|${destino}`}>
+                            {grupo.viajes.map((cobranza, indexViaje) => (
+                                <Table.Row key={cobranza.viaje.id}>
+                                    <Table.Cell>
+                                        <Checkbox
+                                            checked={cobranza.checked}
+                                            onCheckedChange={() => handleChange(index, indexViaje)}
+                                        />
+                                    </Table.Cell>
 
-                                <Table.RowHeaderCell>{new Date(cobranza.viaje.fechaViaje)
-                                    .toLocaleDateString("es-ES", {
-                                        year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+                                    <Table.RowHeaderCell>{new Date(cobranza.viaje.fechaViaje)
+                                        .toLocaleDateString("es-ES", {
+                                            year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT"
+                                        })}
+                                    </Table.RowHeaderCell>
+                                    <Table.Cell>{cobranza.viaje.chofer}</Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.chapa}</Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.producto}</Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.origen}</Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.destino}</Table.Cell>
+                                    <Table.Cell>
+                                        {Number(cobranza.viaje.tiquet).toLocaleString("es-ES")}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {Number(cobranza.viaje.kgOrigen).toLocaleString("es-ES")}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {Number(cobranza.viaje.kgDestino).toLocaleString("es-ES")}
+                                    </Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.kgDestino - cobranza.viaje.kgOrigen}</Table.Cell>
+                                    <Table.Cell>{Number(cobranza.viaje.precio).toLocaleString("es-ES", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
                                     })}
+                                    </Table.Cell>
+                                    <Table.Cell>{(Number(cobranza.viaje.precio) * cobranza.viaje.kgDestino)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 1,
+                                        })}
+                                    </Table.Cell>
+                                </Table.Row>
+                            ))}
+
+                            <Table.Row>
+                                <Table.Cell></Table.Cell>
+                                <Table.RowHeaderCell>
+                                    <em className="font-bold">Subtotal:</em>
                                 </Table.RowHeaderCell>
-                                <Table.Cell>{cobranza.viaje.chofer}</Table.Cell>
-                                <Table.Cell>{cobranza.viaje.chapa}</Table.Cell>
-                                <Table.Cell>{cobranza.viaje.producto}</Table.Cell>
-                                <Table.Cell>{cobranza.viaje.origen}</Table.Cell>
-                                <Table.Cell>{cobranza.viaje.destino}</Table.Cell>
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell></Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.tiquet).toLocaleString("es-ES")}
+                                    <em className="font-bold">{Number(grupo.subtotalOrigen)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 1,
+                                        })}
+                                    </em>
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.kgOrigen).toLocaleString("es-ES")}
+                                    <em className="font-bold">{Number(grupo.subtotalDestino)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 1,
+                                        })}
+                                    </em>
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {Number(cobranza.viaje.kgDestino).toLocaleString("es-ES")}
+                                    <em className="font-bold">{Number(grupo.subtotalDiferencia)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 1,
+                                        })}
+                                    </em>
                                 </Table.Cell>
-                                <Table.Cell>{cobranza.viaje.kgDestino - cobranza.viaje.kgOrigen}</Table.Cell>
-                                <Table.Cell>{Number(cobranza.viaje.precio).toLocaleString("es-ES", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })}
-                                </Table.Cell>
-                                <Table.Cell>{(Number(cobranza.viaje.precio) * cobranza.viaje.kgDestino)
-                                    .toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 1,
-                                    })}
+                                <Table.Cell></Table.Cell>
+                                <Table.Cell>
+                                    <em className="font-bold">{Number(grupo.subtotalGS)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 1,
+                                        })}
+                                    </em>
                                 </Table.Cell>
                             </Table.Row>
-                        ))}
-
-                        <Table.Row>
-                            <Table.Cell></Table.Cell>
-
-                            <Table.RowHeaderCell>
-                                <em className="font-bold">Subtotal:</em>
-                            </Table.RowHeaderCell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell>
-                                <em className="font-bold">{Number(cobranzas[grupo].subtotalOrigen)
-                                    .toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 1,
-                                    })}
-                                </em>
-                            </Table.Cell>
-                            <Table.Cell>
-                                <em className="font-bold">{Number(cobranzas[grupo].subtotalDestino)
-                                    .toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 1,
-                                    })}
-                                </em>
-                            </Table.Cell>
-                            <Table.Cell>
-                                <em className="font-bold">{Number(cobranzas[grupo].subtotalDiferencia)
-                                    .toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 1,
-                                    })}
-                                </em>
-                            </Table.Cell>
-                            <Table.Cell></Table.Cell>
-                            <Table.Cell>
-                                <em className="font-bold">{Number(cobranzas[grupo].subtotalGS)
-                                    .toLocaleString("es-ES", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 1,
-                                    })}
-                                </em>
-                            </Table.Cell>
-                        </Table.Row>
-                    </React.Fragment>
-                ))}
-                {Object.keys(cobranzas).length > 0 && (
+                        </React.Fragment>
+                    )
+                })}
+                {cobranzas.length > 0 && (
                     <Table.Row className="bg-gray-200">
                         <Table.Cell></Table.Cell>
 
@@ -220,4 +202,9 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
     )
 }
 
-export default TableCobranzas
+export default React.memo(TableCobranzas, (prevProps, nextProps) => {
+    // Only re-render when cobranzas or tracker change
+    return (
+        prevProps.cobranzas === nextProps.cobranzas
+    );
+});

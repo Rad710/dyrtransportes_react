@@ -34,8 +34,8 @@ function PlanillasYears({ title }) {
                 // Convert the Set back to an array
                 const uniqueFechas = Array.from(uniqueFechasSet)
                 setYears(uniqueFechas.map(year => ({ year: Number(year), checked: false })).reverse())
+                setLoading(false)
             }
-            setLoading(false)
         }
         fetchData()
     }, []);
@@ -80,6 +80,7 @@ function PlanillasYears({ title }) {
 
     const handleSubmit = async (newYear) => {
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
         const result = await postPlanilla(new Date(newYear, 0, 1))
 
         if (!result?.response && !result?.message) {
@@ -88,6 +89,7 @@ function PlanillasYears({ title }) {
             setError(result.response?.data)
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
     const handleExportar = async () => {

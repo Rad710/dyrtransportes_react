@@ -1,5 +1,5 @@
 import { useMatch } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 
 import { Button } from "@radix-ui/themes"
 
@@ -21,7 +21,8 @@ function Cobranzas({ title }) {
   const [month, day] = date.split("-")
   const planillaDate = new Date(year, month - 1, day)
 
-  const [cobranzas, setCobranzas] = useState({})
+  const [cobranzas, setCobranzas] = useState([])
+
 
   const [formData, setFormData] = useState({
     id: "", fechaCreacion: planillaDate.toISOString().slice(0, 10),
@@ -34,7 +35,6 @@ function Cobranzas({ title }) {
 
   const [loading, setLoading] = useState(true)
 
-
   useEffect(() => {
     document.title = title;
 
@@ -42,15 +42,10 @@ function Cobranzas({ title }) {
       const response = await getCobranza(planillaDate.toISOString().slice(0, 10))
 
       if (!response?.response && !response?.message) {
-        const result = {}
-        for (const grupo in response) {
-          result[grupo] = {
-            ...response[grupo], viajes: response[grupo].viajes.map((viaje) => ({ viaje: viaje, checked: false }))
-          }
-        }
+        const result = response.map(grupo => ({ ...grupo, viajes: grupo.viajes.map((viaje) => ({ viaje: viaje, checked: false })) }))
         setCobranzas(result)
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchData()
@@ -59,7 +54,9 @@ function Cobranzas({ title }) {
 
 
   const handleExportar = async () => {
+    document.body.style.cursor = 'wait'
     await getExportarCobranza(planillaDate.toISOString().slice(0, 10))
+    document.body.style.cursor = 'default'
   }
 
   const handleDelete = async () => {
@@ -78,15 +75,8 @@ function Cobranzas({ title }) {
       return
     }
 
-    const result = {}
-    for (const grupo in responseUpdate) {
-      result[grupo] = {
-        ...responseUpdate[grupo], viajes: responseUpdate[grupo].viajes
-          .map((viaje) => ({ viaje: viaje, checked: false }))
-      }
-    }
+    const result = responseUpdate.map(grupo => ({ ...grupo, viajes: grupo.viajes.map((viaje) => ({ viaje: viaje, checked: false })) }))
     setCobranzas(result)
-
     setTracker([])
   }
 
@@ -107,7 +97,6 @@ function Cobranzas({ title }) {
             formData={formData}
             setFormData={setFormData}
             tracker={tracker}
-            setTracker={setTracker}
           />
 
           <Button color="grass" variant="solid" size="4"
@@ -131,7 +120,7 @@ function Cobranzas({ title }) {
             setTracker={setTracker}
           />
 
-          {Object.keys(cobranzas).length === 0 && (
+          {cobranzas.length === 0 && (
             <p className="text-center p-4 text-lg">
               No hay datos ingresados
             </p>

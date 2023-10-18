@@ -54,6 +54,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -73,6 +74,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
             setError('Complete todos los campos');
             setSuccess('')
             setDisableButton(false)
+            document.body.style.cursor = 'default'
             return
         }
 
@@ -107,6 +109,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
             setError('A ocurrido un error: ');
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -135,6 +138,7 @@ function FormPrecios({ formData, setFormData, listaPrecios, setListaPrecios }) {
         setError('');
         setSuccess('')
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 

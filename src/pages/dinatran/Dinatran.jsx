@@ -31,11 +31,11 @@ function Dinatran({ title }) {
   const loadStatistics = async () => {
     const result = await getInformeDinatran(startDate.toISOString().slice(0, 10),
       endDate.toISOString().slice(0, 10))
-      
-    if (!result?.response  && !result?.message) {
+
+    if (!result?.response && !result?.message) {
       setStatistics(result)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {
@@ -57,20 +57,20 @@ function Dinatran({ title }) {
         onClick={onClick}
       />
 
-{!loading && (
-  <>
-        <TableDinatran
-        statistics={statistics}
-      />
-      {Object.keys(statistics).length === 0 && (
-        <p className="text-center p-4 text-lg">
-          No hay datos
-        </p>
+      {!loading && (
+        <>
+          <TableDinatran
+            statistics={statistics}
+          />
+          {Object.keys(statistics).length === 0 && (
+            <p className="text-center p-4 text-lg">
+              No hay datos
+            </p>
+          )}
+        </>
       )}
-  </>
-)}
 
-<ColorRing
+      <ColorRing
         visible={loading}
         height="80"
         width="80"

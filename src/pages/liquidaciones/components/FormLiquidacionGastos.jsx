@@ -63,6 +63,7 @@ function FormLiquidacionGastos({
         e.preventDefault()
 
         setDisableButton(true)
+        document.body.style.cursor = 'wait'
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
@@ -82,6 +83,7 @@ function FormLiquidacionGastos({
             setError('Complete todos los campos');
             setSuccess('')
             setDisableButton(false)
+            document.body.style.cursor = 'default'
             return
         }
         resetFormStyle(inputStyles, setInputStyles)
@@ -104,7 +106,7 @@ function FormLiquidacionGastos({
             const conBoleta = await resultGastos?.filter(gasto => gasto.boleta !== null)?.map(gasto => ({ ...gasto, checked: false }))
             const sinBoleta = await resultGastos?.filter(gasto => gasto.boleta === null)?.map(gasto => ({ ...gasto, checked: false }))
 
-            setLiquidacionGastos({conBoleta: conBoleta ?? [], sinBoleta: sinBoleta ?? []})
+            setLiquidacionGastos({ conBoleta: conBoleta ?? [], sinBoleta: sinBoleta ?? [] })
 
             // resetear el form
             const resetFormData = {}
@@ -121,6 +123,7 @@ function FormLiquidacionGastos({
             setError('A ocurrido un error');
         }
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -137,6 +140,7 @@ function FormLiquidacionGastos({
         setSuccess('')
         setSelect('')
         setDisableButton(false)
+        document.body.style.cursor = 'default'
     }
 
 
@@ -156,8 +160,8 @@ function FormLiquidacionGastos({
         }
 
         setFormData({
-            id: toEdit.id, fecha: new Date(toEdit.fecha).toISOString().slice(0, 10), 
-            chofer: chofer, boleta: toEdit.boleta, importe: toEdit.importe, 
+            id: toEdit.id, fecha: new Date(toEdit.fecha).toISOString().slice(0, 10),
+            chofer: chofer, boleta: toEdit.boleta, importe: toEdit.importe,
             fechaLiquidacion: fecha, razon: toEdit.razon
         })
     }
@@ -166,7 +170,7 @@ function FormLiquidacionGastos({
         setSelect(value)
 
         if (value === 'sinBoleta') {
-            setFormData({ ...formData, boleta: null})
+            setFormData({ ...formData, boleta: null })
         }
     }
 
@@ -183,8 +187,8 @@ function FormLiquidacionGastos({
 
                 <Button color="teal" variant="solid" size="4"
                     disabled={
-                        (liquidacionGastos.conBoleta.filter(entry => entry.checked).length + 
-                        liquidacionGastos.sinBoleta.filter(entry => entry.checked).length) !== 1
+                        (liquidacionGastos.conBoleta.filter(entry => entry.checked).length +
+                            liquidacionGastos.sinBoleta.filter(entry => entry.checked).length) !== 1
                     }
                     onClick={handleEditar}
                 >
@@ -208,7 +212,7 @@ function FormLiquidacionGastos({
 
 
                     <Flex direction="column" gap="3">
-                        <Flex direction={!isMobile ? "row" : "column"}  gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Tipo
@@ -217,7 +221,7 @@ function FormLiquidacionGastos({
                                 <Select.Root
                                     onValueChange={onValueChange}
                                 >
-                                    <Select.Trigger placeholder="Seleccione gasto"/>
+                                    <Select.Trigger placeholder="Seleccione gasto" />
                                     <Select.Content position="popper">
                                         <Select.Group>
                                             <Select.Item value="conBoleta">Gasto Con Boleta</Select.Item>
@@ -248,7 +252,7 @@ function FormLiquidacionGastos({
                                 </label>
                             )}
                         </Flex>
-                        <Flex direction={!isMobile ? "row" : "column"}  gap="3">
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Fecha
@@ -307,8 +311,8 @@ function FormLiquidacionGastos({
                             </Button>
                         </Dialog.Close>
 
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             color={buttonText === "Editar" ? "teal" : "indigo"}
                             disabled={disableButton}
                         >
