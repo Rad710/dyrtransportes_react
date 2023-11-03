@@ -15,7 +15,7 @@ import { getPrecio } from "../../../utils/precio";
 function FormCobranzas({
     fechaCreacion, cobranzas, setCobranzas,
     formData, setFormData,
-    tracker,
+    tracker, setTracker
 }) {
 
     const inputRefs = [
@@ -215,6 +215,7 @@ function FormCobranzas({
             }
 
             setToSuggest(resetToSuggest)
+            setTracker([])
 
         } else {
             setSuccess('')
