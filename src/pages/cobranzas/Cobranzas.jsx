@@ -97,6 +97,7 @@ function Cobranzas({ title }) {
             formData={formData}
             setFormData={setFormData}
             tracker={tracker}
+            setTracker={setTracker}
           />
 
           <Button color="grass" variant="solid" size="4"
