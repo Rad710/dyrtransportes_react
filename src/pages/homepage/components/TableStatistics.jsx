@@ -31,8 +31,8 @@ function TableStatistics({ statistics }) {
                         totalOrigen, totalDestino, totalFlete, totalLiquidacion,
                         totalFacturado, totalNoFacturado, viajes } = statistics[chofer]
 
-                    const gastoTotal = totalFacturado + totalNoFacturado
-                    const difference = totalLiquidacion - gastoTotal
+                    const gastoTotal = Number(totalFacturado) + Number(totalNoFacturado)
+                    const difference = Number(totalLiquidacion) - Number(gastoTotal)
                     const perdida = difference < 0 ? difference : 0
 
                     return (
@@ -49,7 +49,7 @@ function TableStatistics({ statistics }) {
                             </Table.Cell>
 
                             <Table.Cell>
-                                {formatter.format(totalDestino - totalOrigen)}
+                                {formatter.format(Number(totalDestino) - Number(totalOrigen))}
                             </Table.Cell>
 
                             <Table.Cell>
@@ -77,7 +77,7 @@ function TableStatistics({ statistics }) {
                             </Table.Cell>
 
                             <Table.Cell className="text-green-600 font-black">
-                                {formatter.format(totalFlete - totalLiquidacion + perdida)}
+                                {formatter.format(Number(totalFlete) - Number(totalLiquidacion) + Number(perdida))}
                             </Table.Cell>
                         </Table.Row>
                     )
