@@ -8,30 +8,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Cloning repo..."
-                
-                checkout  changelog: true, poll: true, scm: [
-                    $class: 'GitSCM',
-                    branches: [[name: "origin/new-features" ]],
-                    extensions: [
-                        [
-                            $class: 'PreBuildMerge',
-                            options: [
-                            fastForwardMode: 'FF',
-                            mergeRemote: 'origin',
-                            mergeStrategy: 'default',
-                            mergeTarget: 'main']
-                        ],
-                        [
-                            $class: 'UserIdentity',
-                            email: 'rolmedro@gmail.com',
-                            name: 'rad710'
-                        ]],
-                    userRemoteConfigs: [[
-                    // credentialsId: 'githubCredentials',
-                    name: 'origin',
-                    url: "https://github.com/Rad710/dyrtransportes_react.git"
-                    ]]
-                ]
+                checkout scm
             }
         }
         
