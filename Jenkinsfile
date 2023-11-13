@@ -18,15 +18,17 @@ pipeline {
                 
                 sh """
                     git status
-                    ls
+                    git checkout new-features
                     git rev-parse --abbrev-ref HEAD
+                    ls
                     npm install
-                    npm audit fix
-                    npm run build
-                    
-                    docker build -t dyrtransportes-react:latest .
-                    docker run -p 5050:80 -d dyrtransportes-react
                     """
+
+                    // npm audit fix
+                    // npm run build
+                    
+                    // docker build -t dyrtransportes-react:latest .
+                    // docker run -p 5050:80 -d dyrtransportes-react
             }
         }
     }
