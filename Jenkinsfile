@@ -8,7 +8,7 @@ pipeline {
         stage('Prepare') {
             steps {
                 echo "Preparing..."
-                echo env
+                echo "Environment variables: ${env}"
             }
         }
         stage('Checkout') {
