@@ -29,11 +29,14 @@ pipeline {
                 }
 
                 script {
-                    publishChecks name: 'Preview Build', 
-                        status: 'IN_PROGRESS'
-                        
-                        title: 'Pipeline Check', 
-                        summary: 'Cloning repo...'
+publishChecks
+	name: 'my-cool-check',
+	title: 'Integration Test',
+	summary: 'Manifest is built. Deploying to a staging pool now.',
+	status: 'IN_PROGRESS',
+    text: 'Nothing much to see here.',
+    detailsURL: 'https://link.to.your/jenkins/build/',
+    actions: []
                     sh """
                         git status
                         git branch -r
