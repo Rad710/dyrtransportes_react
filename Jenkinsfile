@@ -29,9 +29,9 @@ pipeline {
                 }
 
 
-                publishChecks 
+                publishChecks name: 'Preview Build', 
                     status: 'IN_PROGRESS'
-                    name: 'Preview Build', 
+                    
                     title: 'Pipeline Check', 
                     summary: 'Cloning repo...'
                 sh """
