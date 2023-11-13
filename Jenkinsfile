@@ -28,39 +28,40 @@ pipeline {
                     echo "This build is associated with a branch ${env.BRANCH_NAME}"
                 }
 
-
-                publishChecks name: 'Preview Build', 
-                    status: 'IN_PROGRESS'
+                script {
+                    publishChecks name: 'Preview Build', 
+                        status: 'IN_PROGRESS'
+                        
+                        title: 'Pipeline Check', 
+                        summary: 'Cloning repo...'
+                    sh """
+                        git status
+                        git branch -r
+                        ls
+                        """
+    
+                    publishChecks 
+                        status: 'IN_PROGRESS'
+                        name: 'Preview Build', 
+                        title: 'Pipeline Check', 
+                        summary: 'Build step...'
+                    sh """
+                        npm install
+                        npm audit fix
+                        npm run build
+                        """
+    
+                    publishChecks 
+                        status: 'IN_PROGRESS'
+                        name: 'Preview Build', 
+                        title: 'Pipeline Check', 
+                        summary: 'Docker build...'
                     
-                    title: 'Pipeline Check', 
-                    summary: 'Cloning repo...'
-                sh """
-                    git status
-                    git branch -r
-                    ls
-                    """
-
-                publishChecks 
-                    status: 'IN_PROGRESS'
-                    name: 'Preview Build', 
-                    title: 'Pipeline Check', 
-                    summary: 'Build step...'
-                sh """
-                    npm install
-                    npm audit fix
-                    npm run build
-                    """
-
-                publishChecks 
-                    status: 'IN_PROGRESS'
-                    name: 'Preview Build', 
-                    title: 'Pipeline Check', 
-                    summary: 'Docker build...'
-                
-                sh """
-                    docker build -t dyrtransportes-react:latest .
-                    """
-                // docker run -p 5050:80 -d dyrtransportes-react
+                    sh """
+                        docker build -t dyrtransportes-react:latest .
+                        """
+                    // docker run -p 5050:80 -d dyrtransportes-react
+                }
             }
             post {
                 always {
