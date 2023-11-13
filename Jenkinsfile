@@ -58,7 +58,7 @@ pipeline {
                     // docker run -p 5050:80 -d dyrtransportes-react
                 }
             }
-            post {
+            // post {
                 // success {
                 //     // //Send build result to Github
                 //     // publishChecks 
@@ -69,7 +69,7 @@ pipeline {
                 //     //     detailsURL: 'url.url',
                 //     //     conclusion: 'SUCCESS'
                 // }
-            }
+            // }
         }
     }
     
