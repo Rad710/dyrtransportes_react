@@ -65,8 +65,7 @@ pipeline {
             post {
                 success {
                     //Send build result to Github
-                    publishChecks 
-                        name: 'Preview Build', 
+                    publishChecks name: 'Preview Build', 
                         title: 'Pipeline Check', 
                         summary: 'Checking merge',
                         text: 'The Jenkins Pipeline...',
