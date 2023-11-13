@@ -19,14 +19,14 @@ pipeline {
         }
         
         stage('Build project') {
+            if (env.CHANGE_ID) {
+                echo "This build is associated with a pull request ${env.BRANCH_NAME}: #${env.CHANGE_ID}"
+            } else {
+                echo "This build is associated with a branch ${env.BRANCH_NAME}"
+            }
+            
             steps {
                 echo "Building..."
-
-                if (env.CHANGE_ID) {
-                    echo "This build is associated with a pull request ${env.BRANCH_NAME}: #${env.CHANGE_ID}"
-                } else {
-                    echo "This build is associated with a branch ${env.BRANCH_NAME}"
-                }
 
                 script {
                     sh """
