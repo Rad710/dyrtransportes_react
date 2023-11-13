@@ -17,6 +17,7 @@ pipeline {
                 echo "Building..."
                 
                 sh """
+                    echo ${BRANCH_NAME}
                     git status
                     git branch -r 
                     git checkout origin/main
