@@ -28,7 +28,7 @@ pipeline {
                         echo "This build is associated with a branch: ${env.BRANCH_NAME}"
                     }
 
-                    publishChecks status: 'IN_PROGRESS'
+                    publishChecks status: 'IN_PROGRESS',
                         name: 'Preview Build', 
                         title: 'Pipeline Check', 
                         summary: 'Cloning repo...'
@@ -38,7 +38,7 @@ pipeline {
                         ls
                         """
     
-                    publishChecks status: 'IN_PROGRESS'
+                    publishChecks status: 'IN_PROGRESS',
                         name: 'Preview Build', 
                         title: 'Pipeline Check', 
                         summary: 'Build step...'
@@ -48,7 +48,7 @@ pipeline {
                         npm run build
                         """
     
-                    publishChecks status: 'IN_PROGRESS'
+                    publishChecks status: 'IN_PROGRESS',
                         name: 'Preview Build', 
                         title: 'Pipeline Check', 
                         summary: 'Docker build...'
