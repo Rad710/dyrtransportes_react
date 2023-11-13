@@ -17,13 +17,8 @@ pipeline {
                 echo "Building..."
                 
                 sh """
-                    echo ${BRANCH_NAME}
                     git status
-                    git branch -r 
-                    git checkout origin/main
-                    git pull origin main
-                    git merge feature
-
+                    git checkout ${BRANCH_NAME}
                     git rev-parse --abbrev-ref HEAD
                     ls
                     """
