@@ -18,12 +18,14 @@ pipeline {
                 
                 sh """
                     git status
-                    git checkout new-features
+                    git checkout main
+                    git pull origin main
+                    git merge feature
+
                     git rev-parse --abbrev-ref HEAD
                     ls
-                    npm install
                     """
-
+                    //npm install
                     // npm audit fix
                     // npm run build
                     
