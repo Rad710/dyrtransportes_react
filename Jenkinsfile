@@ -18,7 +18,8 @@ pipeline {
                 
                 sh """
                     git status
-                    git checkout main
+                    git branch -r 
+                    git checkout origin/main
                     git pull origin main
                     git merge feature
 
