@@ -150,8 +150,9 @@ function Liquidacion({ title }) {
             ...viaje, precioLiquidacion: preciosJSON[`${viaje.origen}/${viaje.destino}`] ?? 0,
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10), chofer: chofer
         }))
-
-        const putPromises = updatedViajes.map(async (entrada) => (await putLiquidacionViaje(entrada)))
+        const putPromises = updatedViajes.map(async (entrada) => (
+                await putLiquidacionViaje({...entrada, fechaLiquidacion: fecha})
+            ))
 
         const result = await Promise.all(putPromises)
 
