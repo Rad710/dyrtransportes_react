@@ -110,6 +110,26 @@ function PlanillasYears({ title }) {
                 <h2 className="text-3xl font-bold text-left md:w-1/3">Listado de Planillas</h2>
 
                 <div className="gap-5 flex justify-end md:2/3">
+                    <Form
+                        onSubmit={(e) => {
+                            e.preventDefault()
+                            handleSubmit(years.at(0) ? years.at(0).year + 1 : 2023)
+                        }}>
+                        {error ?
+                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
+                            (<Button
+                                color="grass"
+                                variant="surface"
+                                size="4"
+                                type="submit"
+                                ml="6"
+                                disabled={disableButton}
+                            >
+                                <PlusIcon width="20" height="20" />Agregar Año
+                            </Button>)
+                        }
+                    </Form>
+
                     <Button color="grass" variant="solid" size="4"
                         onClick={handleExportar}
                         disabled={years.filter(year => year.checked).length > 1}
@@ -140,25 +160,6 @@ function PlanillasYears({ title }) {
                             </Flex>
                         </li>
                     ))}
-                    <Form
-                        onSubmit={(e) => {
-                            e.preventDefault()
-                            handleSubmit(years.at(0) ? years.at(0).year + 1 : 2023)
-                        }}>
-                        {error ?
-                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
-                            (<Button
-                                color="grass"
-                                variant="surface"
-                                size="4"
-                                type="submit"
-                                ml="6"
-                                disabled={disableButton}
-                            >
-                                <PlusIcon width="20" height="20" />Agregar Año
-                            </Button>)
-                        }
-                    </Form>
                 </ul>
             )}
 

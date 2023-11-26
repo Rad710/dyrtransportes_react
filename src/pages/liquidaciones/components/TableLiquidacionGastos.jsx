@@ -31,7 +31,7 @@ function TableLiquidacionGastos({ liquidacionGastos, setLiquidacionGastos }) {
 
             <Table.Body>
               {liquidacionGastos.conBoleta.map((gasto, index) => (
-                <Table.Row key={gasto.id}>
+                <Table.Row key={gasto.id} className={gasto.checked ? "bg-gray-200" : ""}>
                   <Table.Cell>
                     <Checkbox
                       checked={gasto.checked}
@@ -96,7 +96,7 @@ function TableLiquidacionGastos({ liquidacionGastos, setLiquidacionGastos }) {
 
             <Table.Body>
               {liquidacionGastos.sinBoleta.map((gasto, index) => (
-                <Table.Row key={gasto.id}>
+                <Table.Row key={gasto.id} className={gasto.checked ? "bg-gray-200" : ""}>
                   <Table.Cell>
                     <Checkbox
                       checked={gasto.checked}

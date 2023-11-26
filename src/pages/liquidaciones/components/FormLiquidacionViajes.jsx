@@ -1,12 +1,12 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 
 import { FileIcon, PlusIcon } from "@radix-ui/react-icons"
-import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes"
+import { Button, Dialog, Flex, Select, Text, TextField } from "@radix-ui/themes"
 import { Form } from "react-router-dom";
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
-import { getLiquidacionViajes, postLiquidacionViaje, putLiquidacionViaje } from "../../../utils/liquidaciones";
+import { getLiquidacionViajes, getLiquidacionesChofer, postLiquidacionViaje, putLiquidacionViaje } from "../../../utils/liquidaciones";
 
 
 function FormLiquidacionViajes({
@@ -37,6 +37,21 @@ function FormLiquidacionViajes({
 
     const [buttonText, setButtonText] = useState('')
     const [disableButton, setDisableButton] = useState(false)
+
+    const [liquidacionesChofer, setLiquidacionesChofer] = useState([])
+
+    useEffect(() => {
+        const queryLiquidaciones = async () => {
+            const result = await getLiquidacionesChofer(chofer)
+
+            if (!result?.response && !result?.message) {
+              const formattedResult = result.map(liquidacion => new Date(liquidacion.fechaLiquidacion))
+        
+              setLiquidacionesChofer(formattedResult)
+            }
+        }
+        queryLiquidaciones()
+    }, [])
 
 
     const handleKeyDown = async (e, index) => {
@@ -181,7 +196,7 @@ function FormLiquidacionViajes({
                 </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Content style={{ maxWidth: 600 }}>
                 <Form onSubmit={(e) => handleSubmit(e)}>
 
                     <Dialog.Title>{`${buttonText} Entrada`}</Dialog.Title>
@@ -213,7 +228,6 @@ function FormLiquidacionViajes({
                                     variant={inputStyles.tiquet.variant}
                                 />
                             </label>
-
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Fecha
@@ -229,8 +243,6 @@ function FormLiquidacionViajes({
                                     variant={inputStyles.fechaViaje.variant}
                                 />
                             </label>
-                        </Flex>
-                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chapa
@@ -246,6 +258,8 @@ function FormLiquidacionViajes({
                                     variant={inputStyles.chapa.variant}
                                 />
                             </label>
+                        </Flex>
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Producto
@@ -262,9 +276,6 @@ function FormLiquidacionViajes({
                                     variant={inputStyles.producto.variant}
                                 />
                             </label>
-                        </Flex>
-
-                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Origen
@@ -365,6 +376,32 @@ function FormLiquidacionViajes({
                                     variant={inputStyles.kgDestino.variant}
                                 />
                             </label>
+
+                            {formData.id ? 
+                                (<label>
+                                    <Text as="div" size="2" mb="1" weight="bold">
+                                        Fecha de Liquidación
+                                    </Text>
+                                    <Select.Root 
+                                        value={formData.fechaLiquidacion}
+                                        onValueChange={(v) => setFormData({...formData, fechaLiquidacion: v})}
+                                    >
+                                        <Select.Trigger />
+                                        <Select.Content position="popper">
+                                            {liquidacionesChofer.map(liquidacion => (
+                                                <Select.Item 
+                                                    value={liquidacion.toISOString().slice(0, 10)} 
+                                                    key={liquidacion.toISOString().slice(0, 10)}
+                                                >
+                                                    {liquidacion.toLocaleDateString("es-ES",
+                                                        { year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT" }
+                                                    )}
+                                                </Select.Item>
+                                            ))}
+                                        </Select.Content>
+                                    </Select.Root>
+                                </label>) : ''
+                            }
                         </Flex>
                     </Flex>
 
