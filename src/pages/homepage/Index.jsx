@@ -55,7 +55,13 @@ function Index({ title }) {
       endDate?.toISOString()?.slice(0, 10))
     if (!result?.response && !result?.message) {
       setStatistics(result.choferes)
-      setBarData(result.totales)
+
+      const barResult = {}
+      for (const field in result.totales) {
+        barResult[field] = Number(result.totales[field])
+      }
+
+      setBarData(barResult)
       setLoading(false)
     }
   }
