@@ -33,7 +33,7 @@ function TableLiquidacionViajes({ liquidacionViajes, setLiquidacionViajes }) {
 
             <Table.Body>
                 {liquidacionViajes.map((viaje, index) => (
-                    <Table.Row key={viaje.id}>
+                    <Table.Row key={viaje.id} className={viaje.checked ? "bg-gray-200" : ""}>
                         <Table.Cell>
                             <Checkbox
                                 checked={viaje.checked}

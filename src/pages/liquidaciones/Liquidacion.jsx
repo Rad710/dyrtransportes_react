@@ -33,9 +33,10 @@ function Liquidacion({ title }) {
 
     const [liquidacionViajes, setLiquidacionViajes] = useState([])
 
+    const currentDate = new Date().toISOString().slice(0, 10)
     const [formDataViajes, setFormDataViajes] = useState({
         id: "", fechaCreacion: null, tiquet: "",
-        fechaViaje: "", chofer: chofer, chapa: "", producto: "",
+        fechaViaje: currentDate, chofer: chofer, chapa: "", producto: "",
         origen: "", destino: "", precio: "", precioLiquidacion: "",
         kgOrigen: "", kgDestino: "", fechaLiquidacion: fecha
     })
@@ -43,7 +44,7 @@ function Liquidacion({ title }) {
     const [liquidacionGastos, setLiquidacionGastos] = useState({ conBoleta: [], sinBoleta: [] })
 
     const [formDataGastos, setFormDataGastos] = useState({
-        id: "", fecha: "", chofer: chofer, boleta: null,
+        id: "", fecha: currentDate, chofer: chofer, boleta: null,
         importe: "", fechaLiquidacion: fecha, razon: ""
     })
 
@@ -57,7 +58,7 @@ function Liquidacion({ title }) {
             const [resultViajes, resultGastos, resultLiquidacion] = await Promise.all([
                 getLiquidacionViajes(chofer, fecha),
                 getLiquidacionGastos(chofer, fecha),
-                getLiquidacion(chofer, fecha)
+                getLiquidacion(chofer, fecha),
             ]);
 
             const newViajes = resultViajes?.map(viaje => ({ ...viaje, checked: false }))
@@ -265,7 +266,7 @@ function Liquidacion({ title }) {
             </Box>
                 )}
 
-                <ColorRing
+            <ColorRing
                 visible={loading}
                 height="80"
                 width="80"

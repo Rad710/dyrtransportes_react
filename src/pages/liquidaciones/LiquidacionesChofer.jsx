@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { Button, Checkbox, Flex } from "@radix-ui/themes"
-import { PlusIcon } from "@radix-ui/react-icons"
+import { Button, Checkbox, Flex, IconButton } from "@radix-ui/themes"
+import { CheckIcon, Cross2Icon, PlusIcon } from "@radix-ui/react-icons"
 import { Link, useMatch } from "react-router-dom";
 
 import AlertButton from "../../components/AlertButton"
@@ -25,9 +25,10 @@ function LiquidacionesChofer({ title }) {
     const result = await getLiquidacionesChofer(chofer)
 
     if (!result?.response && !result?.message) {
-      const formattedResult = result.map(fecha => (
-        { fecha: new Date(fecha).toISOString().slice(0, 10), checked: false }
-      ))
+      const formattedResult = result.map(liquidacion => ({ 
+        fecha: new Date(liquidacion.fechaLiquidacion).toISOString().slice(0, 10), 
+        checked: false, pagado: liquidacion.pagado 
+      }))
 
       setLiquidaciones(formattedResult)
       setLoading(false)
@@ -85,6 +86,7 @@ function LiquidacionesChofer({ title }) {
         <div className="gap-5 md:flex justify-end md:2/3">
           <Button color="indigo" variant="solid" size="4"
             onClick={handleAdd}
+            disabled={true}
           >
             <PlusIcon width="20" height="20" />Agregar
           </Button>
@@ -99,8 +101,7 @@ function LiquidacionesChofer({ title }) {
       {!loading && (
         <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
           {liquidaciones.map(liquidacion => (
-            <li className="flex"
-              key={liquidacion.fecha}>
+            <li key={liquidacion.fecha}>
               <Flex align="center">
                 <Checkbox mr="4"
                   checked={liquidacion.checked}
@@ -108,8 +109,24 @@ function LiquidacionesChofer({ title }) {
                 <Link
                   className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
                   to={`/liquidaciones/${chofer}/${liquidacion.fecha}`}
-                >{new Date(liquidacion.fecha).toLocaleDateString("es-ES",
-                  { month: "long", day: "numeric", timeZone: "GMT" })}</Link>
+                >
+                  {
+                    new Date(liquidacion.fecha).toLocaleDateString("es-ES",
+                      {year: "numeric", month: "long", day: "numeric", timeZone: "GMT" })
+                  }
+                </Link>
+                <span className="text-xl ml-4 mr-4">Pagado: </span>
+                {
+                  liquidacion.pagado ? (
+                    <IconButton color="grass" variant="soft">
+                      <CheckIcon width="18" height="18" />
+                    </IconButton>
+                  ) : (
+                    <IconButton color="tomato" variant="soft">
+                      <Cross2Icon width="18" height="18" />
+                    </IconButton>
+                  )
+                }
               </Flex>
             </li>
           ))}
