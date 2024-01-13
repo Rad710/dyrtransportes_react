@@ -101,7 +101,24 @@ function ListaPlanillas({ title }) {
             <div className="md:flex justify-between mb-8 items-center">
                 <h2 className="text-3xl font-bold text-left md:w-1/3">{`Planillas del ${year}`}</h2>
 
-                <div className="gap-5 flex justify-end md:2/3">
+                <div className="gap-5 flex flex-col justify-end md:2/3 md:flex-row">
+                    <Form
+                        onSubmit={handleSubmit}>
+                        {error ?
+                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
+                            (<Button
+                                color="grass"
+                                variant="surface"
+                                size="4"
+                                type="submit"
+                                ml="6"
+                                disabled={disableButton}
+                            >
+                                <PlusIcon width="20" height="20" />Agregar Planilla
+                            </Button>)
+                        }
+                    </Form>
+
                     <Button color="grass" variant="solid" size="4"
                         onClick={handleExportar}
                         disabled={planillas.filter(planilla => planilla.checked).length > 2}
@@ -133,23 +150,6 @@ function ListaPlanillas({ title }) {
                             </Flex>
                         </li>
                     ))}
-
-                    <Form
-                        onSubmit={handleSubmit}>
-                        {error ?
-                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
-                            (<Button
-                                color="grass"
-                                variant="surface"
-                                size="4"
-                                type="submit"
-                                ml="6"
-                                disabled={disableButton}
-                            >
-                                <PlusIcon width="20" height="20" />Agregar Planilla
-                            </Button>)
-                        }
-                    </Form>
                 </ul>
             )}
 
