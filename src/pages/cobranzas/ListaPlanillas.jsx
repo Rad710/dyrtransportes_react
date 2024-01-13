@@ -37,7 +37,7 @@ function ListaPlanillas({ title }) {
             }
         }
         fetchData()
-    }, [match]);
+    }, [match])
 
     const handleDelete = async () => {
         const planillasChecked = planillas.filter(planilla => planilla.checked === true)
