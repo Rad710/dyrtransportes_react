@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Checkbox, Flex } from "@radix-ui/themes"
+import { Checkbox, Flex, TextField } from "@radix-ui/themes"
 import { Link } from "react-router-dom"
 import { deleteLiquidaciones, getLiquidaciones } from "../../utils/liquidaciones"
 
@@ -7,12 +7,15 @@ import AlertButton from "../../components/AlertButton"
 import FormListaLiquidaciones from "./components/FormListaLiquidaciones"
 
 import { ColorRing } from "react-loader-spinner"
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons"
 
 function ListaLiquidaciones({ title }) {
 
   const [liquidaciones, setLiquidaciones] = useState([])
 
   const [loading, setLoading] = useState(true)
+
+  const [filter, setFilter] = useState('')
 
 
   useEffect(() => {
@@ -58,6 +61,10 @@ function ListaLiquidaciones({ title }) {
     setLiquidaciones(newLiquidaciones)
   }
 
+  const filteredLiquidaciones = filter ?
+    liquidaciones.filter(liquidacion => liquidacion.chofer.toLowerCase().includes(filter.toLowerCase()))
+    : liquidaciones
+
   return (
     <div className="p-4">
       <div className="md:flex justify-between mb-8 items-center">
@@ -78,9 +85,20 @@ function ListaLiquidaciones({ title }) {
         </div>
       </div>
 
+      <div className="font-bold flex m-auto justify-center mb-8 gap-4">
+        <MagnifyingGlassIcon width="18" height="18" className="mt-2" />
+
+        <TextField.Input
+          name="filter"
+          placeholder="Nombre de Chofer"
+          onChange={(e) => setFilter(e.target.value)}
+          value={filter}
+        />
+      </div>
+
       {!loading && (
         <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
-          {liquidaciones.map(liquidacion => (
+          {filteredLiquidaciones.map(liquidacion => (
             <li className="flex"
               key={liquidacion.chofer}>
               <Flex align="center">

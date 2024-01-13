@@ -69,7 +69,8 @@ function FormLiquidacionGastos({
 
         // Iterate over the keys of formData
         for (const field in formData) {
-            if (formData[field] === '' || (formData[field] === null && select === 'conBoleta')) {
+            if (field != 'razon' && (formData[field] === '' 
+                || (formData[field] === null && select === 'conBoleta'))) {
                 newInputStyles[field] = { color: 'red', variant: 'soft' };
             }
         }
@@ -78,7 +79,6 @@ function FormLiquidacionGastos({
             ...prevStyle,
             ...newInputStyles,
         }));
-
         if (Object.keys(newInputStyles).length > 1) {
             setError('Complete todos los campos');
             setSuccess('')
@@ -114,7 +114,7 @@ function FormLiquidacionGastos({
                 resetFormData[field] = ''
             }
             setFormData({
-                id: "", fecha: "", chofer: chofer, boleta: null,
+                id: "", fecha: new Date().toISOString().slice(0, 10), chofer: chofer, boleta: null,
                 importe: "", fechaLiquidacion: fecha, razon: ""
             })
 
@@ -130,7 +130,7 @@ function FormLiquidacionGastos({
     const handleCerrar = () => {
         // resetear el form
         setFormData({
-            id: "", fecha: "", chofer: chofer, boleta: null,
+            id: "", fecha: new Date().toISOString().slice(0, 10), chofer: chofer, boleta: null,
             importe: "", fechaLiquidacion: fecha, razon: ""
         })
 
