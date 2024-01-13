@@ -59,7 +59,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                     return (
                         <React.Fragment key={`${producto}|${origen}|${destino}`}>
                             {grupo.viajes.map((cobranza, indexViaje) => (
-                                <Table.Row key={cobranza.viaje.id}>
+                                <Table.Row key={cobranza.viaje.id} className={cobranza.checked ? "bg-gray-200" : ""}>
                                     <Table.Cell>
                                         <Checkbox
                                             checked={cobranza.checked}

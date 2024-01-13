@@ -1,11 +1,11 @@
 import { FileIcon, PlusIcon } from "@radix-ui/react-icons"
-import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes"
+import { Button, Dialog, Flex, Select, Text, TextField } from "@radix-ui/themes"
 import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-router-dom";
 
 import { isMobile } from "react-device-detect";
 
-import { getCobranza, getKeywords, postCobranza, putCobranza } from "../../../utils/cobranza";
+import { getCobranza, getKeywords, getPlanillasOfYear, postCobranza, putCobranza } from "../../../utils/cobranza";
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
@@ -20,8 +20,8 @@ function FormCobranzas({
 
     const inputRefs = [
         useRef(null), useRef(null), useRef(null), useRef(null),
-        useRef(null), useRef(null), useRef(null),
-        useRef(null), useRef(null), useRef(null)
+        useRef(null), useRef(null), useRef(null), useRef(null),
+        useRef(null), useRef(null), useRef(null), useRef(null),
     ];
 
     const [inputStyles, setInputStyles] = useState({
@@ -34,7 +34,8 @@ function FormCobranzas({
         tiquet: { color: 'indigo', variant: 'surface' },
         precio: { color: 'indigo', variant: 'surface' },
         kgOrigen: { color: 'indigo', variant: 'surface' },
-        kgDestino: { color: 'indigo', variant: 'surface' }
+        kgDestino: { color: 'indigo', variant: 'surface' },
+        precioLiquidacion: { color: 'indigo', variant: 'surface' },
     })
 
     const [error, setError] = useState('')
@@ -51,12 +52,23 @@ function FormCobranzas({
 
     const [suggestions, setSuggestions] = useState({ chofer: [], destino: [], origen: [], producto: [] })
 
+    const [planillaList, setPlanillaList] = useState([])
+
     useEffect(() => {
         const queryKeywords = async () => {
-            const response = await getKeywords()
-
-            if (!response?.response && !response?.message) {
-                setSuggestions(response)
+            const [keywords, planillas] = await Promise.all([
+                getKeywords(),
+                getPlanillasOfYear(fechaCreacion.toISOString().slice(0, 10).slice(0, 4))
+            ]);
+        
+            if (!keywords?.response && !keywords?.message) {
+                setSuggestions(keywords);
+            }
+        
+            if (!planillas?.response && !planillas?.message) {
+                setPlanillaList(planillas.map(planilla => new Date(planilla)));
+            } else {
+                setError(planillas?.response?.data);
             }
         }
         queryKeywords()
@@ -90,11 +102,11 @@ function FormCobranzas({
             }
         } else if ('destino' === fieldName) {
             const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
-
             setFormData({
                 ...formData,
                 destino: toSuggest.destino.at(selectedSuggestion),
-                precio: String(result?.precio ?? '')
+                precio: String(result?.precio ?? ''),
+                precioLiquidacion: String(result?.precioLiquidacion ?? '')
             })
         } else {
             setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
@@ -111,16 +123,6 @@ function FormCobranzas({
             }
             autocompleteField(fieldName)
         }
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault()
-            setSelectedSuggestion(selectedSuggestion + 1)
-        }
-
-        if (e.key === 'ArrowUp') {
-            e.preventDefault()
-            setSelectedSuggestion(selectedSuggestion - 1)
-        }
     }
 
 
@@ -128,7 +130,7 @@ function FormCobranzas({
         const fieldName = e.target.name
         const string = e.target.value
 
-        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino'].includes(fieldName)) {
+        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion'].includes(fieldName)) {
             if (isNaN(Number(string))) {
                 return
             }
@@ -255,9 +257,10 @@ function FormCobranzas({
         }
         setFormData({
             ...viaje,
-            fechaCreacion: fechaCreacion,
+            fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10),
-            precio: Number(viaje.precio).toFixed(2)
+            precio: Number(viaje.precio).toFixed(2),
+            precioLiquidacion: Number(viaje.precioLiquidacion).toFixed(2)
         })
     }
 
@@ -291,7 +294,7 @@ function FormCobranzas({
                 </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Content style={{ maxWidth: 600 }}>
                 <Form onSubmit={(e) => handleSubmit(e)}>
 
                     <Dialog.Title>{`${buttonText} Entrada`}</Dialog.Title>
@@ -360,8 +363,7 @@ function FormCobranzas({
                                     variant={inputStyles.fechaViaje.variant}
                                 />
                             </label>
-                        </Flex>
-                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
+
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chapa
@@ -378,6 +380,8 @@ function FormCobranzas({
                                     variant={inputStyles.chapa.variant}
                                 />
                             </label>
+                        </Flex>
+                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Producto
@@ -414,9 +418,6 @@ function FormCobranzas({
                                     </div>
                                 </div>
                             </label>
-                        </Flex>
-
-                        <Flex direction={!isMobile ? "row" : "column"} gap="3">
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Origen
@@ -511,7 +512,14 @@ function FormCobranzas({
 
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
-                                    Precio
+                                    {
+                                        `Precio (P. sin IVA: ${isNaN(Number(formData.precio)) ?
+                                        '' :
+                                        (formData.precio / 1.1)
+                                        .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 2, maximumFractionDigits: 2 
+                                        })})`
+                                    }
                                 </Text>
                                 <TextField.Input
                                     name="precio"
@@ -526,6 +534,24 @@ function FormCobranzas({
                                     variant={inputStyles.precio.variant}
                                 />
                             </label>
+
+                            <label>
+                                <Text as="div" size="2" mb="1" weight="bold">
+                                    Precio Liquidacion
+                                </Text>
+                                <TextField.Input
+                                    name="precioLiquidacion"
+                                    type="number"
+                                    placeholder="Precio de Liquidacion"
+                                    ref={inputRefs[8]}
+                                    onKeyDown={(e) => handleKeyDown(e, 8)}
+                                    onBlur={e => handleBlur(e)}
+                                    onChange={onChange}
+                                    value={formData.precioLiquidacion}
+                                    color={inputStyles.precioLiquidacion.color}
+                                    variant={inputStyles.precioLiquidacion.variant}
+                                />
+                            </label>
                         </Flex>
 
                         <Flex direction={!isMobile ? "row" : "column"} gap="3">
@@ -536,8 +562,8 @@ function FormCobranzas({
                                 <TextField.Input
                                     name="kgOrigen"
                                     placeholder="Kg. Origen"
-                                    ref={inputRefs[8]}
-                                    onKeyDown={(e) => handleKeyDown(e, 8)}
+                                    ref={inputRefs[9]}
+                                    onKeyDown={(e) => handleKeyDown(e, 9)}
                                     onBlur={e => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.kgOrigen}
@@ -552,7 +578,7 @@ function FormCobranzas({
                                 <TextField.Input
                                     name="kgDestino"
                                     placeholder="Kg. Destino"
-                                    ref={inputRefs[9]}
+                                    ref={inputRefs[10]}
                                     onBlur={e => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.kgDestino}
@@ -560,6 +586,32 @@ function FormCobranzas({
                                     variant={inputStyles.kgDestino.variant}
                                 />
                             </label>
+                            
+                            {formData.id ? 
+                                (<label>
+                                    <Text as="div" size="2" mb="1" weight="bold">
+                                        Fecha de Cobranza
+                                    </Text>
+                                    <Select.Root 
+                                        value={formData.fechaCreacion}
+                                        onValueChange={(v) => setFormData({...formData, fechaCreacion: v})}
+                                    >
+                                        <Select.Trigger />
+                                        <Select.Content position="popper">
+                                            {planillaList.map(planilla => (
+                                                <Select.Item 
+                                                    value={planilla.toISOString().slice(0, 10)} 
+                                                    key={planilla.toISOString().slice(0, 10)}
+                                                >
+                                                    {planilla.toLocaleDateString("es-ES",
+                                                        { year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT" }
+                                                    )}
+                                                </Select.Item>
+                                            ))}
+                                        </Select.Content>
+                                    </Select.Root>
+                                </label>) : ''
+                            }
                         </Flex>
                     </Flex>
 
