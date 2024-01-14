@@ -1,8 +1,8 @@
 # Steps (desde root del proyecto)
 # 1. Agregar token para Sonarqube
 # 2. docker build --network=host -t node-agent:latest -f jenkins/Dockerfile.agent .
-# 4. docker tag node-agent:latest localhost:5000/dyrtransportes/node-agent:20.11
-# 5. docker push localhost:5000/dyrtransportes/node-agent:20.11
+# 4. docker tag node-agent:latest localhost:5000/dyrtransportes/agent/node-agent:20.11
+# 5. docker push localhost:5000/dyrtransportes/agent/node-agent:20.11
 
 FROM node:20.11
 
