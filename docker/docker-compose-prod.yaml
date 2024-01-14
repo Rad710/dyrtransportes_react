@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  dyrtransportes-react-prod:
+    image: localhost:5000/dyrtransportes/prod/dyrtransportes-react:latest
+    
+    ports:
+      - 1000:80
+
+    environment:
+      - VITE_API_URL=url
+
+    container_name: dyrtransportes-react-prod
+
+    networks:
+      - dyrtransportes
+      - dyrtransportes-frontend
+
+networks:
+  dyrtransportes:
+  dyrtransportes-frontend:
