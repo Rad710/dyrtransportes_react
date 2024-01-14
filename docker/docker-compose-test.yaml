@@ -8,7 +8,7 @@ services:
       - 1002:80
 
     environment:
-      - VITE_API_URL=localhost_url
+      - VITE_API_URL=http://localhost:1234
 
     container_name: dyrtransportes-react-test
 
