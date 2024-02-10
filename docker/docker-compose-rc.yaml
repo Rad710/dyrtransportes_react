@@ -13,9 +13,11 @@ services:
     container_name: dyrtransportes-react-rc
 
     networks:
-      - dyrtransportes
       - dyrtransportes-frontend
+      - dyrtransportes
 
 networks:
-  dyrtransportes:
   dyrtransportes-frontend:
+  dyrtransportes:
+    name: dyrtransportes
+    external: true
