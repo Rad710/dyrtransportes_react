@@ -1,16 +1,16 @@
 version: "3.9"
 
 services:
-  dyrtransportes-react-dev:
-    image: ${REGISTRY}/dyrtransportes/frontend/dev/dyrtransportes-react:latest
+  dyrtransportes-react-rc:
+    image: ${REGISTRY}/dyrtransportes/frontend/rc/dyrtransportes-react:latest
     
     ports:
-      - 1002:80
+      - 1001:80
 
     environment:
       - VITE_API_URL=http://dyrtransportes-flask-dev:8081
 
-    container_name: dyrtransportes-react-dev
+    container_name: dyrtransportes-react-rc
 
     networks:
       - dyrtransportes

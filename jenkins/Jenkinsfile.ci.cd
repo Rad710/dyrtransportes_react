@@ -1,27 +1,28 @@
 def username = ''
 def email = ''
 
-def imageName = "dyrtransportes-react"
-def tag = BRANCH_NAME.toLowerCase().replaceAll('/', '_')
+def imageName = "dyrtransportes-react:${BRANCH_NAME.toLowerCase().replaceAll('/', '_')}"
+def tag = ''
 def tagComment = "Jenkins CI/CD Pipeline. Branch: ${BRANCH_NAME}. Build ID: ${BUILD_ID}. Build URL: ${BUILD_URL}"
 
 def dockerImage
-def dockerComposeFile = ''
+def dockerComposeFile = 'docker/docker-compose-dev.yaml'
 
-def registry = 'http://localhost:5000'
+def dockerRegistry = 'http://docker-registry-server:5000'
 // def registryCredentials = 'localhost-docker-registry'
 
 def numberCommits = 5
 def commitList = ''
 
+def releasePattern = ~/release\/\d+\.\d+\.\d+$/
+
 pipeline {
     agent {
         docker {
-            image 'localhost:5000/dyrtransportes/agent/node-agent:20.11'
-            registryUrl 'http://localhost:5000'
-            // registryCredentialsId 'localhost-docker-registry'
-
-            // host's docker group gid: stat -c '%g' /var/run/docker.sock
+            image 'dev/node-agent:20.11'
+            registryUrl "http://docker-registry-server:5000"
+            // docker group gid: 999
+            // stat -c '%g' /var/run/docker.sock
             args """
                 --group-add 999
                 -v /var/run/docker.sock:/var/run/docker.sock
@@ -43,7 +44,7 @@ pipeline {
             steps {
                 script {
                     echo "Cloning Repository..."
-                    cleanWs()
+
                     checkout scm
                 }
             }
@@ -65,33 +66,33 @@ pipeline {
                         }
                     }
 
-                    releasePattern = ~/release\/\d+\.\d+\.\d+$/
-
                     if (BRANCH_NAME ==~ releasePattern) {
-                        imageName = 'localhost:5000/dyrtransportes/dev/dyrtransportes-react'
-                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
+                        imageName = 'dyrtransportes/frontend/rc/dyrtransportes-react'
+                        dockerComposeFile = 'docker/docker-compose-rc.yaml'
 
-                        tag = BRANCH_NAME.split('/').last() + ".${BUILD_ID}-dev"
+                        tag = BRANCH_NAME.split('/').last() + ".${BUILD_ID}-rc"
                     }
 
                     if (BRANCH_NAME == 'main') {
-                        imageName = 'localhost:5000/dyrtransportes/prod/dyrtransportes-react'
+                        imageName = 'dyrtransportes/frontend/prod/dyrtransportes-react'
                         dockerComposeFile = 'docker/docker-compose-prod.yaml'
 
                         tag = sh(returnStdout: true, script: 'git describe --tags --abbrev=0').trim()
                         tag = tag.split("\\.")[0..2].join(".")
+                        tag += ".${BUILD_ID}"
                     }
 
                     if (BRANCH_NAME == 'develop') {
-                        imageName = 'localhost:5000/dyrtransportes/dev/dyrtransportes-react-test'
-                        dockerComposeFile = 'docker/docker-compose-test.yaml'
+                        imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
+                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
 
-                        tag = "0.0.${BUILD_ID}-test"
+                        tag = "0.0.${BUILD_ID}-dev"
                     }
 
 
                     username = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
                     email = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                    echo "Repo Author name: ${username}/email:${email}"
 
                     if (currentBuild.getBuildCauses()[0].shortDescription.contains("Started by user")) {
                         username = null
@@ -102,6 +103,9 @@ pipeline {
 
                     commitList = sh(returnStdout: true, script: "git log -${numberCommits} --format=\"%s\"").trim()
                     echo "List of Commits: ${commitList}"
+
+                    sh 'git config --global user.name "jenkins"'
+                    sh 'git config --global user.email "jenkins@jenkins.com"'
                 }
             }
         }
@@ -111,6 +115,9 @@ pipeline {
                 script {
                     echo 'Building...'
 
+
+                    sh "rm -r .env*"
+                    sh "echo -n \"VITE_API_URL=VITE_API_URL_PLACEHOLDER\" > .env"
                     try {
                         sh "mv /home/node/node_modules ${WORKSPACE}"
                     } catch (Exception e) {
@@ -119,8 +126,6 @@ pipeline {
 
                     sh "npm install"
                     sh "npm audit fix"
-                    sh "rm -r .env*"
-                    // sh "mv docker/.env \"${WORKSPACE}\""
                     sh "npm run build"
                 }
             }
@@ -137,7 +142,7 @@ pipeline {
                 script {
                     echo 'Scanning...'
 
-                    withSonarQubeEnv("http://localhost:9000") {  
+                    withSonarQubeEnv("http://sonarqube-community:9000") {  
                         sh "rm -r node_modules/" //faster scan if removed
 
                         echo 'Sonar start'
@@ -152,7 +157,7 @@ pipeline {
         stage('Tag GIT Repo') {
             when {
                 expression {
-                    return !dockerComposeFile.isEmpty()
+                    return !tag.isEmpty() && BRANCH_NAME ==~ releasePattern
                 }
             }
             steps {
@@ -174,18 +179,18 @@ pipeline {
         stage('Push Docker Registry') {
             when {
                 expression {
-                    return !dockerComposeFile.isEmpty()
+                    return !tag.isEmpty()
                 }
             }
             steps {
                 script {
-                    echo "Pushing..."
-                    echo "Push Docker Image: ${imageName}:${tag}"
-
+                    echo "Building..."
                     dockerImage = docker.build(imageName, "-f docker/Dockerfile .")
 
-                    docker.withRegistry(registry) {
-                        dockerImage.push(tag)
+                    echo "Pushing..."
+                    docker.withRegistry(dockerRegistry) {
+                        echo "Push Docker Image: ${imageName} with tag: ${tag}"
+                        dockerImage.push("${tag}")
                         dockerImage.push("latest")
                     }
                 }
@@ -195,29 +200,41 @@ pipeline {
         stage('Archive Artifact') {
             when {
                 expression {
-                    return !dockerComposeFile.isEmpty() && BRANCH_NAME != 'develop'
+                    return !tag.isEmpty() && BRANCH_NAME != 'develop'
                 }
             }
 
             steps {
                 script {
                     echo "Archiving..."
+
+                    sh "echo -n \"REGISTRY = 'docker-registry-server:5000'\" > docker/.env"
+
                     // usar el docker compose para tener env de diferentes ambientes
                     sh "docker compose -f ${dockerComposeFile} up -d"
                     
-                    serviceName = "dyrtransportes-react-" + dockerComposeFile.replace('docker/docker-compose-', '')
+                    dockerEnv = dockerComposeFile.replace('docker/docker-compose-', '')
+                    dockerEnv = dockerEnv.replace('.yaml', '')
+                    serviceName = "dyrtransportes-react-" + dockerEnv
                     containerName = sh(script: "docker compose -f ${dockerComposeFile} ps -q ${serviceName}", 
                         returnStdout: true).trim() 
                     
                     sh "docker cp ${containerName}:/usr/share/nginx/html ./artifact"
                     sh "docker compose -f ${dockerComposeFile} down"
 
-                    sh "tar -czvf ${serviceName}-${tag}.tar.gz ./artifact"
+                    tarFileName = "${serviceName}-${tag}.tar.gz"
 
-                    archiveArtifacts artifacts: "${serviceName}-${tag}.tar.gz",
+                    tar file: tarFileName,
+                        archive: false,
+                        compress: true,
+                        dir: "artifact"
+
+                    archiveArtifacts artifacts: tarFileName,
                         allowEmptyArchive: true,
                         fingerprint: true,
                         onlyIfSuccessful: true
+
+                    sh "rm docker/.env"
                 }
             }
         }
@@ -225,7 +242,7 @@ pipeline {
         stage('Create GitHub Release') {
             when {
                 expression {
-                    return !dockerComposeFile.isEmpty() && BRANCH_NAME != 'develop'
+                    return !tag.isEmpty() && BRANCH_NAME != 'develop'
                 }
             }
 
@@ -247,18 +264,22 @@ pipeline {
                                 -d '{ "tag_name": "${tag}", \
                                     "target_commitish": "${BRANCH_NAME}", \
                                     "name": "${tag}", \
-                                    "body": "${tagComment}", \
+                                    "body": "${commitList.replace('\n', '<br />')}", \
                                     "draft": false, \
                                     "prerelease": false, \
                                     "generate_release_notes": true}'
                             """, returnStdout: true).trim()
 
-                            uploadUrl = sh(script: """
-                                echo "${createRelease}" | jq -r '.upload_url' | head -n 1
-                                """, returnStdout: true).trim() 
+                            responseCode = createRelease.split('\n')[-1] as Integer
+                            createRelease = createRelease.split(responseCode as String)[0]
+
+                            echo "Create Release Respose: ${createRelease}"
+                            echo "Response Code from GitHub Release: ${responseCode}"
+
+                            responseJSON = readJSON(text: createRelease)
+                            uploadUrl = responseJSON['upload_url'].replace('/assets{?name,label}', '')
 
                             echo "Upload URL: ${uploadUrl}"
-
                             sh """
                                 curl -XPOST -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" \
                                 -H "Accept: application/vnd.github+json" \
@@ -267,10 +288,6 @@ pipeline {
                                 "${uploadUrl}/assets?name=${serviceName}-${tag}.tar.gz" \
                                 --data-binary "@${serviceName}-${tag}.tar.gz"
                             """
-
-                            responseCode = createRelease.split('\n')[-1] as Integer
-
-                            echo "Response Code from GitHub Release: ${responseCode}"
                         } catch (e) {
                             echo "Error en crear GitHub Release: ${e}"
                         }
@@ -282,24 +299,39 @@ pipeline {
         stage('Deploy Docker Host') {
             when {
                 expression {
-                    return !dockerComposeFile.isEmpty()
+                    return !tag.isEmpty()
                 }
             }
             steps {
                 script {
                     echo "Deploying..."
 
-                    dockerContext = "default"
-                    echo "Deploy to Docker Host in ${dockerContext}"
+                    sh "echo -n \"REGISTRY = 'localhost:5000'\" > docker/.env"
 
                     try {
-                        sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} down"
+                        sh "docker context create remote --docker \"host=ssh://rolando@172.20.0.1\""
+
+                        sh "mkdir /home/node/.ssh"
+                        sh "ssh-keyscan -H -t ssh-ed25519 172.20.0.1 >> /home/node/.ssh/known_hosts"
                     } catch (e) {
-                        echo "First time running docker compose!"
+                        echo "docker context already exists!"
+                    }
+                    
+                    dockerContext = "remote"
+                    echo "Deploy to Docker Host in ${dockerContext}"
+
+                    sshagent (credentials: ["remote-docker"]) {
+                        try {
+                            sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} down"
+                        } catch (e) {
+                            echo "First time running docker compose!"
+                        }
+
+                        sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} pull"
+                        sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} up -d"
                     }
 
-                    sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} pull"
-                    sh "docker --context ${dockerContext} compose -f ${dockerComposeFile} up -d"
+                    sh "rm docker/.env"
                 }
             }
         }
@@ -310,13 +342,13 @@ pipeline {
                 echo 'Post stage cleaning...'
 
                 try {
-                    sh "docker rmi -f ${imageName}:latest ${imageName}:tag"
-                } catch (Exception e) {
+                    sh "docker rmi -f \$(docker images -q ${imageName})"
+                } catch (e) {
                     echo 'No docker image to delete. Or failure when deleting!'
                 }
 
                 notificationMessage = tagComment + " Result: ${currentBuild.currentResult}."
-                if (!dockerComposeFile.isEmpty()) {
+                if (!tag.isEmpty()) {
                     notificationMessage += " Push to Docker Registry with tag: ${tag}."
                 }
 
@@ -328,15 +360,16 @@ pipeline {
                 
                 echo "Custom measurements: ${customMeasurementFields}. Custom tags: ${myTags}"
 
-                withSonarQubeEnv("http://localhost:9000") {
-                    influxDbPublisher(selectedTarget: 'influxdb', 
-                        customDataMap: customMeasurementFields, 
-                        customDataMapTags: myTags)
-                }
 
                 mail to: "rolmedro@gmail.com",
                     subject: tagComment,
                     body : notificationMessage
+
+                withSonarQubeEnv("http://sonarqube-community:9000") {
+                    influxDbPublisher(selectedTarget: 'influxdb', 
+                        customDataMap: customMeasurementFields, 
+                        customDataMapTags: myTags)
+                }
 
                 // userId = slackUserIdFromEmail(email)
                 // if (currentBuild.currentResult != 'SUCCESS') {
@@ -346,7 +379,9 @@ pipeline {
                 // }
                 // slackSend(channel: "@${userId}", color: "${notificationColor}", message: "${notificationMessage}", notifyCommitters: true)
 
-                cleanWs()
+                mineRepository()
+                gitDiffStat()
+                discoverGitReferenceBuild(targetBranch: 'main')
             }
         }
     }
