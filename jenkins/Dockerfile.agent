@@ -53,7 +53,7 @@ RUN chmod -R 777 /home/node \
 
 ENV SONAR_USER_HOME="/home/node/.sonar"
 # sonarqube scanner
-RUN npm install -g sonarqube-scanner
+RUN npm install -g sonarqube-scanner eslint
 USER node
 RUN sonar-scanner --version
 
