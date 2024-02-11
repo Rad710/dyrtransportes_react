@@ -26,3 +26,7 @@ dist-ssr
 
 #eslint
 eslint.xml
+eslint.json
+
+#sonar-scanner
+.scannerwork/

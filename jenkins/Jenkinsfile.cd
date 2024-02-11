@@ -126,9 +126,14 @@ pipeline {
                     --max-warnings 0 \
                     --format checkstyle > eslint.xml"
 
+                sh "eslint src --ext js,jsx \
+                    --report-unused-disable-directives \
+                    --max-warnings 0 \
+                    --format json > eslint.json"
+
                 recordIssues enabledForFailure: true, 
                     aggregatingResults: true, 
-                    tools: [pyLint(pattern: 'eslint.xml')],
+                    tools: [esLint(pattern: 'eslint.xml')],
                     qualityGates: [[threshold: 1, type: 'TOTAL_ERROR', failed: true], [threshold: 1, type: 'TOTAL_HIGH', failed: true]]
                     
                 echo 'Testing must be implemented...'
@@ -144,8 +149,10 @@ pipeline {
                         sh "rm -r node_modules/" //faster scan if removed
 
                         echo 'Sonar start'
-                        sh "sonar-scanner -Dsonar.projectKey=D-y-R-Transportes-React \
+                        sh "sonar-scanner -Dsonar.eslint.reportPaths=eslint.json \
+                            -Dsonar.projectKey=D-y-R-Transportes-React \
                             -Dsonar.sourceEncoding=UTF-8"
+
                         echo 'Sonar end'
                     }
                 }
