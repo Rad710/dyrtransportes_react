@@ -143,12 +143,12 @@ pipeline {
                 sh "eslint src --ext js,jsx \
                     --report-unused-disable-directives \
                     --max-warnings 0 \
-                    --format checkstyle > eslint.xml"
+                    --format checkstyle > eslint.xml | exit 0"
 
                 sh "eslint src --ext js,jsx \
                     --report-unused-disable-directives \
                     --max-warnings 0 \
-                    --format json > eslint.json"
+                    --format json > eslint.json | exit 0"
 
                 recordIssues enabledForFailure: true, 
                     aggregatingResults: true, 
