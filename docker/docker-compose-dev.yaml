@@ -5,7 +5,7 @@ services:
     image: ${REGISTRY}/dyrtransportes/frontend/dev/dyrtransportes-react:latest
     
     ports:
-      - 1002:80
+      - 1000:80
 
     environment:
       - VITE_API_URL=http://dyrtransportes-flask-dev:8081
