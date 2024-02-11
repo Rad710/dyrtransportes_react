@@ -120,6 +120,17 @@ pipeline {
 
         stage('Test & eslint') {
             steps {
+                echo "Starting ESLint..."
+                sh "eslint src --ext js,jsx \
+                    --report-unused-disable-directives \
+                    --max-warnings 0 \
+                    --format checkstyle > eslint.xml"
+
+                recordIssues enabledForFailure: true, 
+                    aggregatingResults: true, 
+                    tools: [pyLint(pattern: 'eslint.xml')],
+                    qualityGates: [[threshold: 1, type: 'TOTAL_ERROR', failed: true], [threshold: 1, type: 'TOTAL_HIGH', failed: true]]
+                    
                 echo 'Testing must be implemented...'
             }
         }
