@@ -41,8 +41,8 @@ RUN echo \
 
 #Install Docker CLI
 RUN apt-get -y update && apt-get -y install docker-ce-cli \
-    inetutils-ping wget zip jq curl && \
-    apt-get clean -y
+    inetutils-ping wget zip jq curl \
+    && apt-get clean -y
 
 WORKDIR /home/node
 COPY --from=builder /app/node_modules node_modules

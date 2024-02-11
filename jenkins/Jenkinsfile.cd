@@ -1,9 +1,7 @@
 def username = ''
 def email = ''
 
-def imageName = "dyrtransportes-react:${BRANCH_NAME.toLowerCase().replaceAll('/', '_')}"
-def tag = ''
-def tagComment = "Jenkins CI/CD Pipeline. Branch: ${BRANCH_NAME}. Build ID: ${BUILD_ID}. Build URL: ${BUILD_URL}"
+def imageName = ''
 
 def dockerImage
 def dockerComposeFile = 'docker/docker-compose-dev.yaml'
@@ -14,7 +12,21 @@ def dockerRegistry = 'http://docker-registry-server:5000'
 def numberCommits = 5
 def commitList = ''
 
-def releasePattern = ~/release\/\d+\.\d+\.\d+$/
+if (TARGET_ENV == 'DEV') {
+    env.TAG += '-dev'
+    imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
+    
+} else if (TARGET_ENV == 'RC') {
+    env.TAG += '-rc'
+    // imageName = 'dyrtransportes/frontend/rc/dyrtransportes-react'
+
+    imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
+
+} else if (TARGET_ENV == 'PROD') {
+    // imageName = 'dyrtransportes/frontend/prod/dyrtransportes-react'
+
+    imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
+}
 
 pipeline {
     agent {
@@ -31,7 +43,6 @@ pipeline {
     }
 
     options {
-        disableConcurrentBuilds(abortPrevious: true)
         skipDefaultCheckout()
     }
 
@@ -65,36 +76,6 @@ pipeline {
                             print "Parameter: ${param}, Value: ${value}"
                         }
                     }
-
-                    if (BRANCH_NAME ==~ releasePattern) {
-                        // imageName = 'dyrtransportes/frontend/rc/dyrtransportes-react'
-                        // dockerComposeFile = 'docker/docker-compose-rc.yaml'
-                        
-                        imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
-                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
-
-                        tag = BRANCH_NAME.split('/').last() + ".${BUILD_ID}-rc"
-                    }
-
-                    if (BRANCH_NAME == 'main') {
-                        // imageName = 'dyrtransportes/frontend/prod/dyrtransportes-react'
-                        // dockerComposeFile = 'docker/docker-compose-prod.yaml'
-
-                        imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
-                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
-
-                        tag = sh(returnStdout: true, script: 'git describe --tags --abbrev=0').trim()
-                        tag = tag.split("\\.")[0..2].join(".")
-                        tag += ".${BUILD_ID}"
-                    }
-
-                    if (BRANCH_NAME == 'develop') {
-                        imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
-                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
-
-                        tag = "0.0.${BUILD_ID}-dev"
-                    }
-
 
                     username = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
                     email = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
@@ -160,7 +141,7 @@ pipeline {
             }
         }
 
-        stage("SonarQube Quality Gate") {
+        stage('SonarQube Quality Gate') {
             steps {
               timeout(time: 5, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
@@ -169,33 +150,23 @@ pipeline {
         }
 
         stage('Tag GIT Repo') {
-            when {
-                expression {
-                    return !tag.isEmpty() && BRANCH_NAME ==~ releasePattern
-                }
-            }
             steps {
                 script {
                     echo "Tagging..."
-                    echo "GIT tag: ${tag}. Tag comment: ${tagComment}"
+                    echo "GIT tag: ${tag}. Tag comment: ${TAG_COMMENT}"
                     withCredentials([usernamePassword(credentialsId: 'rad710-jenkins-github-app',
                         usernameVariable: 'GITHUB_APP',
                         passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {  
                     
-                        sh "git tag -a ${tag} -m \"${tagComment}\" "
+                        sh "git tag -a ${TAG} -m \"${TAG_COMMENT}\" "
                         sh "git push https://${GITHUB_APP}:${GITHUB_ACCESS_TOKEN}@github.com/${GITHUB_REPO}.git ${tag}"
-                        sh "git tag -d ${tag}"
+                        sh "git tag -d ${TAG}"
                     }
                 }
             }
         }
 
         stage('Push Docker Registry') {
-            when {
-                expression {
-                    return !tag.isEmpty()
-                }
-            }
             steps {
                 script {
                     echo "Building..."
@@ -212,12 +183,6 @@ pipeline {
         }
 
         stage('Archive Artifact') {
-            when {
-                expression {
-                    return !tag.isEmpty() && BRANCH_NAME != 'develop'
-                }
-            }
-
             steps {
                 script {
                     echo "Archiving..."
@@ -236,7 +201,7 @@ pipeline {
                     sh "docker cp ${containerName}:/usr/share/nginx/html ./artifact"
                     sh "docker compose -f ${dockerComposeFile} down"
 
-                    tarFileName = "${serviceName}-${tag}.tar.gz"
+                    tarFileName = "${serviceName}-${TAG}.tar.gz"
 
                     tar file: tarFileName,
                         archive: false,
@@ -254,12 +219,6 @@ pipeline {
         }
 
         stage('Create GitHub Release') {
-            when {
-                expression {
-                    return !tag.isEmpty() && BRANCH_NAME != 'develop'
-                }
-            }
-
             steps {
                 script {
                     echo "Releasing..."
@@ -275,10 +234,10 @@ pipeline {
                                 -H "Accept: application/vnd.github+json" \
                                 -H "X-GitHub-Api-Version: 2022-11-28" \
                                 https://api.github.com/repos/${GITHUB_REPO}/releases \
-                                -d '{ "tag_name": "${tag}", \
+                                -d '{ "tag_name": "${TAG}", \
                                     "target_commitish": "${BRANCH_NAME}", \
-                                    "name": "${tag}", \
-                                    "body": "${commitList.replace('\n', '<br />')}", \
+                                    "name": "${TAG}", \
+                                    "body": "${TAG_COMMENT.replace('\n', '<br />')}", \
                                     "draft": false, \
                                     "prerelease": false, \
                                     "generate_release_notes": true}'
@@ -299,8 +258,8 @@ pipeline {
                                 -H "Accept: application/vnd.github+json" \
                                 -H "X-GitHub-Api-Version: 2022-11-28" \
                                 -H "Content-Type:application/octet-stream" \
-                                "${uploadUrl}/assets?name=${serviceName}-${tag}.tar.gz" \
-                                --data-binary "@${serviceName}-${tag}.tar.gz"
+                                "${uploadUrl}/assets?name=${serviceName}-${TAG}.tar.gz" \
+                                --data-binary "@${serviceName}-${TAG}.tar.gz"
                             """
                         } catch (e) {
                             echo "Error en crear GitHub Release: ${e}"
@@ -311,11 +270,6 @@ pipeline {
         }
 
         stage('Deploy Docker Host') {
-            when {
-                expression {
-                    return !tag.isEmpty()
-                }
-            }
             steps {
                 script {
                     echo "Deploying..."
@@ -361,10 +315,7 @@ pipeline {
                     echo 'No docker image to delete. Or failure when deleting!'
                 }
 
-                notificationMessage = tagComment + " Result: ${currentBuild.currentResult}."
-                if (!tag.isEmpty()) {
-                    notificationMessage += " Push to Docker Registry with tag: ${tag}."
-                }
+                notificationMessage = "Jenkins CI/CD Pipeline. Branch: ${BRANCH_NAME}. Build ID: ${BUILD_ID}. Build URL: ${BUILD_URL}. Result: ${currentBuild.currentResult}. Push to Docker Registry with tag: ${TAG}"
 
                 blameData = [:]
                 myTags = ['blame_data':['author': username, 'email': email, 'cause': currentBuild.getBuildCauses()[0].shortDescription]]
@@ -373,7 +324,6 @@ pipeline {
                 customMeasurementFields['blame_data'] = blameData
                 
                 echo "Custom measurements: ${customMeasurementFields}. Custom tags: ${myTags}"
-
 
                 mail to: "rolmedro@gmail.com",
                     subject: tagComment,
