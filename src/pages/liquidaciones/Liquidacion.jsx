@@ -10,8 +10,7 @@ import FormLiquidacionViajes from "./components/FormLiquidacionViajes";
 import TableLiquidacionViajes from "./components/TableLiquidacionViajes";
 import FormLiquidacionGastos from "./components/FormLiquidacionGastos";
 import TableLiquidacionGastos from "./components/TableLiquidacionGastos";
-import { getPrecios } from "../../utils/precio";
-
+import { RouteApi } from "../routes/route_utils";
 import { deleteLiquidacionGasto, deleteLiquidacionViaje, getExportarLiquidacion, 
     getLiquidacion, getLiquidacionGastos, getLiquidacionViajes, 
     postLiquidacion, putLiquidacion, putLiquidacionViaje } from "../../utils/liquidaciones";
@@ -135,7 +134,7 @@ function Liquidacion({ title }) {
 
     const sincronizePrecios = async () => {
 
-        const newPrecios = await getPrecios()
+        const newPrecios = await RouteApi.getRoutes();
 
         if (newPrecios?.response || newPrecios?.message) {
             return

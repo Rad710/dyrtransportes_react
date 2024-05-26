@@ -9,7 +9,7 @@ import { getCobranza, getKeywords, getPlanillasOfYear, postCobranza, putCobranza
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
-import { getPrecio } from "../../../utils/precio";
+import { RouteApi } from "../../../pages/routes/route_utils";
 
 
 function FormCobranzas({
@@ -101,7 +101,7 @@ function FormCobranzas({
                 })
             }
         } else if ('destino' === fieldName) {
-            const result = await getPrecio(formData.origen, toSuggest.destino.at(selectedSuggestion))
+            const result = await RouteApi.getRoute(formData.origen, toSuggest.destino.at(selectedSuggestion))
             setFormData({
                 ...formData,
                 destino: toSuggest.destino.at(selectedSuggestion),
