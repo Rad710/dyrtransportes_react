@@ -3,47 +3,51 @@ import { HomeIcon } from "@radix-ui/react-icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { postPlanilla } from "../utils/cobranza";
-import { getExportarPrecios } from "../utils/precio";
-
 
 const Navigation = () => {
-    const [_, pathPrimary] = useLocation()?.pathname?.split('/')
-    const path = '/' + pathPrimary
+    const [_, pathPrimary] = useLocation()?.pathname?.split("/");
+    const path = "/" + pathPrimary;
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const handleCrearPlanilla = async () => {
-        const currentFecha = new Date()
-        const result = await postPlanilla(currentFecha)
+        const currentFecha = new Date();
+        const result = await postPlanilla(currentFecha);
 
         if (result?.response) {
             toast({
                 variant: "destructive",
                 description: `Error: ${result.response.data}`,
-              })
-              return
+            });
+            return;
         } else {
-            const url = `/cobranzas/${currentFecha.toISOString().slice(0, 4)}/${currentFecha.toISOString().slice(5, 10)}`
-            navigate(url)
+            const url = `/cobranzas/${currentFecha
+                .toISOString()
+                .slice(0, 4)}/${currentFecha.toISOString().slice(5, 10)}`;
+            navigate(url);
         }
-    }
-
-    const handleExportarPrecios = async () => {
-        await getExportarPrecios()
-    }
+    };
 
     return (
         <nav>
             <Flex gap="5" justify="between" wrap="wrap">
-                <Box >
+                <Box>
                     <div className="flex items-center text-left">
-                        <Flex gap="1"
-                            className={`${path === '/' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
+                        <Flex
+                            gap="1"
+                            className={`${
+                                path === "/"
+                                    ? "text-indigo-300"
+                                    : "text-white hover:text-indigo-300"
+                            }`}
                         >
                             <Link to="/" className="mt-1">
                                 <HomeIcon width="32" height="32" />
                             </Link>
-                            <Link to="/" className="text-4xl ml-2 font-black">
+                            <Link
+                                to="/"
+                                className="text-4xl ml-2 font-black hidden md:block"
+                            >
                                 D y R Transportes
                             </Link>
                         </Flex>
@@ -54,21 +58,24 @@ const Navigation = () => {
                     <Flex gap="5" align="center" wrap="wrap">
                         <DropdownMenu.Root>
                             <DropdownMenu.Trigger>
-                                <p className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${path === '/cobranzas' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
-                                >Cobranzas</p>
+                                <p
+                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer
+                        ${
+                            path === "/cobranzas"
+                                ? "text-indigo-300"
+                                : "text-white hover:text-indigo-300"
+                        }`}
+                                >
+                                    Cobranzas
+                                </p>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Content variant="soft">
                                 <DropdownMenu.Item>
-                                    <Link
-                                        to="/cobranzas"
-                                    >Ver Cobranzas</Link>
+                                    <Link to="/cobranzas">Ver Cobranzas</Link>
                                 </DropdownMenu.Item>
                                 <DropdownMenu.Separator />
                                 <DropdownMenu.Item>
-                                    <button
-                                        onClick={handleCrearPlanilla}
-                                    >
+                                    <button onClick={handleCrearPlanilla}>
                                         Crear Planilla
                                     </button>
                                 </DropdownMenu.Item>
@@ -77,72 +84,78 @@ const Navigation = () => {
 
                         <DropdownMenu.Root>
                             <DropdownMenu.Trigger>
-                                <p className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${path === '/liquidaciones' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
-                                >Liquidaciones</p>
+                                <p
+                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer
+                        ${
+                            path === "/liquidaciones"
+                                ? "text-indigo-300"
+                                : "text-white hover:text-indigo-300"
+                        }`}
+                                >
+                                    Liquidaciones
+                                </p>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Content variant="soft">
                                 <DropdownMenu.Item>
-                                    <Link
-                                        to="/liquidaciones"
-                                    >
+                                    <Link to="/liquidaciones">
                                         Ver Liquidaciones
                                     </Link>
                                 </DropdownMenu.Item>
                             </DropdownMenu.Content>
                         </DropdownMenu.Root>
 
+                        <Link to="/routes">
+                            <p
+                                className={`font-bold text-2xl mt-2 hover:cursor-pointer ${
+                                    path === "/routes"
+                                        ? "text-indigo-300"
+                                        : "text-white hover:text-indigo-300"
+                                }`}
+                            >
+                                Precios
+                            </p>
+                        </Link>
+
                         <DropdownMenu.Root>
                             <DropdownMenu.Trigger>
-                                <p className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${path === '/precios' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
-                                >Precios</p>
+                                <p
+                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer
+                        ${
+                            path === "/nomina"
+                                ? "text-indigo-300"
+                                : "text-white hover:text-indigo-300"
+                        }`}
+                                >
+                                    Nomina
+                                </p>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Content variant="soft">
                                 <DropdownMenu.Item>
-                                    <Link
-                                        to="/precios"
-                                    >Ver Precios</Link>
+                                    <Link to="/nomina">Ver Nomina</Link>
                                 </DropdownMenu.Item>
                                 <DropdownMenu.Separator />
                                 <DropdownMenu.Item>
-                                    <button
-                                        onClick={handleExportarPrecios}
-                                    >
-                                        Exportar Precios
-                                    </button>
+                                    Exportar Nomina
                                 </DropdownMenu.Item>
                             </DropdownMenu.Content>
                         </DropdownMenu.Root>
 
                         <DropdownMenu.Root>
                             <DropdownMenu.Trigger>
-                                <p className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${path === '/nomina' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
-                                >Nomina</p>
+                                <p
+                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer
+                        ${
+                            path === "/dinatran"
+                                ? "text-indigo-300"
+                                : "text-white hover:text-indigo-300"
+                        }`}
+                                >
+                                    DINATRAN
+                                </p>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Content variant="soft">
                                 <DropdownMenu.Item>
-                                    <Link
-                                        to="/nomina"
-                                    >Ver Nomina</Link>
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Separator />
-                                <DropdownMenu.Item>Exportar Nomina</DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
-
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                                <p className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${path === '/dinatran' ? 'text-indigo-300' : 'text-white hover:text-indigo-300'}`}
-                                >DINATRAN</p>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content variant="soft">
-                                <DropdownMenu.Item>
-                                    <Link
-                                        to="/dinatran"
-                                    >Ver Informes</Link>
+                                    <Link to="/dinatran">Ver Informes</Link>
                                 </DropdownMenu.Item>
                             </DropdownMenu.Content>
                         </DropdownMenu.Root>
@@ -152,7 +165,5 @@ const Navigation = () => {
         </nav>
     );
 };
-
-
 
 export default Navigation;
