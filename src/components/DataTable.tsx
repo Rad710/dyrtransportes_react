@@ -1,6 +1,5 @@
 import {
     ColumnDef,
-    ColumnDefResolved,
     ColumnFiltersState,
     SortingState,
     VisibilityState,
@@ -11,17 +10,13 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -33,7 +28,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type PropsDataTable<T> = {
     data: T[];
@@ -49,7 +44,7 @@ export function DataTable<T>({
     filterColumnList,
 }: PropsDataTable<T>) {
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [currentFilter, setCurrentFilter] = useState(
+    const [currentColumnFilter, setCurrentColumnFilter] = useState(
         filterColumnList?.at(0) ?? null
     );
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -57,6 +52,10 @@ export function DataTable<T>({
         {}
     );
     const [rowSelection, setRowSelection] = useState({});
+
+    useEffect(() => {
+        setRowSelection({});
+    }, [data]);
 
     const table = useReactTable({
         data,
@@ -80,29 +79,37 @@ export function DataTable<T>({
                 pageSize: pageSize,
             },
         },
+        autoResetPageIndex: false,
+        autoResetExpanded: false,
     });
 
     if (import.meta.env.VITE_DEBUG) {
         console.log({ filterColumnList });
-        console.log({ currentFilter });
+        console.log({ currentColumnFilter });
         console.log({ columns });
+        const count = useRef(0);
+
+        useEffect(() => {
+            count.current = count.current + 1;
+            console.log("Data Table render: ", count.current);
+        });
     }
 
     return (
         <div className="w-full">
             <div className="grid grid-cols-2 grid-rows-1 items-center py-4">
-                {currentFilter?.length && (
+                {currentColumnFilter?.length && (
                     <div className="flex">
                         <Input
-                            placeholder={`Filtrar por ${currentFilter}...`}
+                            placeholder={`Filtrar por ${currentColumnFilter}...`}
                             value={
                                 (table
-                                    .getColumn(currentFilter)
+                                    .getColumn(currentColumnFilter)
                                     ?.getFilterValue() as string) ?? ""
                             }
                             onChange={(event) =>
                                 table
-                                    .getColumn(currentFilter)
+                                    .getColumn(currentColumnFilter)
                                     ?.setFilterValue(event.target.value)
                             }
                             className="max-w-xs md:max-w-sm md:text-lg"
@@ -116,15 +123,15 @@ export function DataTable<T>({
                                     <DropdownMenuCheckboxItem
                                         key={"filter-" + item}
                                         className="capitalize"
-                                        checked={item === currentFilter}
+                                        checked={item === currentColumnFilter}
                                         onCheckedChange={() => {
                                             table
                                                 .getColumn(
-                                                    currentFilter.toString()
+                                                    currentColumnFilter.toString()
                                                 )
                                                 ?.setFilterValue("");
 
-                                            setCurrentFilter(item);
+                                            setCurrentColumnFilter(item);
                                         }}
                                     >
                                         {item}

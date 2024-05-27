@@ -1,23 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
-import FormPrecios from "./components/FormPrecios";
-import { RouteDataTable } from "./components/RouteDataTable";
-import { DialogConfirm } from "@/components/DialogConfirm";
+import {
+    routeColumns,
+    routeFilterColumnList,
+} from "./components/RouteDataTableColumns";
 import { RouteApi } from "./route_utils";
 
 import { ColorRing } from "react-loader-spinner";
 import { PropsTitle } from "@/types";
 import { Route } from "./types";
-import { Table2Icon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Table2Icon, Trash2Icon } from "lucide-react";
 import { toastSuccess } from "@/utils/notification";
+import { DialogButtonConfirm } from "@/components/DialogButtonConfirm";
+import { DataTable } from "@/components/DataTable";
 
-export function Routes({ title }: Readonly<PropsTitle>) {
-    const [routeList, setRouteList] = useState<Route[]>([]);
+export const Routes = ({ title }: Readonly<PropsTitle>) => {
     const [loading, setLoading] = useState<boolean>(true);
-    const [formData, setFormData] = useState<Route>({ route_code: null });
 
-    const hasChecked = routeList.some((item) => item.checked);
+    const [routeList, setRouteList] = useState<Route[]>([]);
+    const [selectedRouteRows, setSelectedRouteRows] = useState<
+        (number | null)[]
+    >([]);
+
+    const [formData, setFormData] = useState<Route>({ route_code: null });
 
     useEffect(() => {
         document.title = title;
@@ -35,15 +40,11 @@ export function Routes({ title }: Readonly<PropsTitle>) {
     }, []);
 
     const handleDeleteRouteList = async () => {
-        const toDeleteRouteCodeList = routeList
-            .filter((item) => item.checked)
-            .map((item) => item.route_code);
-
         if (import.meta.env.VITE_DEBUG) {
-            console.log({ toDeleteRouteCodeList });
+            console.log("To delete: ", { selectedRouteRows });
         }
 
-        const result = await RouteApi.deleteRouteList(toDeleteRouteCodeList);
+        const result = await RouteApi.deleteRouteList(selectedRouteRows);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
@@ -52,18 +53,51 @@ export function Routes({ title }: Readonly<PropsTitle>) {
         if (result?.success) {
             console.log({ result });
             toastSuccess(result.success);
-            setRouteList(routeList.filter((item) => !item.checked));
+            setRouteList(
+                routeList.filter(
+                    (item) => !selectedRouteRows.includes(item.route_code ?? 0)
+                )
+            );
+            setSelectedRouteRows([]);
         }
     };
+
+    const handleDeleteItemAction = async (code: number | null) => {
+        const result = await RouteApi.deleteRouteList([code]);
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("handleDeleteItemAction: ", { result });
+        }
+
+        if (result?.success) {
+            console.log({ result });
+            toastSuccess(result.success);
+            setRouteList(routeList.filter((item) => item.route_code !== code));
+            setSelectedRouteRows(
+                selectedRouteRows.filter((item) => item !== code)
+            );
+        }
+    };
+
+    const columns = useMemo(
+        () =>
+            routeColumns({
+                selectedRouteRows,
+                setSelectedRouteRows,
+                handleDeleteItemAction,
+            }),
+        []
+    );
+    const pageSize = 20;
 
     return (
         <div className="px-4">
             <div className="md:flex justify-between items-center">
-                <h2 className="text-xl md:text-3xl font-bold text-left md:w-1/3 mb-2 md:mb-0">
+                <h2 className="text-xl md:text-3xl font-bold text-left md:w-1/6 mb-2 md:mb-0">
                     Lista de Precios
                 </h2>
 
-                <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end md:w-2/3">
+                <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end md:w-5/6">
                     {/* <FormPrecios
                         formData={formData}
                         setFormData={setFormData}
@@ -71,53 +105,86 @@ export function Routes({ title }: Readonly<PropsTitle>) {
                         setListaPrecios={setListaPrecios}
                     /> */}
 
-                    {/* TODO set color */}
-                    <DialogConfirm
-                        buttonText="Exportar"
-                        dialogText="Se exportarán solo las Rutas seleccionadas."
-                        handler={async () =>
-                            RouteApi.exportRouteList(
-                                routeList
-                                    .filter((item) => item.checked)
-                                    .map((item) => item.route_code)
-                            )
+                    <DialogButtonConfirm
+                        dialogContent={
+                            <span className="md:text-lg">
+                                Se exportarán{" "}
+                                <strong className="font-bold text-gray-700">
+                                    {selectedRouteRows.length > 0
+                                        ? "solo las Rutas seleccionadas."
+                                        : "todas las Rutas."}
+                                </strong>
+                            </span>
                         }
-                        disabled={!hasChecked}
-                    >
-                        <Button
-                            variant="default"
-                            size="md-lg"
-                            onClick={async () =>
-                                !hasChecked
-                                    ? RouteApi.exportRouteList()
-                                    : void 0
-                            }
-                        >
-                            <Table2Icon className="w-8 h-8 mr-2" />
-                            Exportar
-                        </Button>
-                    </DialogConfirm>
+                        buttonContent={
+                            <>
+                                <PlusIcon className="w-6 h-6" />
+                                Agregar
+                            </>
+                        }
+                        variant="default"
+                        size="md-lg"
+                        onClickFunctionPromise={() =>
+                            RouteApi.exportRouteList(selectedRouteRows)
+                        }
+                    />
 
-                    <DialogConfirm
-                        buttonText="Eliminar"
-                        dialogText="Esta acción es irreversible y se eliminará la Ruta permanentemente."
-                        handler={handleDeleteRouteList}
-                        disabled={!hasChecked}
-                    >
-                        <Button
-                            variant="destructive"
-                            size="md-lg"
-                            disabled={!hasChecked}
-                        >
-                            <Trash2Icon className="w-8 h-8 mr-2" />
-                            Eliminar
-                        </Button>
-                    </DialogConfirm>
+                    {/* TODO set color */}
+                    <DialogButtonConfirm
+                        dialogContent={
+                            <span className="md:text-lg">
+                                Se exportarán{" "}
+                                <strong className="font-bold text-gray-700">
+                                    {selectedRouteRows.length > 0
+                                        ? "solo las Rutas seleccionadas."
+                                        : "todas las Rutas."}
+                                </strong>
+                            </span>
+                        }
+                        buttonContent={
+                            <>
+                                <Table2Icon className="w-6 h-6" />
+                                Exportar
+                            </>
+                        }
+                        variant="default"
+                        size="md-lg"
+                        onClickFunctionPromise={() =>
+                            RouteApi.exportRouteList(selectedRouteRows)
+                        }
+                    />
+
+                    <DialogButtonConfirm
+                        dialogContent={
+                            <span className="md:text-lg">
+                                Esta acción es irreversible y se{" "}
+                                <strong className="font-bold text-gray-700">
+                                    eliminará
+                                </strong>{" "}
+                                la Ruta permanentemente.
+                            </span>
+                        }
+                        buttonContent={
+                            <>
+                                <Trash2Icon className="w-6 h-6" />
+                                Eliminar
+                            </>
+                        }
+                        onClickFunctionPromise={handleDeleteRouteList}
+                        disabled={selectedRouteRows.length == 0}
+                        variant="destructive"
+                        size="md-lg"
+                    />
                 </div>
             </div>
 
             {!loading && (
-                <RouteDataTable data={routeList} setData={setRouteList} />
+                <DataTable
+                    data={routeList}
+                    columns={columns}
+                    pageSize={pageSize}
+                    filterColumnList={routeFilterColumnList}
+                />
             )}
 
             <ColorRing
@@ -130,4 +197,4 @@ export function Routes({ title }: Readonly<PropsTitle>) {
             />
         </div>
     );
-}
+};

@@ -7,5 +7,4 @@ export type Route = {
     deleted?: boolean | null;
     company_id?: string | null;
     modification_user?: string | null;
-    checked?: boolean;
 };
