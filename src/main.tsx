@@ -6,6 +6,8 @@ import "@radix-ui/themes/styles.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+//TODO remove react-icons, react-loader-spinner
+
 import Layout from "./components/Layout";
 import Index from "./pages/homepage/Index";
 import Cobranzas from "./pages/cobranzas/Cobranzas";
@@ -19,7 +21,6 @@ import ListaLiquidaciones from "./pages/liquidaciones/ListaLiquidaciones";
 import Liquidacion from "./pages/liquidaciones/Liquidacion";
 import Dinatran from "./pages/dinatran/Dinatran";
 import AuthWrapper from "./hooks/AuthWrapper";
-
 const router = createBrowserRouter([
     {
         path: "/",

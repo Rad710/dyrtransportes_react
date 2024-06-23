@@ -13,25 +13,31 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Route } from "../types";
 import React from "react";
+import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 
-type RouteDataTableColumnsProps = {
-    selectedRouteRows: (number | null)[];
-    setSelectedRouteRows: React.Dispatch<
-        React.SetStateAction<(number | null)[]>
-    >;
-    handleDeleteItemAction: (code: number | null) => Promise<void>;
-};
+import Globalize from "globalize";
+import cldrDataES from "cldr-data/main/es/numbers.json";
+import cldrDataEN from "cldr-data/main/en/numbers.json";
+import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
 
-export const routeFilterColumnList: ("Origen" | "Destino")[] = [
-    "Origen",
-    "Destino",
-];
+Globalize.load(cldrDataSupplementSubTags);
+Globalize.load(cldrDataEN);
+Globalize.load(cldrDataES);
+Globalize.locale("es");
 
-export const routeColumns = ({
-    selectedRouteRows,
-    setSelectedRouteRows,
-    handleDeleteItemAction,
-}: RouteDataTableColumnsProps): ColumnDef<Route>[] => {
+const formatter = Globalize.numberFormatter({
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
+export const routeFilterColumnList = ["Origen", "Destino"] as const;
+
+export const routeColumns = (
+    selectedRouteRows: number[],
+    setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>,
+    handleDeleteItemAction: (code?: number | null) => Promise<void>,
+    handleEditItemAction: (code?: number | null) => void
+): ColumnDef<Route>[] => {
     return [
         {
             id: "select",
@@ -43,16 +49,27 @@ export const routeColumns = ({
                     }
                     onCheckedChange={(value) => {
                         table.toggleAllPageRowsSelected(!!value);
+                        const newSelectedRouteRows = !!value
+                            ? table
+                                  .getCoreRowModel()
+                                  .rows.map(
+                                      (item) => item.original.route_code ?? 0
+                                  )
+                            : [];
 
-                        setSelectedRouteRows(
-                            !!value
-                                ? table
-                                      .getCoreRowModel()
-                                      .rows.map(
-                                          (item) => item.original.route_code
-                                      )
-                                : []
-                        );
+                        if (import.meta.env.VITE_DEBUG) {
+                            console.log("Select all value: ", !!value);
+                            console.log(
+                                "current selectedRouteRows: ",
+                                selectedRouteRows
+                            );
+                            console.log(
+                                "new selectedRouteRows: ",
+                                newSelectedRouteRows
+                            );
+                        }
+
+                        setSelectedRouteRows(newSelectedRouteRows);
                     }}
                     aria-label="Seleccionar todos"
                 />
@@ -63,16 +80,28 @@ export const routeColumns = ({
                     onCheckedChange={(value) => {
                         row.toggleSelected(!!value);
 
-                        setSelectedRouteRows(
-                            !!value
-                                ? [
-                                      ...selectedRouteRows,
-                                      row.original.route_code ?? 0,
-                                  ]
-                                : selectedRouteRows.filter(
-                                      (item) => item === row.original.route_code
-                                  )
-                        );
+                        const newSelectedRouteRows = !!value
+                            ? [
+                                  ...selectedRouteRows,
+                                  row.original.route_code ?? 0,
+                              ]
+                            : selectedRouteRows.filter(
+                                  (item) => item !== row.original.route_code
+                              );
+
+                        if (import.meta.env.VITE_DEBUG) {
+                            console.log("Select item value: ", !!value);
+                            console.log(
+                                "current selectedRouteRows: ",
+                                selectedRouteRows
+                            );
+                            console.log(
+                                "new selectedRouteRows: ",
+                                newSelectedRouteRows
+                            );
+                        }
+
+                        setSelectedRouteRows(newSelectedRouteRows);
                     }}
                     aria-label="Seleccionar fila"
                 />
@@ -87,7 +116,7 @@ export const routeColumns = ({
                 return (
                     <Button
                         variant="ghost"
-                        className="hover:bg-transparent hover:font-black"
+                        className="hover:bg-transparent hover:text-black"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }
@@ -98,7 +127,7 @@ export const routeColumns = ({
                 );
             },
             cell: ({ row }) => (
-                <div className="capitalize font-medium md:text-base">
+                <div className="font-medium md:text-base">
                     {row.getValue("Origen")}
                 </div>
             ),
@@ -110,7 +139,7 @@ export const routeColumns = ({
                 return (
                     <Button
                         variant="ghost"
-                        className="hover:bg-transparent hover:font-black"
+                        className="hover:bg-transparent hover:text-black"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }
@@ -121,7 +150,7 @@ export const routeColumns = ({
                 );
             },
             cell: ({ row }) => (
-                <div className="capitalize font-medium md:text-base">
+                <div className="font-medium md:text-base">
                     {row.getValue("Destino")}
                 </div>
             ),
@@ -131,66 +160,56 @@ export const routeColumns = ({
             accessorFn: (row) => row.price,
             header: ({ column }) => {
                 return (
-                    <Button
-                        variant="ghost"
-                        className="hover:bg-transparent hover:font-black"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }
-                    >
-                        <span className="text-right md:text-lg">
-                            Precio Flete
-                        </span>
-                        <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
-                    </Button>
+                    <div className="flex justify-end">
+                        <Button
+                            variant="ghost"
+                            className="hover:bg-transparent hover:text-black"
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === "asc"
+                                )
+                            }
+                        >
+                            <span className="md:text-lg">Precio Flete</span>
+                            <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
+                        </Button>
+                    </div>
                 );
             },
-            cell: ({ row }) => {
-                const price = parseFloat(row.getValue("Precio"));
-
-                const formatted = new Intl.NumberFormat("es-ES", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }).format(price);
-
-                return (
-                    <div className="text-right md:text-base">{formatted}</div>
-                );
-            },
+            cell: ({ row }) => (
+                <div className="text-right md:text-base">
+                    {formatter(row.getValue("Precio"))}
+                </div>
+            ),
         },
         {
             id: "Precio Liquidación",
             accessorFn: (row) => row.payroll_price,
             header: ({ column }) => {
                 return (
-                    <Button
-                        variant="ghost"
-                        className="hover:bg-transparent hover:font-black"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }
-                    >
-                        <span className="text-right md:text-lg">
-                            Precio Liquidación
-                        </span>
-                        <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
-                    </Button>
+                    <div className="flex justify-end">
+                        <Button
+                            variant="ghost"
+                            className="text-right hover:bg-transparent hover:text-black"
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === "asc"
+                                )
+                            }
+                        >
+                            <span className="md:text-lg">
+                                Precio Liquidación
+                            </span>
+                            <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
+                        </Button>
+                    </div>
                 );
             },
-            cell: ({ row }) => {
-                const payrollPrice = parseFloat(
-                    row.getValue("Precio Liquidación")
-                );
-
-                const formatted = new Intl.NumberFormat("es-ES", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }).format(payrollPrice);
-
-                return (
-                    <div className="text-right md:text-base">{formatted}</div>
-                );
-            },
+            cell: ({ row }) => (
+                <div className="text-right md:text-base">
+                    {formatter(row.getValue("Precio Liquidación"))}
+                </div>
+            ),
         },
         {
             id: "actions",
@@ -205,16 +224,50 @@ export const routeColumns = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() =>
-                                handleDeleteItemAction(row.original.route_code)
-                            }
-                        >
-                            <span className="text-red-500">Eliminar</span>
+                        <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+                            <AlertDialogConfirm
+                                buttonClassName="w-full"
+                                buttonContent={
+                                    <span className="text-red-500">
+                                        Eliminar
+                                    </span>
+                                }
+                                onClickFunctionPromise={async () =>
+                                    handleDeleteItemAction(
+                                        row.original.route_code
+                                    )
+                                }
+                                variant="ghost"
+                                size="sm"
+                            >
+                                <span className="md:text-lg">
+                                    Esta acción es irreversible. Se{" "}
+                                    <strong className="font-bold text-gray-700">
+                                        eliminará:
+                                    </strong>
+                                    <br />
+                                    <strong className="font-bold text-gray-700">
+                                        {row.original.origin}
+                                        {" - "}
+                                        {row.original.destination}.
+                                    </strong>
+                                </span>
+                            </AlertDialogConfirm>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <span className="text-indigo-500">Editar</span>
+                        <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full"
+                                onClick={() =>
+                                    handleEditItemAction(
+                                        row.original.route_code
+                                    )
+                                }
+                            >
+                                <span className="text-indigo-500">Editar</span>
+                            </Button>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

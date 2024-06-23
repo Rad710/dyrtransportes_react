@@ -1,28 +1,23 @@
-import { Outlet } from "react-router-dom"
+import { Outlet } from "react-router-dom";
 
-import { Theme } from '@radix-ui/themes';
+import { Theme } from "@radix-ui/themes";
 
 import Navigation from "./Navigation";
 import { Toaster } from "./ui/toaster";
 
-
 function Layout() {
-
     return (
-        <Theme
-            accentColor="indigo"
-            grayColor="gray"
-            radius="medium"
-        >
-            <header className="bg-indigo-800 px-5 py-8 mb-4">
-                <Navigation />
-            </header>
+        <>
+            <Theme accentColor="indigo" grayColor="gray" radius="medium">
+                <header className="bg-indigo-800 px-5 py-8 mb-4">
+                    <Navigation />
+                </header>
 
-            <Outlet />
-            
+                <Outlet />
+            </Theme>
             <Toaster />
-        </Theme>
-    )
+        </>
+    );
 }
 
-export default Layout
+export default Layout;

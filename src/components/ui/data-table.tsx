@@ -1,3 +1,5 @@
+"use client";
+
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -10,7 +12,22 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
+
+import {
+    ChevronDown,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    ChevronsLeftIcon,
+    ChevronsRightIcon,
+} from "lucide-react";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,13 +45,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 type PropsDataTable<T> = {
     data: T[];
     columns: ColumnDef<T>[];
     pageSize: number;
-    filterColumnList: string[];
+    filterColumnList: readonly string[];
 };
 
 export function DataTable<T>({
@@ -42,7 +59,7 @@ export function DataTable<T>({
     columns,
     pageSize,
     filterColumnList,
-}: PropsDataTable<T>) {
+}: Readonly<PropsDataTable<T>>) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [currentColumnFilter, setCurrentColumnFilter] = useState(
         filterColumnList?.at(0) ?? null
@@ -82,18 +99,6 @@ export function DataTable<T>({
         autoResetPageIndex: false,
         autoResetExpanded: false,
     });
-
-    if (import.meta.env.VITE_DEBUG) {
-        console.log({ filterColumnList });
-        console.log({ currentColumnFilter });
-        console.log({ columns });
-        const count = useRef(0);
-
-        useEffect(() => {
-            count.current = count.current + 1;
-            console.log("Data Table render: ", count.current);
-        });
-    }
 
     return (
         <div className="w-full">
@@ -144,10 +149,7 @@ export function DataTable<T>({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            className="ml-auto md:text-lg"
-                        >
+                        <Button variant="outline" className="ml-auto">
                             Columnas <ChevronDown className="ml-2" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -218,36 +220,100 @@ export function DataTable<T>({
                                     colSpan={columns.length}
                                     className="h-24 text-center md:text-lg"
                                 >
-                                    No hay datos.
+                                    Sin datos.
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="flex-1 md:text-lg text-muted-foreground">
+            <div className="flex flex-col md:flex-row gap-y-6 justify-between py-6">
+                <div className="flex text-muted-foreground">
                     {table.getFilteredSelectedRowModel().rows.length} de{" "}
                     {table.getFilteredRowModel().rows.length} fila(s)
                     seleccionada(s).
                 </div>
-                <div className="space-x-2">
-                    <Button
-                        variant="outline"
-                        size="default"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="default"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        Siguiente
-                    </Button>
+
+                <div className="flex gap-x-6">
+                    <div className="flex items-center space-x-2">
+                        <p className="font-medium">Filas por página</p>
+                        <Select
+                            value={`${table.getState().pagination.pageSize}`}
+                            onValueChange={(value) => {
+                                table.setPageSize(Number(value));
+                            }}
+                        >
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue
+                                    placeholder={
+                                        table.getState().pagination.pageSize
+                                    }
+                                />
+                            </SelectTrigger>
+                            <SelectContent side="top">
+                                {[10, 20, 50, 100].map((pageSize) => (
+                                    <SelectItem
+                                        key={pageSize}
+                                        value={`${pageSize}`}
+                                    >
+                                        {pageSize}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center justify-center font-medium">
+                        Página {table.getState().pagination.pageIndex + 1} de{" "}
+                        {table.getPageCount()}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            className="hidden h-8 w-8 p-0 lg:flex"
+                            onClick={() => table.setPageIndex(0)}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <span className="sr-only">
+                                Ir a la primera página
+                            </span>
+                            <ChevronsLeftIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <span className="sr-only">
+                                Ir a la página anterior
+                            </span>
+                            <ChevronLeftIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            <span className="sr-only">
+                                Ir a la página siguiente
+                            </span>
+                            <ChevronRightIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="hidden h-8 w-8 p-0 lg:flex"
+                            onClick={() =>
+                                table.setPageIndex(table.getPageCount() - 1)
+                            }
+                            disabled={!table.getCanNextPage()}
+                        >
+                            <span className="sr-only">
+                                Ir a la última página
+                            </span>
+                            <ChevronsRightIcon className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

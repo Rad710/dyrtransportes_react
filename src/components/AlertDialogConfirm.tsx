@@ -1,3 +1,5 @@
+"use client";
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,28 +15,32 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 
 type AlertDialogProps = {
-    readonly dialogContent: React.ReactNode;
-    readonly buttonContent: React.ReactNode;
-    readonly onClickFunctionPromise: () => Promise<unknown>;
-    readonly disabled?: boolean;
+    buttonContent: React.ReactNode;
+    buttonClassName?: string;
+    onClickFunctionPromise: () => Promise<unknown>;
+    disabled?: boolean;
     variant:
         | "link"
         | "default"
         | "destructive"
         | "outline"
         | "secondary"
-        | "ghost";
+        | "ghost"
+        | "green"
+        | "indigo"
+        | "cyan";
     size: "default" | "sm" | "lg" | "md-lg" | "icon";
 };
 
-export function DialogButtonConfirm({
-    dialogContent,
+export const AlertDialogConfirm = ({
     buttonContent,
+    buttonClassName,
     onClickFunctionPromise,
     disabled,
     variant,
     size,
-}: React.PropsWithChildren<AlertDialogProps>) {
+    children,
+}: React.PropsWithChildren<AlertDialogProps>) => {
     const [debounceDisabled, setDebounceDisabled] = useState(false);
 
     return (
@@ -44,30 +50,28 @@ export function DialogButtonConfirm({
                     variant={variant}
                     size={size}
                     disabled={debounceDisabled || disabled}
+                    className={buttonClassName}
                 >
                     {buttonContent}
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>
-                        Confirmación ¿Está seguro?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {dialogContent}
-                    </AlertDialogDescription>
+                    <AlertDialogTitle>Confirmar ¿Está seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>{children}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="md:mr-4">
                         Cancelar
                     </AlertDialogCancel>
                     <AlertDialogAction
+                        variant={variant}
+                        disabled={debounceDisabled || disabled}
                         onClick={async () => {
                             setDebounceDisabled(true);
                             await onClickFunctionPromise();
                             setDebounceDisabled(false);
                         }}
-                        variant={variant}
                     >
                         {buttonContent}
                     </AlertDialogAction>
@@ -75,4 +79,4 @@ export function DialogButtonConfirm({
             </AlertDialogContent>
         </AlertDialog>
     );
-}
+};

@@ -11,9 +11,11 @@ export const resetFormStyle = (inputStyles, setInputStyles) => {
     setInputStyles(defaultStyles);
 };
 
-export const toastAxiosError = (
-    errorResponse: AxiosError<{ error: string }>
-) => {
+interface HasError {
+    error?: string;
+}
+
+export const toastAxiosError = (errorResponse: AxiosError<HasError>) => {
     let errorMessage = "";
 
     if (errorResponse?.code === "ERR_NETWORK") {

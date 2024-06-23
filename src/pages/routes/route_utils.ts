@@ -4,19 +4,17 @@ import { saveAs } from "file-saver";
 import { Route } from "./types";
 
 export const RouteApi = {
-    postRoute: async (payload: Route) =>
+    getRoute: async (code: number | null) =>
         axios
-            .post(`${import.meta.env.VITE_API_URL}/route`, payload)
+            .get(`${import.meta.env.VITE_API_URL}/route/${code}`)
             .then(
-                (
-                    response: AxiosResponse<
-                        (Route & { success: string }) | null
-                    >
-                ) => response.data ?? null
+                (response: AxiosResponse<Route | null>) => response.data ?? null
             )
             .catch((errorResponse: AxiosError<{ error: string }>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
+                if (errorResponse?.response?.status !== 404) {
+                    console.log({ errorResponse });
+                    toastAxiosError(errorResponse);
+                }
                 return null;
             }),
 
@@ -32,37 +30,27 @@ export const RouteApi = {
                 return [];
             }),
 
-    getRoute: async (code: number | null) =>
+    postRoute: async (payload: Route) =>
         axios
-            .get(`${import.meta.env.VITE_API_URL}/route/${code}`)
-            .then(
-                (response: AxiosResponse<Route | null>) => response.data ?? null
-            )
-            .catch((errorResponse: AxiosError<{ error: string }>) => {
-                if (errorResponse?.response?.status !== 404) {
-                    console.log({ errorResponse });
-                    toastAxiosError(errorResponse);
-                }
-                return null;
-            }),
-
-    patchRoute: async (code: number | null, payload: Route) =>
-        axios
-            .put(`${import.meta.env.VITE_API_URL}/route/${code}`, payload)
-            .then(
-                (
-                    response: AxiosResponse<
-                        (Route & { success: string }) | null
-                    >
-                ) => response.data ?? null
-            )
-            .catch((errorResponse: AxiosError<{ error: string }>) => {
+            .post(`${import.meta.env.VITE_API_URL}/route`, payload)
+            .then((response: AxiosResponse<Route>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<Route>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
-                return null;
+                return errorResponse.response?.data ?? null;
             }),
 
-    deleteRouteList: async (codeList: (number | null)[]) =>
+    patchRoute: async (code: number, payload: Route) =>
+        axios
+            .patch(`${import.meta.env.VITE_API_URL}/route/${code}`, payload)
+            .then((response: AxiosResponse<Route>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<Route>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return errorResponse.response?.data ?? null;
+            }),
+
+    deleteRouteList: async (codeList: number[]) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/routes`, {
                 data: codeList,
@@ -77,7 +65,7 @@ export const RouteApi = {
                 return null;
             }),
 
-    exportRouteList: async (codeList?: (number | null)[]) =>
+    exportRouteList: async (codeList: number[]) =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/export_routes`, {
                 responseType: "blob",
