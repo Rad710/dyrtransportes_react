@@ -33,14 +33,8 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { UseFormReturn } from "react-hook-form";
 import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
-import { Route, RouteFormSchema } from "@/pages/routes/types";
+import { Route } from "@/pages/routes/types";
 import { useState } from "react";
-
-type FormRouteProps = {
-    form: UseFormReturn<RouteFormSchema, any, undefined>;
-    handleSubmit: (formData: Route) => Promise<void>;
-    routeToEdit: Route | null;
-};
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -53,6 +47,16 @@ const formatter = Globalize.numberFormatter({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
 });
+
+type RouteFormSchema = {
+    routeCode?: number;
+    origin: string;
+    destination: string;
+    priceString: string;
+    payrollPriceString: string;
+    successMessage?: string;
+    errorMessage?: string;
+};
 
 export const routeFormSchema = z.object({
     routeCode: z.number().optional(),
@@ -155,6 +159,12 @@ export const routeFormSchema = z.object({
     errorMessage: z.string().optional(),
 });
 
+type FormRouteProps = {
+    form: UseFormReturn<RouteFormSchema, any, undefined>;
+    handleSubmit: (formData: Route) => Promise<void>;
+    routeToEdit: Route | null;
+};
+
 export const RouteDialogForm = ({
     form,
     handleSubmit,
@@ -186,11 +196,20 @@ export const RouteDialogForm = ({
         setButtonDisabled(false);
     };
 
+    const onFormClose = (open: boolean) => {
+        if (open) {
+            return;
+        }
+        form.clearErrors();
+        form.setValue("successMessage", undefined);
+        form.setValue("errorMessage", undefined);
+    };
+
     return (
-        <Dialog onOpenChange={(open) => (!open ? form.clearErrors() : void 0)}>
+        <Dialog onOpenChange={onFormClose}>
             <DialogTrigger asChild>
                 <Button
-                    id="dialog-form-trigger"
+                    id="dialog-form-route-trigger"
                     variant={button.variant}
                     size="md-lg"
                 >
@@ -198,7 +217,7 @@ export const RouteDialogForm = ({
                 </Button>
             </DialogTrigger>
             <DialogContent
-                id="dialog-form-content"
+                id="dialog-form-route-content"
                 className="sm:max-w-xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
             >

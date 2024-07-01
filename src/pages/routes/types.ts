@@ -12,12 +12,13 @@ export type Route = {
     error?: string;
 };
 
-export type RouteFormSchema = {
-    routeCode?: number;
-    origin: string;
-    destination: string;
-    priceString: string;
-    payrollPriceString: string;
-    successMessage?: string;
-    errorMessage?: string;
+export type Product = {
+    product_code?: number | null;
+    product_name?: string | null;
+    deleted?: boolean | null;
+    company_id?: string | null;
+    modification_user?: string | null;
+
+    success?: string;
+    error?: string;
 };

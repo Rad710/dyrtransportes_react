@@ -1,3 +1,5 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
     darkMode: ["class"],
     content: [
@@ -10,9 +12,6 @@ module.exports = {
         container: {
             center: true,
             padding: "2rem",
-            screens: {
-                "2xl": "1400px",
-            },
         },
         extend: {
             keyframes: {
@@ -29,6 +28,12 @@ module.exports = {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
             },
+        },
+        screens: {
+            ...defaultTheme.screens,
+            "md-lg": "932px",
+            xs: "475px",
+            "2xl": "1400px",
         },
     },
     plugins: [require("tailwindcss-animate")],
