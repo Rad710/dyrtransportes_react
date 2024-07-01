@@ -162,17 +162,12 @@ export const routeFormSchema = z.object({
 type FormRouteProps = {
     form: UseFormReturn<RouteFormSchema, any, undefined>;
     handleSubmit: (formData: Route) => Promise<void>;
-    routeToEdit: Route | null;
 };
 
-export const RouteDialogForm = ({
-    form,
-    handleSubmit,
-    routeToEdit,
-}: FormRouteProps) => {
+export const RouteDialogForm = ({ form, handleSubmit }: FormRouteProps) => {
     const [buttonDisabled, setButtonDisabled] = useState(false);
 
-    const button = !routeToEdit
+    const button = !form.getValues("routeCode")
         ? ({
               text: "Agregar Ruta",
               description: "Completar datos de la nueva Ruta",
@@ -188,8 +183,8 @@ export const RouteDialogForm = ({
         setButtonDisabled(true);
         await handleSubmit({
             route_code: data.routeCode ?? null,
-            origin: data.origin,
-            destination: data.destination,
+            origin: data.origin.trim(),
+            destination: data.destination.trim(),
             price: parser(data.priceString),
             payroll_price: parser(data.payrollPriceString),
         });

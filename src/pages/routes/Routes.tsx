@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useReducer } from "react";
 
 import {
     routeColumns,
@@ -49,6 +49,8 @@ const formatter = Globalize.numberFormatter({
 export const Routes = ({ title }: Readonly<PropsTitle>) => {
     const [loading, setLoading] = useState<boolean>(true);
 
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
     //Routes
     const [routeList, setRouteList] = useState<Route[]>([]);
     const [selectedRouteRows, setSelectedRouteRows] = useState<number[]>([]);
@@ -56,8 +58,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
     const routeForm = useForm<z.infer<typeof routeFormSchema>>({
         resolver: zodResolver(routeFormSchema),
     });
-
-    const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
     useEffect(() => {
         document.title = title;
@@ -89,20 +89,12 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         loadRoutesAndProducts();
     }, []);
 
-    useEffect(() => {
+    const setRouteEditFormData = () => {
         if (selectedRouteRows.length === 1) {
-            setRouteToEdit(
-                routeList?.find(
-                    (item) => item.route_code === selectedRouteRows?.at(0)
-                ) ?? null
+            const routeToEdit = routeList.find(
+                (item) => item.route_code === selectedRouteRows?.at(0)
             );
-        } else {
-            setRouteToEdit(null);
-        }
-    }, [selectedRouteRows]);
 
-    useEffect(() => {
-        if (routeToEdit) {
             routeForm.setValue(
                 "routeCode",
                 routeToEdit?.route_code ?? undefined
@@ -125,6 +117,7 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                         : 0
                 ) || ""
             );
+            forceUpdate();
         } else {
             routeForm.reset({
                 routeCode: undefined,
@@ -134,7 +127,11 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                 priceString: "",
             });
         }
-    }, [routeToEdit]);
+    };
+
+    useEffect(() => {
+        setRouteEditFormData();
+    }, [selectedRouteRows]);
 
     const handleCreateRoute = async (formData: Route) => {
         if (formData.route_code) {
@@ -248,18 +245,33 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         }
     };
 
-    const handleEditRouteItemAction = (code?: number | null) => {
-        if (!code) {
+    const handleEditRouteItemAction = (routeToEdit?: Route | null) => {
+        if (!routeToEdit) {
             return;
         }
 
-        const itemToEdit =
-            routeList?.find((item) => item.route_code === code) ?? null;
         if (import.meta.env.VITE_DEBUG) {
             console.log({ routeList });
-            console.log({ code, itemToEdit });
+            console.log({ routeToEdit });
         }
-        setRouteToEdit(itemToEdit);
+        routeForm.setValue("routeCode", routeToEdit?.route_code ?? undefined);
+        routeForm.setValue("origin", routeToEdit?.origin ?? "");
+        routeForm.setValue("destination", routeToEdit?.destination ?? "");
+        routeForm.setValue(
+            "priceString",
+            formatter(
+                typeof routeToEdit?.price === "number" ? routeToEdit?.price : 0
+            ) || ""
+        );
+        routeForm.setValue(
+            "payrollPriceString",
+            formatter(
+                typeof routeToEdit?.payroll_price === "number"
+                    ? routeToEdit.payroll_price
+                    : 0
+            ) || ""
+        );
+        forceUpdate();
 
         //Use dialog button trigger and manually handle event changes
         const dialogTrigger = document.getElementById(
@@ -274,17 +286,8 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                 )
             ) {
                 observer.disconnect();
-
-                if (selectedRouteRows.length === 1) {
-                    setRouteToEdit(
-                        routeList?.find(
-                            (item) =>
-                                item.route_code === selectedRouteRows?.at(0)
-                        ) ?? null
-                    );
-                } else {
-                    setRouteToEdit(null);
-                }
+                setRouteEditFormData();
+                forceUpdate();
 
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Dialog was removed");
@@ -310,26 +313,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
     const productForm = useForm<z.infer<typeof productFormSchema>>({
         resolver: zodResolver(productFormSchema),
     });
-
-    const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-
-    useEffect(() => {
-        if (productToEdit) {
-            productForm.setValue(
-                "productCode",
-                productToEdit?.product_code ?? undefined
-            );
-            productForm.setValue(
-                "productName",
-                productToEdit?.product_name ?? ""
-            );
-        } else {
-            productForm.reset({
-                productCode: undefined,
-                productName: "",
-            });
-        }
-    }, [productToEdit]);
 
     const handleCreateProduct = async (formData: Product) => {
         if (formData.product_code) {
@@ -409,7 +392,12 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
             console.log({ productList });
             console.log({ productToEdit });
         }
-        setProductToEdit(productToEdit);
+        productForm.setValue(
+            "productCode",
+            productToEdit?.product_code ?? undefined
+        );
+        productForm.setValue("productName", productToEdit?.product_name ?? "");
+        forceUpdate();
 
         //Use dialog button trigger and manually handle event changes
         const dialogTrigger = document.getElementById(
@@ -424,7 +412,11 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                 )
             ) {
                 observer.disconnect();
-                setProductToEdit(null);
+                productForm.reset({
+                    productCode: undefined,
+                    productName: "",
+                });
+                forceUpdate();
 
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Dialog was removed");
@@ -502,7 +494,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                                         ? handleEditRoute
                                         : handleCreateRoute
                                 }
-                                routeToEdit={routeToEdit}
                             />
 
                             <AlertDialogConfirm
@@ -570,7 +561,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                                         ? handleEditProduct
                                         : handleCreateProduct
                                 }
-                                productToEdit={productToEdit}
                             />
                         </div>
 

@@ -57,17 +57,12 @@ export const productFormSchema = z.object({
 type FormProductProps = {
     form: UseFormReturn<ProductFormSchema, any, undefined>;
     handleSubmit: (formData: Product) => Promise<void>;
-    productToEdit: Product | null;
 };
 
-export const ProductDialogForm = ({
-    form,
-    handleSubmit,
-    productToEdit,
-}: FormProductProps) => {
+export const ProductDialogForm = ({ form, handleSubmit }: FormProductProps) => {
     const [buttonDisabled, setButtonDisabled] = useState(false);
 
-    const button = !productToEdit
+    const button = !form.getValues("productCode")
         ? ({
               text: "Agregar Producto",
               description: "Completar datos del Producto",
@@ -83,7 +78,7 @@ export const ProductDialogForm = ({
         setButtonDisabled(true);
         await handleSubmit({
             product_code: data.productCode ?? null,
-            product_name: data.productName,
+            product_name: data.productName.trim(),
         });
         setButtonDisabled(false);
     };

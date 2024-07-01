@@ -36,7 +36,7 @@ export const routeColumns = (
     selectedRouteRows: number[],
     setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>,
     handleDeleteItemAction: (code?: number | null) => Promise<void>,
-    handleEditItemAction: (code?: number | null) => void
+    handleEditItemAction: (route: Route) => void
 ): ColumnDef<Route>[] => {
     return [
         {
@@ -261,9 +261,7 @@ export const routeColumns = (
                                 size="sm"
                                 className="w-full"
                                 onClick={() =>
-                                    handleEditItemAction(
-                                        row.original.route_code
-                                    )
+                                    handleEditItemAction(row.original)
                                 }
                             >
                                 <span className="text-indigo-500">Editar</span>
