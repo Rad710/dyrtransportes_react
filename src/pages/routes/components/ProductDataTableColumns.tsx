@@ -77,7 +77,7 @@ export const productColumns = (
                             handleDeleteItemAction(row.original.product_code)
                         }
                         variant="ghost"
-                        size="sm"
+                        size="default"
                     >
                         <span className="md:text-lg">
                             Esta acción es irreversible. Se{" "}
@@ -93,7 +93,7 @@ export const productColumns = (
 
                     <Button
                         variant="ghost"
-                        size="sm"
+                        size="default"
                         className="w-fit"
                         onClick={() => handleEditItemAction(row.original)}
                     >

@@ -239,12 +239,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         }
     };
 
-    const handleDeleteRouteItemAction = async (code?: number | null) => {
-        if (code) {
-            await handleDeleteRouteList([code]);
-        }
-    };
-
     const handleEditRouteItemAction = (routeToEdit?: Route | null) => {
         if (!routeToEdit) {
             return;
@@ -298,6 +292,12 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
             childList: true,
             subtree: false,
         });
+    };
+
+    const handleDeleteRouteItemAction = async (code?: number | null) => {
+        if (code) {
+            await handleDeleteRouteList([code]);
+        }
     };
 
     const routeDataTableColumns = routeColumns(

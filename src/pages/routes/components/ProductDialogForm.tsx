@@ -1,4 +1,5 @@
 "use client";
+"use strict";
 
 import {
     Form,
@@ -107,6 +108,7 @@ export const ProductDialogForm = ({ form, handleSubmit }: FormProductProps) => {
                 id="dialog-form-product-content"
                 className="sm:max-w-xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
             >
                 <ScrollArea className="max-h-[80vh] p-4">
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
@@ -178,6 +180,16 @@ export const ProductDialogForm = ({ form, handleSubmit }: FormProductProps) => {
                             type="submit"
                             form="form-product"
                             disabled={buttonDisabled}
+                            onClick={() => {
+                                if (
+                                    !productFormSchema.safeParse(
+                                        form.getValues()
+                                    ).success
+                                ) {
+                                    form.setValue("successMessage", undefined);
+                                    form.setValue("errorMessage", undefined);
+                                }
+                            }}
                         >
                             {button.text}
                         </Button>

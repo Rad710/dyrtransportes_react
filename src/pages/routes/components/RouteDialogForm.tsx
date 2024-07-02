@@ -215,6 +215,7 @@ export const RouteDialogForm = ({ form, handleSubmit }: FormRouteProps) => {
                 id="dialog-form-route-content"
                 className="sm:max-w-xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
             >
                 <ScrollArea className="max-h-[80vh] p-4">
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
@@ -346,6 +347,15 @@ export const RouteDialogForm = ({ form, handleSubmit }: FormRouteProps) => {
                             type="submit"
                             form="form-route"
                             disabled={buttonDisabled}
+                            onClick={() => {
+                                if (
+                                    !routeFormSchema.safeParse(form.getValues())
+                                        .success
+                                ) {
+                                    form.setValue("successMessage", undefined);
+                                    form.setValue("errorMessage", undefined);
+                                }
+                            }}
                         >
                             {button.text}
                         </Button>
