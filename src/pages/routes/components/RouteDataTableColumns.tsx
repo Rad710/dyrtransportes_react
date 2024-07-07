@@ -32,7 +32,7 @@ const formatter = Globalize.numberFormatter({
 
 export const routeFilterColumnList = ["Origen", "Destino"] as const;
 
-export const routeColumns = (
+export const routeDataTableColumns = (
     selectedRouteRows: number[],
     setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>,
     handleDeleteItemAction: (code?: number | null) => Promise<void>,

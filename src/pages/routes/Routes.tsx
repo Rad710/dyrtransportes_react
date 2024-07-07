@@ -3,7 +3,7 @@
 import { useState, useEffect, useReducer } from "react";
 
 import {
-    routeColumns,
+    routeDataTableColumns,
     routeFilterColumnList,
 } from "./components/RouteDataTableColumns";
 import { RouteDialogForm, routeFormSchema } from "./components/RouteDialogForm";
@@ -28,7 +28,7 @@ import cldrDataES from "cldr-data/main/es/numbers.json";
 import cldrDataEN from "cldr-data/main/en/numbers.json";
 import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
 import {
-    productColumns,
+    productDataTableColumns,
     productFilterColumnList,
 } from "./components/ProductDataTableColumns";
 import {
@@ -179,7 +179,7 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
             return;
         }
 
-        const result = await RouteApi.patchRoute(formData.route_code, formData);
+        const result = await RouteApi.putRoute(formData.route_code, formData);
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
         }
@@ -222,13 +222,12 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         const result = await RouteApi.deleteRouteList(toDeleteRouteList);
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
+            console.log({ toDeleteRouteList });
         }
 
         if (result?.success) {
             const selectedRoutesSet = new Set<number>(toDeleteRouteList);
 
-            console.log({ selectedRoutesSet });
-            console.log({ result });
             toastSuccess(result.success);
             setRouteList(
                 routeList.filter(
@@ -300,7 +299,7 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         }
     };
 
-    const routeDataTableColumns = routeColumns(
+    const routeColumns = routeDataTableColumns(
         selectedRouteRows,
         setSelectedRouteRows,
         handleDeleteRouteItemAction,
@@ -440,13 +439,14 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         }
 
         if (result?.success) {
+            toastSuccess(result.success);
             setProductList(
                 productList.filter((item) => item.product_code !== code)
             );
         }
     };
 
-    const productDataTableColumns = productColumns(
+    const productColumns = productDataTableColumns(
         handleDeleteProductItem,
         handleEditProductItem
     );
@@ -455,21 +455,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
     return (
         <div className="px-4">
             <div className="md:flex justify-between items-center">
-                <ColorRing
-                    visible={loading}
-                    height="80"
-                    width="80"
-                    ariaLabel="blocks-loading"
-                    wrapperClass="w-1/3 h-1/3 m-auto"
-                    colors={[
-                        "#A2C0E8",
-                        "#8DABDF",
-                        "#7896D6",
-                        "#6381CD",
-                        "#6366F1",
-                    ]}
-                />
-
                 <Tabs defaultValue="routes" className="w-full">
                     <TabsList>
                         <TabsTrigger
@@ -505,9 +490,15 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                                 }
                                 variant="green"
                                 size="md-lg"
-                                onClickFunctionPromise={async () =>
-                                    RouteApi.exportRouteList(selectedRouteRows)
-                                }
+                                onClickFunctionPromise={async () => {
+                                    if (selectedRouteRows.length === 0) {
+                                        RouteApi.exportRouteList();
+                                    } else {
+                                        RouteApi.exportRouteList(
+                                            selectedRouteRows
+                                        );
+                                    }
+                                }}
                             >
                                 <span className="md:text-lg">
                                     Se exportarán{" "}
@@ -546,7 +537,7 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                         {!loading && (
                             <DataTable
                                 data={routeList}
-                                columns={routeDataTableColumns}
+                                columns={routeColumns}
                                 pageSize={pageSize}
                                 filterColumnList={routeFilterColumnList}
                             />
@@ -567,7 +558,7 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                         {!loading && (
                             <DataTable
                                 data={productList}
-                                columns={productDataTableColumns}
+                                columns={productColumns}
                                 pageSize={pageSize}
                                 filterColumnList={productFilterColumnList}
                             />

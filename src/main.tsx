@@ -13,7 +13,7 @@ import Index from "./pages/homepage/Index";
 import Cobranzas from "./pages/cobranzas/Cobranzas";
 import LiquidacionesChofer from "./pages/liquidaciones/LiquidacionesChofer";
 import { Routes } from "./pages/routes/Routes";
-import Nomina from "./pages/nomina/Nomina";
+import { Drivers } from "./pages/nomina/Drivers";
 import ErrorPage from "./components/ErrorPage";
 import PlanillasYears from "./pages/cobranzas/PlanillasYears";
 import ListaPlanillas from "./pages/cobranzas/ListaPlanillas";
@@ -74,8 +74,8 @@ const router = createBrowserRouter([
                 element: <Routes title="Lista de Precios" />,
             },
             {
-                path: "/nomina",
-                element: <Nomina title="Nomina Choferes" />,
+                path: "/drivers",
+                element: <Drivers title="Nomina de Choferes" />,
             },
             {
                 path: "/dinatran",

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export const productFilterColumnList = ["Producto"] as const;
 
-export const productColumns = (
+export const productDataTableColumns = (
     handleDeleteItemAction: (code?: number | null) => Promise<void>,
     handleEditItemAction: (product: Product) => Promise<void>
 ): ColumnDef<Product>[] => {

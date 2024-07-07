@@ -33,6 +33,7 @@ export const toastSuccess = (successMessage: string) => {
     toast({
         variant: "success",
         description: successMessage,
+        duration: 5000,
     });
 };
 

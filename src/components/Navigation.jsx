@@ -117,27 +117,17 @@ const Navigation = () => {
                         </Link>
 
                         <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
+                            <Link to="/drivers">
                                 <p
-                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer
-                        ${
-                            path === "/nomina"
-                                ? "text-indigo-300"
-                                : "text-white hover:text-indigo-300"
-                        }`}
+                                    className={`font-bold text-2xl mt-2 hover:cursor-pointer ${
+                                        path === "/drivers"
+                                            ? "text-indigo-300"
+                                            : "text-white hover:text-indigo-300"
+                                    }`}
                                 >
-                                    Nomina
+                                    Nómina
                                 </p>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content variant="soft">
-                                <DropdownMenu.Item>
-                                    <Link to="/nomina">Ver Nomina</Link>
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Separator />
-                                <DropdownMenu.Item>
-                                    Exportar Nomina
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
+                            </Link>
                         </DropdownMenu.Root>
 
                         <DropdownMenu.Root>

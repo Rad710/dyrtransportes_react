@@ -40,9 +40,9 @@ export const RouteApi = {
                 return errorResponse.response?.data ?? null;
             }),
 
-    patchRoute: async (code: number, payload: Route) =>
+    putRoute: async (code: number, payload: Route) =>
         axios
-            .patch(`${import.meta.env.VITE_API_URL}/route/${code}`, payload)
+            .put(`${import.meta.env.VITE_API_URL}/route/${code}`, payload)
             .then((response: AxiosResponse<Route>) => response.data ?? null)
             .catch((errorResponse: AxiosError<Route>) => {
                 console.log({ errorResponse });
@@ -65,9 +65,9 @@ export const RouteApi = {
                 return null;
             }),
 
-    exportRouteList: async (codeList: number[]) =>
+    exportRouteList: async (codeList?: number[]) =>
         axios
-            .get(`${import.meta.env.VITE_API_URL}/export_routes`, {
+            .get(`${import.meta.env.VITE_API_URL}/export-routes`, {
                 responseType: "blob",
                 params: { route_list: codeList },
                 paramsSerializer: {
