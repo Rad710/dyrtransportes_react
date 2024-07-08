@@ -50,6 +50,19 @@ export const RouteApi = {
                 return errorResponse.response?.data ?? null;
             }),
 
+    deleteRoute: async (code: number) =>
+        axios
+            .delete(`${import.meta.env.VITE_API_URL}/route/${code}`)
+            .then(
+                (response: AxiosResponse<{ success: string } | null>) =>
+                    response.data ?? null
+            )
+            .catch((errorResponse: AxiosError<{ error: string }>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return null;
+            }),
+
     deleteRouteList: async (codeList: number[]) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/routes`, {

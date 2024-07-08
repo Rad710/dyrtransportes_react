@@ -19,6 +19,8 @@ import Globalize from "globalize";
 import cldrDataES from "cldr-data/main/es/numbers.json";
 import cldrDataEN from "cldr-data/main/en/numbers.json";
 import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
+import { RouteApi } from "../route_utils";
+import { toastSuccess } from "@/utils/notification";
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -35,9 +37,28 @@ export const routeFilterColumnList = ["Origen", "Destino"] as const;
 export const routeDataTableColumns = (
     selectedRouteRows: number[],
     setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>,
-    handleDeleteItemAction: (code?: number | null) => Promise<void>,
-    handleEditItemAction: (route: Route) => void
+    routeList: Route[],
+    setRouteList: React.Dispatch<React.SetStateAction<Route[]>>,
+    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>
 ): ColumnDef<Route>[] => {
+    const handleDeleteItemRoute = async (code?: number | null) => {
+        if (!code) {
+            return;
+        }
+
+        const result = await RouteApi.deleteRoute(code);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log({ result });
+            console.log("Deleting...", { code });
+        }
+
+        if (result?.success) {
+            toastSuccess(result.success);
+            setRouteList(routeList.filter((item) => item.route_code !== code));
+            setSelectedRouteRows([]);
+        }
+    };
+
     return [
         {
             id: "select",
@@ -229,11 +250,11 @@ export const routeDataTableColumns = (
                                 buttonClassName="w-full"
                                 buttonContent={
                                     <span className="text-red-500">
-                                        Eliminar
+                                        Eliminar Ruta
                                     </span>
                                 }
                                 onClickFunctionPromise={async () =>
-                                    handleDeleteItemAction(
+                                    handleDeleteItemRoute(
                                         row.original.route_code
                                     )
                                 }
@@ -259,12 +280,11 @@ export const routeDataTableColumns = (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="w-full"
-                                onClick={() =>
-                                    handleEditItemAction(row.original)
-                                }
+                                onClick={() => setRouteToEdit(row.original)}
                             >
-                                <span className="text-indigo-500">Editar</span>
+                                <span className="text-cyan-600">
+                                    Editar Ruta
+                                </span>
                             </Button>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

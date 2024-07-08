@@ -1,4 +1,5 @@
 "use client";
+"use strict";
 
 import {
     Form,
@@ -8,10 +9,6 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-
-import { XIcon, CheckIcon } from "lucide-react";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import Globalize from "globalize";
 import cldrDataES from "cldr-data/main/es/numbers.json";
@@ -31,10 +28,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { UseFormReturn } from "react-hook-form";
 import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
 import { Route } from "@/pages/routes/types";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toastSuccess } from "@/utils/notification";
+import { RouteApi } from "../route_utils";
+import { useForm } from "react-hook-form";
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -42,23 +42,12 @@ Globalize.load(cldrDataES);
 Globalize.locale("es");
 
 const parser = Globalize.numberParser();
-
 const formatter = Globalize.numberFormatter({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
 });
 
-type RouteFormSchema = {
-    routeCode?: number;
-    origin: string;
-    destination: string;
-    priceString: string;
-    payrollPriceString: string;
-    successMessage?: string;
-    errorMessage?: string;
-};
-
-export const routeFormSchema = z.object({
+const routeFormSchema = z.object({
     routeCode: z.number().optional(),
 
     origin: z
@@ -134,7 +123,6 @@ export const routeFormSchema = z.object({
             }
 
             const val = parser(arg);
-
             if (isNaN(val)) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
@@ -154,100 +142,214 @@ export const routeFormSchema = z.object({
                 });
             }
         }),
-
-    successMessage: z.string().optional(),
-    errorMessage: z.string().optional(),
 });
 
 type FormRouteProps = {
-    form: UseFormReturn<RouteFormSchema, any, undefined>;
-    handleSubmit: (formData: Route) => Promise<void>;
+    routeList: Route[];
+    setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
+    routeToEdit: Route | null;
+    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
 };
 
-export const RouteDialogForm = ({ form, handleSubmit }: FormRouteProps) => {
-    const [buttonDisabled, setButtonDisabled] = useState(false);
+export const RouteDialogForm = ({
+    routeList,
+    setRouteList,
+    routeToEdit,
+    setRouteToEdit,
+}: FormRouteProps) => {
+    const form = useForm<z.infer<typeof routeFormSchema>>({
+        resolver: zodResolver(routeFormSchema),
+    });
 
+    const [submitResultMessage, setSubmitResultMessage] = useState("");
+
+    const [buttonDisabled, setButtonDisabled] = useState(false);
     const button = !form.getValues("routeCode")
         ? ({
               text: "Agregar Ruta",
               description: "Completar datos de la nueva Ruta",
               variant: "indigo",
+              size: "md-lg",
           } as const)
         : ({
               text: "Editar Ruta",
               description: "Completar datos de la Ruta a editar",
               variant: "cyan",
+              size: "md-lg",
           } as const);
 
+    useEffect(() => {
+        if (routeToEdit) {
+            form.reset({
+                routeCode: routeToEdit?.route_code ?? undefined,
+                origin: routeToEdit?.origin ?? "",
+                destination: routeToEdit?.destination ?? "",
+                priceString:
+                    formatter(
+                        typeof routeToEdit?.price === "number"
+                            ? routeToEdit?.price
+                            : 0
+                    ) || "",
+                payrollPriceString:
+                    formatter(
+                        typeof routeToEdit?.payroll_price === "number"
+                            ? routeToEdit.payroll_price
+                            : 0
+                    ) || "",
+            });
+        }
+    }, [routeToEdit]);
+
+    useEffect(() => {
+        if (!routeToEdit) {
+            form.reset({
+                routeCode: undefined,
+                origin: "",
+                destination: "",
+                priceString: "",
+                payrollPriceString: "",
+            });
+        }
+    }, [form.formState.isSubmitSuccessful, routeToEdit]);
+
+    const handlePostRoute = async (formData: Route) => {
+        if (formData.route_code) {
+            setSubmitResultMessage("Ruta ya existe");
+            throw new Error("Ruta ya existe");
+        }
+
+        const result = await RouteApi.postRoute(formData);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log({ result });
+        }
+
+        if (result?.success) {
+            toastSuccess(result.success);
+            setRouteList([
+                {
+                    route_code: result.route_code,
+                    origin: result.origin,
+                    destination: result.destination,
+                    price: parseFloat(result.price?.toString() ?? "") || 0,
+                    payroll_price:
+                        parseFloat(result.payroll_price?.toString() ?? "") || 0,
+                },
+                ...routeList,
+            ]);
+            setSubmitResultMessage(result.success);
+        }
+
+        if (result?.error) {
+            setSubmitResultMessage(result.error);
+            throw result.error;
+        }
+    };
+
+    const handlePutRoute = async (formData: Route) => {
+        if (!formData.route_code) {
+            setSubmitResultMessage("Ruta no puede editarse");
+            throw new Error("Ruta no puede editarse");
+        }
+
+        const result = await RouteApi.putRoute(formData.route_code, formData);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log({ result });
+        }
+
+        if (result?.success) {
+            toastSuccess(result.success);
+            setRouteList(
+                routeList.map((item) =>
+                    formData.route_code === item.route_code
+                        ? {
+                              route_code: result.route_code,
+                              origin: result.origin,
+                              destination: result.destination,
+                              price:
+                                  parseFloat(result.price?.toString() ?? "") ||
+                                  0,
+                              payroll_price:
+                                  parseFloat(
+                                      result.payroll_price?.toString() ?? ""
+                                  ) || 0,
+                          }
+                        : item
+                )
+            );
+            setSubmitResultMessage(result.success);
+        }
+
+        if (result?.error) {
+            setSubmitResultMessage(result.error);
+            throw result.error;
+        }
+    };
+
     const onSubmit = async (data: z.infer<typeof routeFormSchema>) => {
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Submitting...", { data });
+        }
+
         setButtonDisabled(true);
-        await handleSubmit({
+
+        const payload: Route = {
             route_code: data.routeCode ?? null,
             origin: data.origin.trim(),
             destination: data.destination.trim(),
             price: parser(data.priceString),
             payroll_price: parser(data.payrollPriceString),
-        });
+        };
+        if (!payload.route_code) {
+            handlePostRoute(payload);
+        } else {
+            handlePutRoute(payload);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log({ payload });
+            console.log("Form values: ", form.getValues());
+        }
+
         setButtonDisabled(false);
     };
 
     const onFormClose = (open: boolean) => {
+        console.log(open);
         if (open) {
             return;
         }
         form.clearErrors();
-        form.setValue("successMessage", undefined);
-        form.setValue("errorMessage", undefined);
+        setSubmitResultMessage("");
+        setRouteToEdit(null);
     };
 
     return (
-        <Dialog onOpenChange={onFormClose}>
+        <Dialog
+            onOpenChange={onFormClose}
+            open={routeToEdit ? true : undefined}
+        >
             <DialogTrigger asChild>
-                <Button
-                    id="dialog-form-route-trigger"
-                    variant={button.variant}
-                    size="md-lg"
-                >
+                <Button variant={button.variant} size={button.size}>
                     {button.text}
                 </Button>
             </DialogTrigger>
-            <DialogContent
-                id="dialog-form-route-content"
-                className="sm:max-w-xl p-0"
-                onCloseAutoFocus={(e) => e.preventDefault()}
-                onInteractOutside={(e) => e.preventDefault()}
-            >
+            <DialogContent className="sm:max-w-xl p-0">
                 <ScrollArea className="max-h-[80vh] p-4">
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {!form.getValues("successMessage") &&
-                            !form.getValues("errorMessage") ? (
+                            {submitResultMessage ? (
+                                <span
+                                    className={
+                                        submitResultMessage.includes("exito")
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                    }
+                                >
+                                    {submitResultMessage}
+                                </span>
+                            ) : (
                                 <span>{button.description}</span>
-                            ) : (
-                                ""
-                            )}
-
-                            {form.getValues("successMessage") ? (
-                                <Alert variant="success">
-                                    <CheckIcon className="h-5 w-5" />
-                                    <AlertDescription className="mt-1">
-                                        {form.getValues("successMessage")}
-                                    </AlertDescription>
-                                </Alert>
-                            ) : (
-                                ""
-                            )}
-
-                            {form.getValues("errorMessage") ? (
-                                <Alert variant="destructive">
-                                    <XIcon className="h-5 w-5" />
-                                    <AlertDescription className="mt-1">
-                                        {form.getValues("errorMessage")}
-                                    </AlertDescription>
-                                </Alert>
-                            ) : (
-                                ""
                             )}
                         </DialogDescription>
                     </DialogHeader>
@@ -347,20 +449,10 @@ export const RouteDialogForm = ({ form, handleSubmit }: FormRouteProps) => {
                             type="submit"
                             form="form-route"
                             disabled={buttonDisabled}
-                            onClick={() => {
-                                if (
-                                    !routeFormSchema.safeParse(form.getValues())
-                                        .success
-                                ) {
-                                    form.setValue("successMessage", undefined);
-                                    form.setValue("errorMessage", undefined);
-                                }
-                            }}
                         >
                             {button.text}
                         </Button>
                     </DialogFooter>
-
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </DialogContent>

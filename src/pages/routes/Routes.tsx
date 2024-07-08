@@ -1,16 +1,16 @@
 "use client";
+"use strict";
 
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect } from "react";
 
 import {
     routeDataTableColumns,
     routeFilterColumnList,
 } from "./components/RouteDataTableColumns";
-import { RouteDialogForm, routeFormSchema } from "./components/RouteDialogForm";
+import { RouteDialogForm } from "./components/RouteDialogForm";
 
 import { ProductApi, RouteApi } from "./route_utils";
 
-import { ColorRing } from "react-loader-spinner";
 import { PropsTitle } from "@/types";
 import { Product, Route } from "./types";
 import { Table2Icon, Trash2Icon } from "lucide-react";
@@ -23,10 +23,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import Globalize from "globalize";
-import cldrDataES from "cldr-data/main/es/numbers.json";
-import cldrDataEN from "cldr-data/main/en/numbers.json";
-import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
 import {
     productDataTableColumns,
     productFilterColumnList,
@@ -36,28 +32,21 @@ import {
     productFormSchema,
 } from "./components/ProductDialogForm";
 
-Globalize.load(cldrDataSupplementSubTags);
-Globalize.load(cldrDataEN);
-Globalize.load(cldrDataES);
-Globalize.locale("es");
-
-const formatter = Globalize.numberFormatter({
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
-
 export const Routes = ({ title }: Readonly<PropsTitle>) => {
     const [loading, setLoading] = useState<boolean>(true);
-
-    const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     //Routes
     const [routeList, setRouteList] = useState<Route[]>([]);
     const [selectedRouteRows, setSelectedRouteRows] = useState<number[]>([]);
+    const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
-    const routeForm = useForm<z.infer<typeof routeFormSchema>>({
-        resolver: zodResolver(routeFormSchema),
-    });
+    const routeColumns = routeDataTableColumns(
+        selectedRouteRows,
+        setSelectedRouteRows,
+        routeList,
+        setRouteList,
+        setRouteToEdit
+    );
 
     useEffect(() => {
         document.title = title;
@@ -89,131 +78,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
         loadRoutesAndProducts();
     }, []);
 
-    const setRouteEditFormData = () => {
-        if (selectedRouteRows.length === 1) {
-            const routeToEdit = routeList.find(
-                (item) => item.route_code === selectedRouteRows?.at(0)
-            );
-
-            routeForm.setValue(
-                "routeCode",
-                routeToEdit?.route_code ?? undefined
-            );
-            routeForm.setValue("origin", routeToEdit?.origin ?? "");
-            routeForm.setValue("destination", routeToEdit?.destination ?? "");
-            routeForm.setValue(
-                "priceString",
-                formatter(
-                    typeof routeToEdit?.price === "number"
-                        ? routeToEdit?.price
-                        : 0
-                ) || ""
-            );
-            routeForm.setValue(
-                "payrollPriceString",
-                formatter(
-                    typeof routeToEdit?.payroll_price === "number"
-                        ? routeToEdit.payroll_price
-                        : 0
-                ) || ""
-            );
-            forceUpdate();
-        } else {
-            routeForm.reset({
-                routeCode: undefined,
-                origin: "",
-                destination: "",
-                payrollPriceString: "",
-                priceString: "",
-            });
-        }
-    };
-
-    useEffect(() => {
-        setRouteEditFormData();
-    }, [selectedRouteRows]);
-
-    const handleCreateRoute = async (formData: Route) => {
-        if (formData.route_code) {
-            return;
-        }
-
-        const result = await RouteApi.postRoute(formData);
-        if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
-        }
-
-        if (result?.success) {
-            toastSuccess(result.success);
-            setRouteList([
-                {
-                    route_code: result.route_code,
-                    origin: result.origin,
-                    destination: result.destination,
-                    price: parseFloat(result.price?.toString() ?? "") || 0,
-                    payroll_price:
-                        parseFloat(result.payroll_price?.toString() ?? "") || 0,
-                },
-                ...routeList,
-            ]);
-            routeForm.reset({
-                routeCode: undefined,
-                origin: "",
-                destination: "",
-                payrollPriceString: "",
-                priceString: "",
-            });
-
-            routeForm.setValue("successMessage", result.success);
-            routeForm.setValue("errorMessage", undefined);
-        }
-
-        if (result?.error) {
-            routeForm.setValue("errorMessage", result.error);
-            routeForm.setValue("successMessage", undefined);
-        }
-    };
-
-    const handleEditRoute = async (formData: Route) => {
-        if (!formData.route_code) {
-            return;
-        }
-
-        const result = await RouteApi.putRoute(formData.route_code, formData);
-        if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
-        }
-
-        if (result?.success) {
-            toastSuccess(result.success);
-            setRouteList(
-                routeList.map((item) =>
-                    formData.route_code === item.route_code
-                        ? {
-                              route_code: result.route_code,
-                              origin: result.origin,
-                              destination: result.destination,
-                              price:
-                                  parseFloat(result.price?.toString() ?? "") ||
-                                  0,
-                              payroll_price:
-                                  parseFloat(
-                                      result.payroll_price?.toString() ?? ""
-                                  ) || 0,
-                          }
-                        : item
-                )
-            );
-            routeForm.setValue("successMessage", result.success);
-            routeForm.setValue("errorMessage", undefined);
-        }
-
-        if (result?.error) {
-            routeForm.setValue("errorMessage", result.error);
-            routeForm.setValue("successMessage", undefined);
-        }
-    };
-
     const handleDeleteRouteList = async (toDeleteRouteList: number[]) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("To delete: ", { toDeleteRouteList });
@@ -237,74 +101,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
             setSelectedRouteRows([]);
         }
     };
-
-    const handleEditRouteItemAction = (routeToEdit?: Route | null) => {
-        if (!routeToEdit) {
-            return;
-        }
-
-        if (import.meta.env.VITE_DEBUG) {
-            console.log({ routeList });
-            console.log({ routeToEdit });
-        }
-        routeForm.setValue("routeCode", routeToEdit?.route_code ?? undefined);
-        routeForm.setValue("origin", routeToEdit?.origin ?? "");
-        routeForm.setValue("destination", routeToEdit?.destination ?? "");
-        routeForm.setValue(
-            "priceString",
-            formatter(
-                typeof routeToEdit?.price === "number" ? routeToEdit?.price : 0
-            ) || ""
-        );
-        routeForm.setValue(
-            "payrollPriceString",
-            formatter(
-                typeof routeToEdit?.payroll_price === "number"
-                    ? routeToEdit.payroll_price
-                    : 0
-            ) || ""
-        );
-        forceUpdate();
-
-        //Use dialog button trigger and manually handle event changes
-        const dialogTrigger = document.getElementById(
-            "dialog-form-route-trigger"
-        );
-        dialogTrigger?.click();
-
-        const observer = new MutationObserver(() => {
-            if (
-                !document.body.querySelector(
-                    ":scope > #dialog-form-route-content"
-                )
-            ) {
-                observer.disconnect();
-                setRouteEditFormData();
-                forceUpdate();
-
-                if (import.meta.env.VITE_DEBUG) {
-                    console.log("Dialog was removed");
-                }
-            }
-        });
-        observer.observe(document.body, {
-            childList: true,
-            subtree: false,
-        });
-    };
-
-    const handleDeleteRouteItemAction = async (code?: number | null) => {
-        if (code) {
-            await handleDeleteRouteList([code]);
-        }
-    };
-
-    const routeColumns = routeDataTableColumns(
-        selectedRouteRows,
-        setSelectedRouteRows,
-        handleDeleteRouteItemAction,
-        handleEditRouteItemAction
-    );
 
     //Products
     const [productList, setProductList] = useState<Product[]>([]);
@@ -396,7 +192,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
             productToEdit?.product_code ?? undefined
         );
         productForm.setValue("productName", productToEdit?.product_name ?? "");
-        forceUpdate();
 
         //Use dialog button trigger and manually handle event changes
         const dialogTrigger = document.getElementById(
@@ -415,7 +210,6 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                     productCode: undefined,
                     productName: "",
                 });
-                forceUpdate();
 
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Dialog was removed");
@@ -473,12 +267,10 @@ export const Routes = ({ title }: Readonly<PropsTitle>) => {
                     <TabsContent value="routes" className="md-lg:-mt-8">
                         <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
                             <RouteDialogForm
-                                form={routeForm}
-                                handleSubmit={
-                                    routeForm.getValues("routeCode")
-                                        ? handleEditRoute
-                                        : handleCreateRoute
-                                }
+                                routeList={routeList}
+                                setRouteList={setRouteList}
+                                routeToEdit={routeToEdit}
+                                setRouteToEdit={setRouteToEdit}
                             />
 
                             <AlertDialogConfirm
