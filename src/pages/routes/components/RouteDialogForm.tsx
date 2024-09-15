@@ -313,24 +313,21 @@ export const RouteDialogForm = ({
         setButtonDisabled(false);
     };
 
-    const onFormClose = (open: boolean) => {
-        console.log(open);
-        if (open) {
-            return;
-        }
-        form.clearErrors();
-        setSubmitResultMessage("");
-        setRouteToEdit(null);
-    };
-
     return (
         <Dialog
-            onOpenChange={onFormClose}
             open={routeToEdit ? true : undefined}
+            onOpenChange={(open: boolean) => {
+                if (open) {
+                    return;
+                }
+                form.clearErrors();
+                setSubmitResultMessage("");
+                setRouteToEdit(null);
+            }}
         >
             <DialogTrigger asChild>
-                <Button variant={button.variant} size={button.size}>
-                    {button.text}
+                <Button variant="indigo" size="md-lg">
+                    Agregar Ruta
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl p-0">

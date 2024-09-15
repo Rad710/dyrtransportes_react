@@ -41,6 +41,8 @@ export const routeDataTableColumns = (
     setRouteList: React.Dispatch<React.SetStateAction<Route[]>>,
     setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>
 ): ColumnDef<Route>[] => {
+    const selectedRouteRowsSet = new Set(selectedRouteRows);
+
     const handleDeleteItemRoute = async (code?: number | null) => {
         if (!code) {
             return;
@@ -55,7 +57,6 @@ export const routeDataTableColumns = (
         if (result?.success) {
             toastSuccess(result.success);
             setRouteList(routeList.filter((item) => item.route_code !== code));
-            setSelectedRouteRows([]);
         }
     };
 
@@ -95,38 +96,43 @@ export const routeDataTableColumns = (
                     aria-label="Seleccionar todos"
                 />
             ),
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => {
-                        row.toggleSelected(!!value);
+            cell: ({ row }) => {
+                row.toggleSelected(
+                    selectedRouteRowsSet.has(row.original.route_code ?? 0)
+                );
 
-                        const newSelectedRouteRows = !!value
-                            ? [
-                                  ...selectedRouteRows,
-                                  row.original.route_code ?? 0,
-                              ]
-                            : selectedRouteRows.filter(
-                                  (item) => item !== row.original.route_code
-                              );
+                return (
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => {
+                            row.toggleSelected(!!value);
+                            const newSelectedRouteRows = !!value
+                                ? [
+                                      ...selectedRouteRows,
+                                      row.original.route_code ?? 0,
+                                  ]
+                                : selectedRouteRows.filter(
+                                      (item) => item !== row.original.route_code
+                                  );
 
-                        if (import.meta.env.VITE_DEBUG) {
-                            console.log("Select item value: ", !!value);
-                            console.log(
-                                "current selectedRouteRows: ",
-                                selectedRouteRows
-                            );
-                            console.log(
-                                "new selectedRouteRows: ",
-                                newSelectedRouteRows
-                            );
-                        }
+                            if (import.meta.env.VITE_DEBUG) {
+                                console.log("Select item value: ", !!value);
+                                console.log(
+                                    "current selectedRouteRows: ",
+                                    selectedRouteRows
+                                );
+                                console.log(
+                                    "new selectedRouteRows: ",
+                                    newSelectedRouteRows
+                                );
+                            }
 
-                        setSelectedRouteRows(newSelectedRouteRows);
-                    }}
-                    aria-label="Seleccionar fila"
-                />
-            ),
+                            setSelectedRouteRows(newSelectedRouteRows);
+                        }}
+                        aria-label="Seleccionar fila"
+                    />
+                );
+            },
             enableSorting: false,
             enableHiding: false,
         },
