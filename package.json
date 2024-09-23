@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port 5173",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -31,7 +31,7 @@
     "axios": "^1.6.7",
     "chart.js": "^4.4.1",
     "class-variance-authority": "^0.7.0",
-    "cldr-data": "^36.0.2",
+    "cldr-data": "^36.0.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.0.0",
     "file-saver": "^2.0.5",

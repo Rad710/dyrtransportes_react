@@ -13,14 +13,11 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Route } from "../types";
 import React from "react";
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 
 import Globalize from "globalize";
 import cldrDataES from "cldr-data/main/es/numbers.json";
 import cldrDataEN from "cldr-data/main/en/numbers.json";
 import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
-import { RouteApi } from "../route_utils";
-import { toastSuccess } from "@/utils/notification";
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -37,29 +34,9 @@ export const routeFilterColumnList = ["Origen", "Destino"] as const;
 export const routeDataTableColumns = (
     selectedRouteRows: number[],
     setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>,
-    routeList: Route[],
-    setRouteList: React.Dispatch<React.SetStateAction<Route[]>>,
-    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>
+    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>,
+    setRouteToDelete: React.Dispatch<React.SetStateAction<Route | null>>,
 ): ColumnDef<Route>[] => {
-    const selectedRouteRowsSet = new Set(selectedRouteRows);
-
-    const handleDeleteItemRoute = async (code?: number | null) => {
-        if (!code) {
-            return;
-        }
-
-        const result = await RouteApi.deleteRoute(code);
-        if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
-            console.log("Deleting...", { code });
-        }
-
-        if (result?.success) {
-            toastSuccess(result.success);
-            setRouteList(routeList.filter((item) => item.route_code !== code));
-        }
-    };
-
     return [
         {
             id: "select",
@@ -71,24 +48,17 @@ export const routeDataTableColumns = (
                     }
                     onCheckedChange={(value) => {
                         table.toggleAllPageRowsSelected(!!value);
+
                         const newSelectedRouteRows = !!value
                             ? table
-                                  .getCoreRowModel()
-                                  .rows.map(
-                                      (item) => item.original.route_code ?? 0
-                                  )
+                                  .getPaginationRowModel()
+                                  .rows.map((item) => item.original.route_code ?? 0)
                             : [];
 
                         if (import.meta.env.VITE_DEBUG) {
                             console.log("Select all value: ", !!value);
-                            console.log(
-                                "current selectedRouteRows: ",
-                                selectedRouteRows
-                            );
-                            console.log(
-                                "new selectedRouteRows: ",
-                                newSelectedRouteRows
-                            );
+                            console.log("current selectedRouteRows: ", selectedRouteRows);
+                            console.log("new selectedRouteRows: ", newSelectedRouteRows);
                         }
 
                         setSelectedRouteRows(newSelectedRouteRows);
@@ -97,34 +67,21 @@ export const routeDataTableColumns = (
                 />
             ),
             cell: ({ row }) => {
-                row.toggleSelected(
-                    selectedRouteRowsSet.has(row.original.route_code ?? 0)
-                );
-
                 return (
                     <Checkbox
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => {
                             row.toggleSelected(!!value);
                             const newSelectedRouteRows = !!value
-                                ? [
-                                      ...selectedRouteRows,
-                                      row.original.route_code ?? 0,
-                                  ]
+                                ? [...selectedRouteRows, row.original.route_code ?? 0]
                                 : selectedRouteRows.filter(
-                                      (item) => item !== row.original.route_code
+                                      (item) => item !== row.original.route_code,
                                   );
 
                             if (import.meta.env.VITE_DEBUG) {
                                 console.log("Select item value: ", !!value);
-                                console.log(
-                                    "current selectedRouteRows: ",
-                                    selectedRouteRows
-                                );
-                                console.log(
-                                    "new selectedRouteRows: ",
-                                    newSelectedRouteRows
-                                );
+                                console.log("current selectedRouteRows: ", selectedRouteRows);
+                                console.log("new selectedRouteRows: ", newSelectedRouteRows);
                             }
 
                             setSelectedRouteRows(newSelectedRouteRows);
@@ -144,9 +101,7 @@ export const routeDataTableColumns = (
                     <Button
                         variant="ghost"
                         className="hover:bg-transparent hover:text-black"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
                         <span className="md:text-lg">Origen</span>
                         <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
@@ -154,9 +109,7 @@ export const routeDataTableColumns = (
                 );
             },
             cell: ({ row }) => (
-                <div className="font-medium md:text-base">
-                    {row.getValue("Origen")}
-                </div>
+                <div className="font-medium md:text-base">{row.getValue("Origen")}</div>
             ),
         },
         {
@@ -167,9 +120,7 @@ export const routeDataTableColumns = (
                     <Button
                         variant="ghost"
                         className="hover:bg-transparent hover:text-black"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
                         <span className="md:text-lg">Destino</span>
                         <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
@@ -177,9 +128,7 @@ export const routeDataTableColumns = (
                 );
             },
             cell: ({ row }) => (
-                <div className="font-medium md:text-base">
-                    {row.getValue("Destino")}
-                </div>
+                <div className="font-medium md:text-base">{row.getValue("Destino")}</div>
             ),
         },
         {
@@ -191,11 +140,7 @@ export const routeDataTableColumns = (
                         <Button
                             variant="ghost"
                             className="hover:bg-transparent hover:text-black"
-                            onClick={() =>
-                                column.toggleSorting(
-                                    column.getIsSorted() === "asc"
-                                )
-                            }
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                         >
                             <span className="md:text-lg">Precio Flete</span>
                             <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
@@ -204,9 +149,7 @@ export const routeDataTableColumns = (
                 );
             },
             cell: ({ row }) => (
-                <div className="text-right md:text-base">
-                    {formatter(row.getValue("Precio"))}
-                </div>
+                <div className="text-right md:text-base">{formatter(row.getValue("Precio"))}</div>
             ),
         },
         {
@@ -218,15 +161,9 @@ export const routeDataTableColumns = (
                         <Button
                             variant="ghost"
                             className="text-right hover:bg-transparent hover:text-black"
-                            onClick={() =>
-                                column.toggleSorting(
-                                    column.getIsSorted() === "asc"
-                                )
-                            }
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                         >
-                            <span className="md:text-lg">
-                                Precio Liquidación
-                            </span>
+                            <span className="md:text-lg">Precio Liquidación</span>
                             <ArrowUpDown className="ml-2 h-4 md:h-5 w-4 md:w-5" />
                         </Button>
                     </div>
@@ -252,34 +189,13 @@ export const routeDataTableColumns = (
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                            <AlertDialogConfirm
-                                buttonClassName="w-full"
-                                buttonContent={
-                                    <span className="text-red-500">
-                                        Eliminar Ruta
-                                    </span>
-                                }
-                                onClickFunctionPromise={async () =>
-                                    handleDeleteItemRoute(
-                                        row.original.route_code
-                                    )
-                                }
+                            <Button
                                 variant="ghost"
                                 size="sm"
+                                onClick={() => setRouteToDelete(row.original)}
                             >
-                                <span className="md:text-lg">
-                                    Esta acción es irreversible. Se{" "}
-                                    <strong className="font-bold text-gray-700">
-                                        eliminará:
-                                    </strong>
-                                    <br />
-                                    <strong className="font-bold text-gray-700">
-                                        {row.original.origin}
-                                        {" - "}
-                                        {row.original.destination}.
-                                    </strong>
-                                </span>
-                            </AlertDialogConfirm>
+                                <span className="text-red-600">Eliminar</span>
+                            </Button>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={(e) => e.preventDefault()}>
@@ -288,9 +204,7 @@ export const routeDataTableColumns = (
                                 size="sm"
                                 onClick={() => setRouteToEdit(row.original)}
                             >
-                                <span className="text-cyan-600">
-                                    Editar Ruta
-                                </span>
+                                <span className="text-cyan-600">Editar</span>
                             </Button>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -1,313 +1,380 @@
-import { FileIcon, PlusIcon } from "@radix-ui/react-icons"
-import { Button, Dialog, Flex, Select, Text, TextField } from "@radix-ui/themes"
+import { FileIcon, PlusIcon } from "@radix-ui/react-icons";
+import {
+    Button,
+    Dialog,
+    Flex,
+    Select,
+    Text,
+    TextField,
+} from "@radix-ui/themes";
 import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-router-dom";
 
 import { isMobile } from "react-device-detect";
 
-import { getCobranza, getKeywords, getPlanillasOfYear, postCobranza, putCobranza } from "../../../utils/cobranza";
+import {
+    getCobranza,
+    getKeywords,
+    getPlanillasOfYear,
+    postCobranza,
+    putCobranza,
+} from "../../../utils/cobranza";
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
-import { RouteApi } from "../../../pages/routes/route_utils";
-
+import { RouteApi } from "../../../pages/routeAndProduct/route_utils";
 
 function FormCobranzas({
-    fechaCreacion, cobranzas, setCobranzas,
-    formData, setFormData,
-    tracker, setTracker
+    fechaCreacion,
+    cobranzas,
+    setCobranzas,
+    formData,
+    setFormData,
+    tracker,
+    setTracker,
 }) {
-
     const inputRefs = [
-        useRef(null), useRef(null), useRef(null), useRef(null),
-        useRef(null), useRef(null), useRef(null), useRef(null),
-        useRef(null), useRef(null), useRef(null), useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
+        useRef(null),
     ];
 
     const [inputStyles, setInputStyles] = useState({
-        fechaViaje: { color: 'indigo', variant: 'surface' },
-        chofer: { color: 'indigo', variant: 'surface' },
-        chapa: { color: 'indigo', variant: 'surface' },
-        producto: { color: 'indigo', variant: 'surface' },
-        origen: { color: 'indigo', variant: 'surface' },
-        destino: { color: 'indigo', variant: 'surface' },
-        tiquet: { color: 'indigo', variant: 'surface' },
-        precio: { color: 'indigo', variant: 'surface' },
-        kgOrigen: { color: 'indigo', variant: 'surface' },
-        kgDestino: { color: 'indigo', variant: 'surface' },
-        precioLiquidacion: { color: 'indigo', variant: 'surface' },
-    })
+        fechaViaje: { color: "indigo", variant: "surface" },
+        chofer: { color: "indigo", variant: "surface" },
+        chapa: { color: "indigo", variant: "surface" },
+        producto: { color: "indigo", variant: "surface" },
+        origen: { color: "indigo", variant: "surface" },
+        destino: { color: "indigo", variant: "surface" },
+        tiquet: { color: "indigo", variant: "surface" },
+        precio: { color: "indigo", variant: "surface" },
+        kgOrigen: { color: "indigo", variant: "surface" },
+        kgDestino: { color: "indigo", variant: "surface" },
+        precioLiquidacion: { color: "indigo", variant: "surface" },
+    });
 
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    const [buttonText, setButtonText] = useState('')
-    const [disableButton, setDisableButton] = useState(false)
+    const [buttonText, setButtonText] = useState("");
+    const [disableButton, setDisableButton] = useState(false);
 
     const [toSuggest, setToSuggest] = useState({
-        chofer: [], producto: [], origen: [], destino: []
-    })
+        chofer: [],
+        producto: [],
+        origen: [],
+        destino: [],
+    });
 
-    const [selectedSuggestion, setSelectedSuggestion] = useState(0)
+    const [selectedSuggestion, setSelectedSuggestion] = useState(0);
 
-    const [suggestions, setSuggestions] = useState({ chofer: [], destino: [], origen: [], producto: [] })
+    const [suggestions, setSuggestions] = useState({
+        chofer: [],
+        destino: [],
+        origen: [],
+        producto: [],
+    });
 
-    const [planillaList, setPlanillaList] = useState([])
+    const [planillaList, setPlanillaList] = useState([]);
 
     useEffect(() => {
         const queryKeywords = async () => {
             const [keywords, planillas] = await Promise.all([
                 getKeywords(),
-                getPlanillasOfYear(fechaCreacion.toISOString().slice(0, 10).slice(0, 4))
+                getPlanillasOfYear(
+                    fechaCreacion.toISOString().slice(0, 10).slice(0, 4),
+                ),
             ]);
-        
+
             if (!keywords?.response && !keywords?.message) {
                 setSuggestions(keywords);
             }
-        
+
             if (!planillas?.response && !planillas?.message) {
-                setPlanillaList(planillas.map(planilla => new Date(planilla)));
+                setPlanillaList(
+                    planillas.map((planilla) => new Date(planilla)),
+                );
             } else {
                 setError(planillas?.response?.data);
             }
-        }
-        queryKeywords()
-    }, [cobranzas])
-
+        };
+        queryKeywords();
+    }, [cobranzas]);
 
     const autocompleteField = async (fieldName) => {
-        if (!['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
-            return
+        if (!["chofer", "producto", "origen", "destino"].includes(fieldName)) {
+            return;
         }
 
         if (!toSuggest[fieldName].at(selectedSuggestion)) {
-            return
+            return;
         }
 
-        if (fieldName === 'chofer') {
-            const result = await getNomina()
+        if (fieldName === "chofer") {
+            const result = await getNomina();
 
-            const nomina = result?.filter(nomina => (
-                nomina.chofer === formData.chofer ||
-                nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
-            ))
-            const [chapaNomina] = nomina
+            const nomina = result?.filter(
+                (nomina) =>
+                    nomina.chofer === formData.chofer ||
+                    nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion),
+            );
+            const [chapaNomina] = nomina;
 
             if (chapaNomina !== undefined) {
                 setFormData({
                     ...formData,
                     chofer: toSuggest.chofer.at(selectedSuggestion),
-                    chapa: chapaNomina.chapa
-                })
+                    chapa: chapaNomina.chapa,
+                });
             }
-        } else if ('destino' === fieldName) {
-            const result = await RouteApi.getRoute(formData.origen, toSuggest.destino.at(selectedSuggestion))
+        } else if ("destino" === fieldName) {
+            const result = await RouteApi.getRoute(
+                formData.origen,
+                toSuggest.destino.at(selectedSuggestion),
+            );
             setFormData({
                 ...formData,
                 destino: toSuggest.destino.at(selectedSuggestion),
-                precio: String(result?.precio ?? ''),
-                precioLiquidacion: String(result?.precioLiquidacion ?? '')
-            })
+                precio: String(result?.precio ?? ""),
+                precioLiquidacion: String(result?.precioLiquidacion ?? ""),
+            });
         } else {
-            setFormData({ ...formData, [fieldName]: toSuggest[fieldName].at(selectedSuggestion) })
+            setFormData({
+                ...formData,
+                [fieldName]: toSuggest[fieldName].at(selectedSuggestion),
+            });
         }
-    }
-
+    };
 
     const handleKeyDown = async (e, index) => {
-        const fieldName = e.target.name
-        if (e.key === 'Enter') {
+        const fieldName = e.target.name;
+        if (e.key === "Enter") {
             e.preventDefault(); // Prevent form submission
             if (index < inputRefs.length - 1) {
                 inputRefs[index + 1].current.focus();
             }
-            autocompleteField(fieldName)
+            autocompleteField(fieldName);
         }
-    }
-
+    };
 
     const onChange = (e) => {
-        const fieldName = e.target.name
-        const string = e.target.value
+        const fieldName = e.target.name;
+        const string = e.target.value;
 
-        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion'].includes(fieldName)) {
+        if (
+            [
+                "tiquet",
+                "precio",
+                "kgOrigen",
+                "kgDestino",
+                "precioLiquidacion",
+            ].includes(fieldName)
+        ) {
             if (isNaN(Number(string))) {
-                return
+                return;
             }
         }
 
-        if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
-            const newToSuggest = suggestions[fieldName].filter(suggested =>
-                (string !== '' && new RegExp('^' + string).test(suggested))
-            )
-            setToSuggest({ ...toSuggest, [fieldName]: newToSuggest })
+        if (["chofer", "producto", "origen", "destino"].includes(fieldName)) {
+            const newToSuggest = suggestions[fieldName].filter(
+                (suggested) =>
+                    string !== "" && new RegExp("^" + string).test(suggested),
+            );
+            setToSuggest({ ...toSuggest, [fieldName]: newToSuggest });
         }
 
-        const newFormData = { ...formData, [fieldName]: string }
-        setFormData(newFormData)
-    }
+        const newFormData = { ...formData, [fieldName]: string };
+        setFormData(newFormData);
+    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        setDisableButton(true)
-        document.body.style.cursor = 'wait'
+        setDisableButton(true);
+        document.body.style.cursor = "wait";
         // Create a new object for styles based on validation
         const newInputStyles = {};
 
         // Iterate over the keys of formData
         for (const field in formData) {
-            if (formData[field] === '') {
-                newInputStyles[field] = { color: 'red', variant: 'soft' };
+            if (formData[field] === "") {
+                newInputStyles[field] = { color: "red", variant: "soft" };
             }
         }
 
-        setInputStyles(prevStyle => ({
+        setInputStyles((prevStyle) => ({
             ...prevStyle,
             ...newInputStyles,
         }));
 
         if (Object.keys(newInputStyles).length > 1) {
-            setError('Complete todos los campos');
-            setSuccess('')
-            setDisableButton(false)
-            document.body.style.cursor = 'default'
-            return
+            setError("Complete todos los campos");
+            setSuccess("");
+            setDisableButton(false);
+            document.body.style.cursor = "default";
+            return;
         }
-        resetFormStyle(inputStyles, setInputStyles)
+        resetFormStyle(inputStyles, setInputStyles);
 
-        let response = null
-        if (formData.id === '') {
-            response = await postCobranza(formData)
+        let response = null;
+        if (formData.id === "") {
+            response = await postCobranza(formData);
         } else {
-            response = await putCobranza(formData)
-            setButtonText('Agregar')
+            response = await putCobranza(formData);
+            setButtonText("Agregar");
         }
 
         if (!response?.response) {
-            setSuccess(`Entrada ${formData.id === '' ? 'añadida' : 'editada'} correctamente`);
-            setError('');
+            setSuccess(
+                `Entrada ${formData.id === "" ? "añadida" : "editada"} correctamente`,
+            );
+            setError("");
 
             //actualizar state
-            const responseUpdate = await getCobranza(fechaCreacion.toISOString().slice(0, 10))
+            const responseUpdate = await getCobranza(
+                fechaCreacion.toISOString().slice(0, 10),
+            );
 
             if (responseUpdate?.response) {
-                setDisableButton(false)
-                document.body.style.cursor = 'default'
-                return
+                setDisableButton(false);
+                document.body.style.cursor = "default";
+                return;
             }
 
-            const result = responseUpdate.map(grupo => ({ ...grupo, viajes: grupo.viajes.map((viaje) => ({ viaje: viaje, checked: false })) }))
-            setCobranzas(result)
+            const result = responseUpdate.map((grupo) => ({
+                ...grupo,
+                viajes: grupo.viajes.map((viaje) => ({
+                    viaje: viaje,
+                    checked: false,
+                })),
+            }));
+            setCobranzas(result);
 
             //reset form data and suggestions
-            const resetFormData = {}
+            const resetFormData = {};
             for (const field in formData) {
-                resetFormData[field] = ''
+                resetFormData[field] = "";
             }
             setFormData({
-                ...resetFormData, fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
-                fechaViaje: new Date().toISOString().slice(0, 10)
-            })
+                ...resetFormData,
+                fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
+                fechaViaje: new Date().toISOString().slice(0, 10),
+            });
 
-            const resetToSuggest = {}
+            const resetToSuggest = {};
 
             for (const key in toSuggest) {
-                resetToSuggest[key] = []
+                resetToSuggest[key] = [];
             }
 
-            setToSuggest(resetToSuggest)
-            setTracker([])
-
+            setToSuggest(resetToSuggest);
+            setTracker([]);
         } else {
-            setSuccess('')
-            setError('A ocurrido un error');
+            setSuccess("");
+            setError("A ocurrido un error");
         }
-        setDisableButton(false)
-        document.body.style.cursor = 'default'
-    }
-
+        setDisableButton(false);
+        document.body.style.cursor = "default";
+    };
 
     const handleCerrar = () => {
         // resetear el form
-        const resetFormData = {}
+        const resetFormData = {};
         for (const field in formData) {
-            resetFormData[field] = ''
+            resetFormData[field] = "";
         }
         setFormData({
-            ...resetFormData, fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
-            fechaViaje: new Date().toISOString().slice(0, 10)
-        })
+            ...resetFormData,
+            fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
+            fechaViaje: new Date().toISOString().slice(0, 10),
+        });
 
-        resetFormStyle(inputStyles, setInputStyles)
+        resetFormStyle(inputStyles, setInputStyles);
 
-        setError('');
-        setSuccess('')
-        setDisableButton(false)
-    }
-
+        setError("");
+        setSuccess("");
+        setDisableButton(false);
+    };
 
     const handleEditar = () => {
-        setButtonText('Editar')
+        setButtonText("Editar");
 
-        const { grupo, index } = tracker.at(0)
-        const viaje = {}
+        const { grupo, index } = tracker.at(0);
+        const viaje = {};
         for (const attribute in cobranzas[grupo].viajes[index].viaje) {
-            viaje[attribute] = String(cobranzas[grupo].viajes[index].viaje[attribute] ?? '')
+            viaje[attribute] = String(
+                cobranzas[grupo].viajes[index].viaje[attribute] ?? "",
+            );
         }
         setFormData({
             ...viaje,
             fechaCreacion: fechaCreacion.toISOString().slice(0, 10),
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10),
             precio: Number(viaje.precio).toFixed(2),
-            precioLiquidacion: Number(viaje.precioLiquidacion).toFixed(2)
-        })
-    }
-
+            precioLiquidacion: Number(viaje.precioLiquidacion).toFixed(2),
+        });
+    };
 
     const handleBlur = (e) => {
-        const fieldName = e.target.name
-        autocompleteField(fieldName)
-        if (['chofer', 'producto', 'origen', 'destino'].includes(fieldName)) {
-            setToSuggest({ ...toSuggest, [fieldName]: [] })
-            setSelectedSuggestion(0)
+        const fieldName = e.target.name;
+        autocompleteField(fieldName);
+        if (["chofer", "producto", "origen", "destino"].includes(fieldName)) {
+            setToSuggest({ ...toSuggest, [fieldName]: [] });
+            setSelectedSuggestion(0);
         }
-    }
-
+    };
 
     return (
         <Dialog.Root>
             <Dialog.Trigger>
-                <Button color="indigo" variant="solid" size="4"
-                    onClick={() => setButtonText('Agregar')}
+                <Button
+                    color="indigo"
+                    variant="solid"
+                    size="4"
+                    onClick={() => setButtonText("Agregar")}
                 >
-                    <PlusIcon width="20" height="20" />Agregar
+                    <PlusIcon width="20" height="20" />
+                    Agregar
                 </Button>
             </Dialog.Trigger>
             <Dialog.Trigger>
-
-                <Button color="teal" variant="solid" size="4"
-                    disabled={(tracker.length <= 0) || tracker.length > 1}
+                <Button
+                    color="teal"
+                    variant="solid"
+                    size="4"
+                    disabled={tracker.length <= 0 || tracker.length > 1}
                     onClick={handleEditar}
                 >
-                    <FileIcon width="20" height="20" />Editar
+                    <FileIcon width="20" height="20" />
+                    Editar
                 </Button>
             </Dialog.Trigger>
 
             <Dialog.Content style={{ maxWidth: 600 }}>
                 <Form onSubmit={(e) => handleSubmit(e)}>
-
                     <Dialog.Title>{`${buttonText} Entrada`}</Dialog.Title>
                     {error ? (
-                        <CalloutMessage color="red" size="1">{error}</CalloutMessage>
-                    ) : (success ? (
-                        <CalloutMessage color="green" size="1">{success}</CalloutMessage>
+                        <CalloutMessage color="red" size="1">
+                            {error}
+                        </CalloutMessage>
+                    ) : success ? (
+                        <CalloutMessage color="green" size="1">
+                            {success}
+                        </CalloutMessage>
                     ) : (
                         <Dialog.Description size="2" mb="4">
                             Ingresa los datos del viaje.
                         </Dialog.Description>
-                    ))}
-
+                    )}
 
                     <Flex direction="column" gap="3">
                         <Flex direction={!isMobile ? "row" : "column"} gap="3">
@@ -322,7 +389,7 @@ function FormCobranzas({
                                         placeholder="Chofer"
                                         ref={inputRefs[0]}
                                         onKeyDown={(e) => handleKeyDown(e, 0)}
-                                        onBlur={e => handleBlur(e)}
+                                        onBlur={(e) => handleBlur(e)}
                                         onChange={onChange}
                                         value={formData.chofer}
                                         color={inputStyles.chofer.color}
@@ -330,9 +397,14 @@ function FormCobranzas({
                                         list="suggestedChofer"
                                     />
                                     <datalist id="suggestedChofer">
-                                        {[... new Set(suggestions.chofer)].sort().map(entry => (
-                                            <option value={entry} key={entry}></option>
-                                        ))}
+                                        {[...new Set(suggestions.chofer)]
+                                            .sort()
+                                            .map((entry) => (
+                                                <option
+                                                    value={entry}
+                                                    key={entry}
+                                                ></option>
+                                            ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -341,7 +413,9 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.chofer.at(selectedSuggestion)}
+                                            {toSuggest.chofer.at(
+                                                selectedSuggestion,
+                                            )}
                                         </Text>
                                     </div>
                                 </div>
@@ -356,7 +430,7 @@ function FormCobranzas({
                                     type="date"
                                     ref={inputRefs[1]}
                                     onKeyDown={(e) => handleKeyDown(e, 1)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.fechaViaje}
                                     color={inputStyles.fechaViaje.color}
@@ -373,7 +447,7 @@ function FormCobranzas({
                                     placeholder="Chapa"
                                     ref={inputRefs[2]}
                                     onKeyDown={(e) => handleKeyDown(e, 2)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.chapa.toLocaleUpperCase()}
                                     color={inputStyles.chapa.color}
@@ -393,7 +467,7 @@ function FormCobranzas({
                                         placeholder="Producto"
                                         ref={inputRefs[3]}
                                         onKeyDown={(e) => handleKeyDown(e, 3)}
-                                        onBlur={e => handleBlur(e)}
+                                        onBlur={(e) => handleBlur(e)}
                                         onChange={onChange}
                                         value={formData.producto}
                                         color={inputStyles.producto.color}
@@ -402,9 +476,14 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedProducto">
-                                        {[... new Set(suggestions.producto)].sort().map(entry => (
-                                            <option value={entry} key={entry}></option>
-                                        ))}
+                                        {[...new Set(suggestions.producto)]
+                                            .sort()
+                                            .map((entry) => (
+                                                <option
+                                                    value={entry}
+                                                    key={entry}
+                                                ></option>
+                                            ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -413,7 +492,9 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.producto.at(selectedSuggestion)}
+                                            {toSuggest.producto.at(
+                                                selectedSuggestion,
+                                            )}
                                         </Text>
                                     </div>
                                 </div>
@@ -429,7 +510,7 @@ function FormCobranzas({
                                         placeholder="Origen"
                                         ref={inputRefs[4]}
                                         onKeyDown={(e) => handleKeyDown(e, 4)}
-                                        onBlur={e => handleBlur(e)}
+                                        onBlur={(e) => handleBlur(e)}
                                         onChange={onChange}
                                         value={formData.origen}
                                         color={inputStyles.origen.color}
@@ -438,9 +519,14 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedOrigen">
-                                        {[... new Set(suggestions.origen)].sort().map(entry => (
-                                            <option value={entry} key={entry}></option>
-                                        ))}
+                                        {[...new Set(suggestions.origen)]
+                                            .sort()
+                                            .map((entry) => (
+                                                <option
+                                                    value={entry}
+                                                    key={entry}
+                                                ></option>
+                                            ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -449,7 +535,9 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.origen.at(selectedSuggestion)}
+                                            {toSuggest.origen.at(
+                                                selectedSuggestion,
+                                            )}
                                         </Text>
                                     </div>
                                 </div>
@@ -465,7 +553,7 @@ function FormCobranzas({
                                         placeholder="Destino"
                                         ref={inputRefs[5]}
                                         onKeyDown={(e) => handleKeyDown(e, 5)}
-                                        onBlur={e => handleBlur(e)}
+                                        onBlur={(e) => handleBlur(e)}
                                         onChange={onChange}
                                         value={formData.destino}
                                         color={inputStyles.destino.color}
@@ -474,9 +562,14 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedDestino">
-                                        {[... new Set(suggestions.destino)].sort().map(entry => (
-                                            <option value={entry} key={entry}></option>
-                                        ))}
+                                        {[...new Set(suggestions.destino)]
+                                            .sort()
+                                            .map((entry) => (
+                                                <option
+                                                    value={entry}
+                                                    key={entry}
+                                                ></option>
+                                            ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -485,7 +578,9 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.destino.at(selectedSuggestion)}
+                                            {toSuggest.destino.at(
+                                                selectedSuggestion,
+                                            )}
                                         </Text>
                                     </div>
                                 </div>
@@ -502,7 +597,7 @@ function FormCobranzas({
                                     placeholder="Tiquet"
                                     ref={inputRefs[6]}
                                     onKeyDown={(e) => handleKeyDown(e, 6)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.tiquet}
                                     color={inputStyles.tiquet.color}
@@ -512,14 +607,16 @@ function FormCobranzas({
 
                             <label>
                                 <Text as="div" size="2" mb="1" weight="bold">
-                                    {
-                                        `Precio (P. sin IVA: ${isNaN(Number(formData.precio)) ?
-                                        '' :
-                                        (formData.precio / 1.1)
-                                        .toLocaleString("es-ES", {
-                                            minimumFractionDigits: 2, maximumFractionDigits: 2 
-                                        })})`
-                                    }
+                                    {`Precio (P. sin IVA: ${
+                                        isNaN(Number(formData.precio))
+                                            ? ""
+                                            : (
+                                                  formData.precio / 1.1
+                                              ).toLocaleString("es-ES", {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2,
+                                              })
+                                    })`}
                                 </Text>
                                 <TextField.Input
                                     name="precio"
@@ -527,7 +624,7 @@ function FormCobranzas({
                                     placeholder="Precio"
                                     ref={inputRefs[7]}
                                     onKeyDown={(e) => handleKeyDown(e, 7)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.precio}
                                     color={inputStyles.precio.color}
@@ -545,11 +642,13 @@ function FormCobranzas({
                                     placeholder="Precio de Liquidacion"
                                     ref={inputRefs[8]}
                                     onKeyDown={(e) => handleKeyDown(e, 8)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.precioLiquidacion}
                                     color={inputStyles.precioLiquidacion.color}
-                                    variant={inputStyles.precioLiquidacion.variant}
+                                    variant={
+                                        inputStyles.precioLiquidacion.variant
+                                    }
                                 />
                             </label>
                         </Flex>
@@ -564,7 +663,7 @@ function FormCobranzas({
                                     placeholder="Kg. Origen"
                                     ref={inputRefs[9]}
                                     onKeyDown={(e) => handleKeyDown(e, 9)}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.kgOrigen}
                                     color={inputStyles.kgOrigen.color}
@@ -579,45 +678,69 @@ function FormCobranzas({
                                     name="kgDestino"
                                     placeholder="Kg. Destino"
                                     ref={inputRefs[10]}
-                                    onBlur={e => handleBlur(e)}
+                                    onBlur={(e) => handleBlur(e)}
                                     onChange={onChange}
                                     value={formData.kgDestino}
                                     color={inputStyles.kgDestino.color}
                                     variant={inputStyles.kgDestino.variant}
                                 />
                             </label>
-                            
-                            {formData.id ? 
-                                (<label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
+
+                            {formData.id ? (
+                                <label>
+                                    <Text
+                                        as="div"
+                                        size="2"
+                                        mb="1"
+                                        weight="bold"
+                                    >
                                         Fecha de Cobranza
                                     </Text>
-                                    <Select.Root 
+                                    <Select.Root
                                         value={formData.fechaCreacion}
-                                        onValueChange={(v) => setFormData({...formData, fechaCreacion: v})}
+                                        onValueChange={(v) =>
+                                            setFormData({
+                                                ...formData,
+                                                fechaCreacion: v,
+                                            })
+                                        }
                                     >
                                         <Select.Trigger />
                                         <Select.Content position="popper">
-                                            {planillaList.map(planilla => (
-                                                <Select.Item 
-                                                    value={planilla.toISOString().slice(0, 10)} 
-                                                    key={planilla.toISOString().slice(0, 10)}
+                                            {planillaList.map((planilla) => (
+                                                <Select.Item
+                                                    value={planilla
+                                                        .toISOString()
+                                                        .slice(0, 10)}
+                                                    key={planilla
+                                                        .toISOString()
+                                                        .slice(0, 10)}
                                                 >
-                                                    {planilla.toLocaleDateString("es-ES",
-                                                        { year: "numeric", month: "numeric", day: "numeric", timeZone: "GMT" }
+                                                    {planilla.toLocaleDateString(
+                                                        "es-ES",
+                                                        {
+                                                            year: "numeric",
+                                                            month: "numeric",
+                                                            day: "numeric",
+                                                            timeZone: "GMT",
+                                                        },
                                                     )}
                                                 </Select.Item>
                                             ))}
                                         </Select.Content>
                                     </Select.Root>
-                                </label>) : ''
-                            }
+                                </label>
+                            ) : (
+                                ""
+                            )}
                         </Flex>
                     </Flex>
 
                     <Flex gap="3" mt="4" justify="end">
                         <Dialog.Close>
-                            <Button variant="soft" color="gray"
+                            <Button
+                                variant="soft"
+                                color="gray"
                                 onClick={handleCerrar}
                             >
                                 Cancelar
@@ -635,7 +758,7 @@ function FormCobranzas({
                 </Form>
             </Dialog.Content>
         </Dialog.Root>
-    )
+    );
 }
 
-export default FormCobranzas
+export default FormCobranzas;

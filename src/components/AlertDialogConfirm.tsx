@@ -30,6 +30,8 @@ type AlertDialogProps = {
         | "indigo"
         | "cyan";
     size: "default" | "sm" | "lg" | "md-lg" | "icon";
+    open?: boolean;
+    onOpenChange?(open: boolean): void;
 };
 
 export const AlertDialogConfirm = ({
@@ -40,11 +42,13 @@ export const AlertDialogConfirm = ({
     variant,
     size,
     children,
+    open,
+    onOpenChange,
 }: React.PropsWithChildren<AlertDialogProps>) => {
     const [debounceDisabled, setDebounceDisabled] = useState(false);
 
     return (
-        <AlertDialog open={disabled ? false : undefined}>
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogTrigger asChild>
                 <Button
                     variant={variant}

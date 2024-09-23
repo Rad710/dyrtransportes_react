@@ -28,13 +28,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
-import { Route } from "@/pages/routes/types";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Route } from "@/pages/routeAndProduct/types";
 import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toastSuccess } from "@/utils/notification";
 import { RouteApi } from "../route_utils";
 import { useForm } from "react-hook-form";
+import { SubmitResult } from "@/types";
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -48,7 +49,7 @@ const formatter = Globalize.numberFormatter({
 });
 
 const routeFormSchema = z.object({
-    routeCode: z.number().optional(),
+    route_code: z.number().optional(),
 
     origin: z
         .string({
@@ -68,7 +69,7 @@ const routeFormSchema = z.object({
             message: "Campo destination no puede estar vacío.",
         }),
 
-    priceString: z
+    price_string: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Precio requerido.",
@@ -106,7 +107,7 @@ const routeFormSchema = z.object({
             }
         }),
 
-    payrollPriceString: z
+    payroll_price_string: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Precio Liquidación requerido.",
@@ -144,7 +145,7 @@ const routeFormSchema = z.object({
         }),
 });
 
-type FormRouteProps = {
+type RouteDialogFormProps = {
     routeList: Route[];
     setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
     routeToEdit: Route | null;
@@ -156,15 +157,13 @@ export const RouteDialogForm = ({
     setRouteList,
     routeToEdit,
     setRouteToEdit,
-}: FormRouteProps) => {
+}: RouteDialogFormProps) => {
+    // STATE
     const form = useForm<z.infer<typeof routeFormSchema>>({
         resolver: zodResolver(routeFormSchema),
     });
 
-    const [submitResultMessage, setSubmitResultMessage] = useState("");
-
-    const [buttonDisabled, setButtonDisabled] = useState(false);
-    const button = !form.getValues("routeCode")
+    const button = !form.getValues("route_code")
         ? ({
               text: "Agregar Ruta",
               description: "Completar datos de la nueva Ruta",
@@ -178,49 +177,56 @@ export const RouteDialogForm = ({
               size: "md-lg",
           } as const);
 
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [buttonDisabled, setButtonDisabled] = useState(false);
+    const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+
+    // USE EFFECTS
     useEffect(() => {
+        // show dialog when clicking editar action button
         if (routeToEdit) {
+            setIsOpen(true);
+
             form.reset({
-                routeCode: routeToEdit?.route_code ?? undefined,
+                route_code: routeToEdit?.route_code ?? undefined,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                priceString:
-                    formatter(
-                        typeof routeToEdit?.price === "number"
-                            ? routeToEdit?.price
-                            : 0
-                    ) || "",
-                payrollPriceString:
+                price_string:
+                    formatter(typeof routeToEdit?.price === "number" ? routeToEdit?.price : 0) ||
+                    "",
+                payroll_price_string:
                     formatter(
                         typeof routeToEdit?.payroll_price === "number"
                             ? routeToEdit.payroll_price
-                            : 0
+                            : 0,
                     ) || "",
             });
         }
     }, [routeToEdit]);
 
     useEffect(() => {
+        // reset dialog when succesfully created NEW route
         if (!routeToEdit) {
             form.reset({
-                routeCode: undefined,
+                route_code: undefined,
                 origin: "",
                 destination: "",
-                priceString: "",
-                payrollPriceString: "",
+                price_string: "",
+                payroll_price_string: "",
             });
         }
-    }, [form.formState.isSubmitSuccessful, routeToEdit]);
+    }, [form.formState.isSubmitSuccessful]);
 
+    // HANDLERS
     const handlePostRoute = async (formData: Route) => {
         if (formData.route_code) {
-            setSubmitResultMessage("Ruta ya existe");
+            setSubmitResult({ error: "Ruta ya existe" });
             throw new Error("Ruta ya existe");
         }
 
         const result = await RouteApi.postRoute(formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
+            console.log("Post Route...", { result });
         }
 
         if (result?.success) {
@@ -231,29 +237,28 @@ export const RouteDialogForm = ({
                     origin: result.origin,
                     destination: result.destination,
                     price: parseFloat(result.price?.toString() ?? "") || 0,
-                    payroll_price:
-                        parseFloat(result.payroll_price?.toString() ?? "") || 0,
+                    payroll_price: parseFloat(result.payroll_price?.toString() ?? "") || 0,
                 },
                 ...routeList,
             ]);
-            setSubmitResultMessage(result.success);
+            setSubmitResult({ success: result.success });
         }
 
         if (result?.error) {
-            setSubmitResultMessage(result.error);
+            setSubmitResult({ error: result.error });
             throw result.error;
         }
     };
 
     const handlePutRoute = async (formData: Route) => {
         if (!formData.route_code) {
-            setSubmitResultMessage("Ruta no puede editarse");
+            setSubmitResult({ error: "Ruta no puede editarse" });
             throw new Error("Ruta no puede editarse");
         }
 
         const result = await RouteApi.putRoute(formData.route_code, formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
+            console.log("Put Route...", { result });
         }
 
         if (result?.success) {
@@ -265,39 +270,53 @@ export const RouteDialogForm = ({
                               route_code: result.route_code,
                               origin: result.origin,
                               destination: result.destination,
-                              price:
-                                  parseFloat(result.price?.toString() ?? "") ||
-                                  0,
+                              price: parseFloat(result.price?.toString() ?? "") || 0,
                               payroll_price:
-                                  parseFloat(
-                                      result.payroll_price?.toString() ?? ""
-                                  ) || 0,
+                                  parseFloat(result.payroll_price?.toString() ?? "") || 0,
                           }
-                        : item
-                )
+                        : item,
+                ),
             );
-            setSubmitResultMessage(result.success);
+            setSubmitResult({ success: result.success });
         }
 
         if (result?.error) {
-            setSubmitResultMessage(result.error);
+            setSubmitResult({ error: result.error });
             throw result.error;
         }
     };
 
-    const onSubmit = async (data: z.infer<typeof routeFormSchema>) => {
+    const handleOnOpenChange = (open: boolean) => {
+        setIsOpen(open);
+
+        // timeout solves issue of form changing text/color when closing
+        setTimeout(() => {
+            form.clearErrors();
+            form.reset({
+                route_code: undefined,
+                origin: "",
+                destination: "",
+                price_string: "",
+                payroll_price_string: "",
+            });
+
+            setSubmitResult(null);
+            setRouteToEdit(null);
+        }, 100);
+    };
+
+    const onFormSubmit = async (data: z.infer<typeof routeFormSchema>) => {
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting...", { data });
+            console.log("Submitting route formData...", { data });
         }
 
         setButtonDisabled(true);
-
         const payload: Route = {
-            route_code: data.routeCode ?? null,
+            route_code: data.route_code ?? null,
             origin: data.origin.trim(),
             destination: data.destination.trim(),
-            price: parser(data.priceString),
-            payroll_price: parser(data.payrollPriceString),
+            price: parser(data.price_string),
+            payroll_price: parser(data.payroll_price_string),
         };
         if (!payload.route_code) {
             handlePostRoute(payload);
@@ -306,44 +325,110 @@ export const RouteDialogForm = ({
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log({ payload });
+            console.log("Submitting payload...", { payload });
             console.log("Form values: ", form.getValues());
         }
 
         setButtonDisabled(false);
     };
 
+    const FormComponent = (
+        <>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onFormSubmit)}
+                    className="space-y-6 mt-4 ml-2 mr-2"
+                    id="form-route"
+                >
+                    <div className="md:flex md:flex-row md:gap-6">
+                        <FormField
+                            control={form.control}
+                            name="origin"
+                            defaultValue={form.getValues("origin")}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Origen</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Origen" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="destination"
+                            defaultValue={form.getValues("destination")}
+                            render={({ field }) => (
+                                <FormItem className="mt-6 md:mt-0">
+                                    <FormLabel>Destino</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Destino" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="md:flex md:flex-row md:gap-6">
+                        <FormField
+                            control={form.control}
+                            name="price_string"
+                            defaultValue={form.getValues("price_string")}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Precio</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Precio" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="payroll_price_string"
+                            defaultValue={form.getValues("payroll_price_string")}
+                            render={({ field }) => (
+                                <FormItem className="mt-6 md:mt-0">
+                                    <FormLabel>Precio Liquidación</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Precio Liquidación" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </form>
+            </Form>
+        </>
+    );
+
     return (
-        <Dialog
-            open={routeToEdit ? true : undefined}
-            onOpenChange={(open: boolean) => {
-                if (open) {
-                    return;
-                }
-                form.clearErrors();
-                setSubmitResultMessage("");
-                setRouteToEdit(null);
-            }}
-        >
+        <Dialog open={isOpen} onOpenChange={handleOnOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="indigo" size="md-lg">
                     Agregar Ruta
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl p-0">
+            <DialogContent
+                className="sm:max-w-xl p-0"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+            >
                 <ScrollArea className="max-h-[80vh] p-4">
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {submitResultMessage ? (
+                            {submitResult ? (
                                 <span
                                     className={
-                                        submitResultMessage.includes("exito")
-                                            ? "text-green-600"
-                                            : "text-red-600"
+                                        submitResult.success ? "text-green-600" : "text-red-600"
                                     }
                                 >
-                                    {submitResultMessage}
+                                    {submitResult.success || submitResult.error}
                                 </span>
                             ) : (
                                 <span>{button.description}</span>
@@ -351,91 +436,7 @@ export const RouteDialogForm = ({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-6 mt-4 ml-2 mr-2"
-                            id="form-route"
-                        >
-                            <div className="md:flex md:flex-row md:gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="origin"
-                                    defaultValue={form.getValues("origin")}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Origen</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Origen"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="destination"
-                                    defaultValue={form.getValues("destination")}
-                                    render={({ field }) => (
-                                        <FormItem className="mt-6 md:mt-0">
-                                            <FormLabel>Destino</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Destino"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="md:flex md:flex-row md:gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="priceString"
-                                    defaultValue={form.getValues("priceString")}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Precio</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Precio"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="payrollPriceString"
-                                    defaultValue={form.getValues(
-                                        "payrollPriceString"
-                                    )}
-                                    render={({ field }) => (
-                                        <FormItem className="mt-6 md:mt-0">
-                                            <FormLabel>
-                                                Precio Liquidación
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Precio Liquidación"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </form>
-                    </Form>
+                    {FormComponent}
 
                     <DialogFooter className="mt-6">
                         <DialogClose asChild>
@@ -450,6 +451,7 @@ export const RouteDialogForm = ({
                             {button.text}
                         </Button>
                     </DialogFooter>
+
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </DialogContent>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, ButtonProps } from "./ui/button";
 
 interface PropsButtonDebounced extends ButtonProps {
-    onClickPromise?: Promise<unknown>;
+    onClickPromise: Promise<unknown>;
 }
 
 export const ButtonDebounced = ({
@@ -21,7 +21,8 @@ export const ButtonDebounced = ({
             disabled={debounceDisabled}
             onClick={async () => {
                 setDebounceDisabled(true);
-                onClickPromise?.then(() => setDebounceDisabled(false));
+                await onClickPromise;
+                setDebounceDisabled(false);
             }}
         >
             {children}

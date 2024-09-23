@@ -12,7 +12,7 @@ import Layout from "./components/Layout";
 import Index from "./pages/homepage/Index";
 import Cobranzas from "./pages/cobranzas/Cobranzas";
 import LiquidacionesChofer from "./pages/liquidaciones/LiquidacionesChofer";
-import { Routes } from "./pages/routes/Routes";
+import { RouteAndProduct } from "./pages/routeAndProduct/RouteAndProduct";
 import { Drivers } from "./pages/nomina/Drivers";
 import ErrorPage from "./components/ErrorPage";
 import PlanillasYears from "./pages/cobranzas/PlanillasYears";
@@ -53,15 +53,11 @@ const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: (
-                            <ListaLiquidaciones title="Lista de Liquidaciones" />
-                        ),
+                        element: <ListaLiquidaciones title="Lista de Liquidaciones" />,
                     },
                     {
                         path: "/liquidaciones/:chofer",
-                        element: (
-                            <LiquidacionesChofer title="Lista de Liquidaciones - Chofer" />
-                        ),
+                        element: <LiquidacionesChofer title="Lista de Liquidaciones - Chofer" />,
                     },
                     {
                         path: "/liquidaciones/:chofer/:fecha",
@@ -71,7 +67,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "/routes",
-                element: <Routes title="Lista de Precios" />,
+                element: <RouteAndProduct title="Lista de Precios" />,
             },
             {
                 path: "/drivers",
@@ -90,5 +86,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthWrapper>
             <RouterProvider router={router} />
         </AuthWrapper>
-    </React.StrictMode>
+    </React.StrictMode>,
 );
