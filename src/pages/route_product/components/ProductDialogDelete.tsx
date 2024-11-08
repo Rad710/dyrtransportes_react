@@ -40,9 +40,7 @@ export const ProductDialogDelete = ({
             return;
         }
 
-        const result = await ProductApi.deleteProduct(
-            productToDelete.product_code,
-        );
+        const result = await ProductApi.deleteProduct(productToDelete.product_code);
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
             console.log("Deleting... ", productToDelete.product_code);
@@ -50,12 +48,9 @@ export const ProductDialogDelete = ({
 
         if (result?.success) {
             toastSuccess(result.success);
-            setProductList(
-                productList.filter(
-                    (item) =>
-                        item.product_code !== productToDelete.product_code,
-                ),
-            );
+
+            const newProductList = await ProductApi.getProductList();
+            setProductList(newProductList);
         }
     };
 
@@ -71,15 +66,11 @@ export const ProductDialogDelete = ({
         }
 
         if (result?.success) {
-            const selectedRoutesSet = new Set<number>(selectedProductRows);
-
             toastSuccess(result.success);
-            setProductList(
-                productList.filter(
-                    (item) => !selectedRoutesSet.has(item.product_code ?? 0),
-                ),
-            );
             setSelectedProductRows([]);
+
+            const newProductList = await ProductApi.getProductList();
+            setProductList(newProductList);
         }
     };
 
@@ -96,9 +87,7 @@ export const ProductDialogDelete = ({
         <AlertDialogConfirm
             size="md-lg"
             variant="destructive"
-            disabled={
-                productToDelete ? false : selectedProductRows.length === 0
-            }
+            disabled={productToDelete ? false : selectedProductRows.length === 0}
             open={open}
             onOpenChange={handleOnOpenChange}
             buttonContent={
@@ -108,16 +97,12 @@ export const ProductDialogDelete = ({
                 </>
             }
             onClickFunctionPromise={
-                productToDelete
-                    ? handleDeleteProductItem
-                    : handleDeleteProductList
+                productToDelete ? handleDeleteProductItem : handleDeleteProductList
             }
         >
             <span className="md:text-lg">
                 Esta acción es irreversible. Se{" "}
-                <strong className="font-bold text-gray-700">
-                    eliminará permanentemente:
-                </strong>
+                <strong className="font-bold text-gray-700">eliminará permanentemente:</strong>
                 <br />
                 <strong className="font-bold text-gray-700">
                     {productToDelete?.product_name

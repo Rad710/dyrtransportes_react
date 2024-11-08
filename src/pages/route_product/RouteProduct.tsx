@@ -46,14 +46,7 @@ const RouteTabContent = () => {
 
     useEffect(() => {
         const loadRoutes = async () => {
-            const routes = await RouteApi.getRouteList().then((list) =>
-                list.map((item) => ({
-                    ...item,
-                    price: parseFloat(item.price?.toString() ?? "") || 0,
-                    payroll_price: parseFloat(item.payroll_price?.toString() ?? "") || 0,
-                })),
-            );
-
+            const routes = await RouteApi.getRouteList();
             setRouteList(routes);
             setLoading(false);
 
@@ -209,7 +202,7 @@ const ProductTabContent = () => {
     );
 };
 
-export const RouteAndProduct = ({ title }: Readonly<PropsTitle>) => {
+export const RouteProduct = ({ title }: Readonly<PropsTitle>) => {
     useEffect(() => {
         document.title = title;
     }, []);

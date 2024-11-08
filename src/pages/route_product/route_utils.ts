@@ -7,24 +7,25 @@ export const RouteApi = {
     getRoute: async (code: number | null) =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/route/${code}`)
-            .then(
-                (response: AxiosResponse<Route | null>) =>
-                    response.data ?? null,
-            )
+            .then((response: AxiosResponse<Route | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
-                if (errorResponse?.response?.status !== 404) {
-                    console.log({ errorResponse });
-                    toastAxiosError(errorResponse);
-                }
-                return null;
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return [];
             }),
 
     getRouteList: async () =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/routes`)
-            .then(
-                (response: AxiosResponse<Route[] | null>) =>
-                    response.data ?? [],
+            .then((response: AxiosResponse<Route[] | null>) => response.data ?? [])
+            .then((list) =>
+                list.map(
+                    (item: Route): Route => ({
+                        ...item,
+                        price: parseFloat(item.price?.toString() ?? "") || 0,
+                        payroll_price: parseFloat(item.payroll_price?.toString() ?? "") || 0,
+                    }),
+                ),
             )
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
@@ -55,10 +56,7 @@ export const RouteApi = {
     deleteRoute: async (code: number) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/route/${code}`)
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null,
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -70,10 +68,7 @@ export const RouteApi = {
             .delete(`${import.meta.env.VITE_API_URL}/routes`, {
                 data: codeList,
             })
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null,
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -104,10 +99,7 @@ export const ProductApi = {
     getProductList: async () =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/products`)
-            .then(
-                (response: AxiosResponse<Product[] | null>) =>
-                    response.data ?? [],
-            )
+            .then((response: AxiosResponse<Product[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -137,10 +129,7 @@ export const ProductApi = {
     deleteProduct: async (code: number) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/product/${code}`)
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null,
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -153,10 +142,7 @@ export const ProductApi = {
             .delete(`${import.meta.env.VITE_API_URL}/products`, {
                 data: codeList,
             })
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null,
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);

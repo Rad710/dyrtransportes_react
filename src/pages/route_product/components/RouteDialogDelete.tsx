@@ -47,11 +47,9 @@ export const RouteDialogDelete = ({
 
         if (result?.success) {
             toastSuccess(result.success);
-            setRouteList(
-                routeList.filter(
-                    (item) => item.route_code !== routeToDelete.route_code,
-                ),
-            );
+
+            const newRouteList = await RouteApi.getRouteList();
+            setRouteList(newRouteList);
         }
     };
 
@@ -67,15 +65,11 @@ export const RouteDialogDelete = ({
         }
 
         if (result?.success) {
-            const selectedRoutesSet = new Set<number>(selectedRouteRows);
-
             toastSuccess(result.success);
-            setRouteList(
-                routeList.filter(
-                    (item) => !selectedRoutesSet.has(item.route_code ?? 0),
-                ),
-            );
             setSelectedRouteRows([]);
+
+            const newRouteList = await RouteApi.getRouteList();
+            setRouteList(newRouteList);
         }
     };
 
@@ -101,15 +95,11 @@ export const RouteDialogDelete = ({
                     Eliminar
                 </>
             }
-            onClickFunctionPromise={
-                routeToDelete ? handleDeleteRouteItem : handleDeleteRouteList
-            }
+            onClickFunctionPromise={routeToDelete ? handleDeleteRouteItem : handleDeleteRouteList}
         >
             <span className="md:text-lg">
                 Esta acción es irreversible. Se{" "}
-                <strong className="font-bold text-gray-700">
-                    eliminará permanentemente:
-                </strong>
+                <strong className="font-bold text-gray-700">eliminará permanentemente:</strong>
                 <br />
                 <strong className="font-bold text-gray-700">
                     {routeToDelete?.route_code ? (

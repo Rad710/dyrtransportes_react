@@ -29,7 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Route } from "@/pages/routeAndProduct/types";
+import { Route } from "@/pages/route_product/types";
 import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toastSuccess } from "@/utils/notification";
@@ -230,18 +230,11 @@ export const RouteDialogForm = ({
         }
 
         if (result?.success) {
-            toastSuccess(result.success);
-            setRouteList([
-                {
-                    route_code: result.route_code,
-                    origin: result.origin,
-                    destination: result.destination,
-                    price: parseFloat(result.price?.toString() ?? "") || 0,
-                    payroll_price: parseFloat(result.payroll_price?.toString() ?? "") || 0,
-                },
-                ...routeList,
-            ]);
             setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newRouteList = await RouteApi.getRouteList();
+            setRouteList(newRouteList);
         }
 
         if (result?.error) {
@@ -262,22 +255,11 @@ export const RouteDialogForm = ({
         }
 
         if (result?.success) {
-            toastSuccess(result.success);
-            setRouteList(
-                routeList.map((item) =>
-                    formData.route_code === item.route_code
-                        ? {
-                              route_code: result.route_code,
-                              origin: result.origin,
-                              destination: result.destination,
-                              price: parseFloat(result.price?.toString() ?? "") || 0,
-                              payroll_price:
-                                  parseFloat(result.payroll_price?.toString() ?? "") || 0,
-                          }
-                        : item,
-                ),
-            );
             setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newRouteList = await RouteApi.getRouteList();
+            setRouteList(newRouteList);
         }
 
         if (result?.error) {

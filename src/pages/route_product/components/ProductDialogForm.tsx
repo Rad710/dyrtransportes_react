@@ -117,15 +117,11 @@ export const ProductDialogForm = ({
         }
 
         if (result?.success) {
-            toastSuccess(result.success);
-            setProductList([
-                {
-                    product_code: result.product_code,
-                    product_name: result.product_name,
-                },
-                ...productList,
-            ]);
             setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newProductList = await ProductApi.getProductList();
+            setProductList(newProductList);
         }
 
         if (result?.error) {
@@ -146,18 +142,11 @@ export const ProductDialogForm = ({
         }
 
         if (result?.success) {
-            toastSuccess(result.success);
-            setProductList(
-                productList.map((item) =>
-                    formData.product_code === item.product_code
-                        ? {
-                              product_code: result.product_code,
-                              product_name: result.product_name,
-                          }
-                        : item,
-                ),
-            );
             setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newProductList = await ProductApi.getProductList();
+            setProductList(newProductList);
         }
 
         if (result?.error) {

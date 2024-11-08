@@ -12,7 +12,7 @@ import Layout from "./components/Layout";
 import Index from "./pages/homepage/Index";
 import Cobranzas from "./pages/cobranzas/Cobranzas";
 import LiquidacionesChofer from "./pages/liquidaciones/LiquidacionesChofer";
-import { RouteAndProduct } from "./pages/routeAndProduct/RouteAndProduct";
+import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { Drivers } from "./pages/nomina/Drivers";
 import ErrorPage from "./components/ErrorPage";
 import PlanillasYears from "./pages/cobranzas/PlanillasYears";
@@ -67,7 +67,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "/routes",
-                element: <RouteAndProduct title="Lista de Precios" />,
+                element: <RouteProduct title="Lista de Precios" />,
             },
             {
                 path: "/drivers",
