@@ -10,7 +10,6 @@ import { Product } from "../types";
 import { ProductApi } from "../route_utils";
 
 type ProductDialogDeleteProps = {
-    productList: Product[];
     setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
     selectedProductRows: number[];
     setSelectedProductRows: React.Dispatch<React.SetStateAction<number[]>>;
@@ -19,7 +18,6 @@ type ProductDialogDeleteProps = {
 };
 
 export const ProductDialogDelete = ({
-    productList,
     setProductList,
     selectedProductRows,
     setSelectedProductRows,

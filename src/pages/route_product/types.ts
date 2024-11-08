@@ -1,12 +1,12 @@
 export type Route = {
     route_code?: number | null;
-    origin?: string | null;
-    destination?: string | null;
-    price?: string | number | null;
-    payroll_price?: string | number | null;
-    deleted?: boolean | null;
-    company_id?: string | null;
-    modification_user?: string | null;
+    origin: string;
+    destination: string;
+    price: string | number;
+    payroll_price: string | number;
+    deleted?: boolean;
+    company_id?: string;
+    modification_user?: string;
 
     success?: string;
     error?: string;
@@ -14,10 +14,10 @@ export type Route = {
 
 export type Product = {
     product_code?: number | null;
-    product_name?: string | null;
-    deleted?: boolean | null;
-    company_id?: string | null;
-    modification_user?: string | null;
+    product_name: string;
+    deleted?: boolean;
+    company_id?: string;
+    modification_user?: string;
 
     success?: string;
     error?: string;

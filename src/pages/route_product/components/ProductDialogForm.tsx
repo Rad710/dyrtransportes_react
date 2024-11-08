@@ -35,27 +35,25 @@ import { toastSuccess } from "@/utils/notification";
 import { SubmitResult } from "@/types";
 
 const productFormSchema = z.object({
-    product_code: z.number().optional(),
+    product_code: z.number().nullish(),
 
     product_name: z
         .string({
             invalid_type_error: "Valor inválido.",
-            required_error: "Campo Producto requerido.",
+            required_error: "El campo Producto es obligatorio.",
         })
         .min(1, {
-            message: "Campo Producto no puede estar vacío.",
+            message: "El campo Producto no puede estar vacío.",
         }),
 });
 
 type FormProductProps = {
-    productList: Product[];
     setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
     productToEdit: Product | null;
     setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
 };
 
 export const ProductDialogForm = ({
-    productList,
     setProductList,
     productToEdit,
     setProductToEdit,
@@ -102,7 +100,7 @@ export const ProductDialogForm = ({
                 product_name: "",
             });
         }
-    }, [form.formState.isSubmitSuccessful]);
+    }, [submitResult]);
 
     // HANDLERS
     const handlePostProduct = async (formData: Product) => {
@@ -111,6 +109,9 @@ export const ProductDialogForm = ({
             throw new Error("Producto ya existe");
         }
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Sending product...", { formData });
+        }
         const result = await ProductApi.postProduct(formData);
         if (import.meta.env.VITE_DEBUG) {
             console.log("Post product...", { result });
@@ -136,6 +137,9 @@ export const ProductDialogForm = ({
             throw new Error("Producto no puede editarse");
         }
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Sending product...", { formData });
+        }
         const result = await ProductApi.putProduct(formData.product_code, formData);
         if (import.meta.env.VITE_DEBUG) {
             console.log("Put product...", { result });
@@ -171,27 +175,17 @@ export const ProductDialogForm = ({
         }, 100);
     };
 
-    const onFormSubmit = async (data: z.infer<typeof productFormSchema>) => {
+    const onFormSubmit = async (payload: z.infer<typeof productFormSchema>) => {
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting product formData...", { data });
+            console.log("Submitting product formData...", { payload });
         }
 
         setButtonDisabled(true);
-        const payload: Product = {
-            product_code: data.product_code ?? null,
-            product_name: data.product_name.trim(),
-        };
         if (!payload.product_code) {
-            handlePostProduct(payload);
+            await handlePostProduct(payload);
         } else {
-            handlePutProduct(payload);
+            await handlePutProduct(payload);
         }
-
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting payload...", { payload });
-            console.log("Form values: ", form.getValues());
-        }
-
         setButtonDisabled(false);
     };
 

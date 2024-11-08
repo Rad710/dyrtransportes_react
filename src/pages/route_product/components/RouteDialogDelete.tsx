@@ -9,7 +9,6 @@ import { Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type RouteDialogDeleteProps = {
-    routeList: Route[];
     setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
     selectedRouteRows: number[];
     setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>;
@@ -18,7 +17,6 @@ type RouteDialogDeleteProps = {
 };
 
 export const RouteDialogDelete = ({
-    routeList,
     setRouteList,
     selectedRouteRows,
     setSelectedRouteRows,

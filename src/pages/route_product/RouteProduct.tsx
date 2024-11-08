@@ -63,7 +63,6 @@ const RouteTabContent = () => {
         <>
             <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
                 <RouteDialogForm
-                    routeList={routeList}
                     setRouteList={setRouteList}
                     routeToEdit={routeToEdit}
                     setRouteToEdit={setRouteToEdit}
@@ -95,7 +94,6 @@ const RouteTabContent = () => {
                 </AlertDialogConfirm>
 
                 <RouteDialogDelete
-                    routeList={routeList}
                     setRouteList={setRouteList}
                     selectedRouteRows={selectedRouteRows}
                     setSelectedRouteRows={setSelectedRouteRows}
@@ -155,7 +153,6 @@ const ProductTabContent = () => {
         <>
             <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
                 <ProductDialogForm
-                    productList={productList}
                     setProductList={setProductList}
                     productToEdit={productToEdit}
                     setProductToEdit={setProductToEdit}
@@ -181,7 +178,6 @@ const ProductTabContent = () => {
                 </AlertDialogConfirm>
 
                 <ProductDialogDelete
-                    productList={productList}
                     setProductList={setProductList}
                     selectedProductRows={selectedProductRows}
                     setSelectedProductRows={setSelectedProductRows}
