@@ -9,7 +9,7 @@ import FormLiquidacionViajes from "./components/FormLiquidacionViajes";
 import TableLiquidacionViajes from "./components/TableLiquidacionViajes";
 import FormLiquidacionGastos from "./components/FormLiquidacionGastos";
 import TableLiquidacionGastos from "./components/TableLiquidacionGastos";
-import { RouteApi } from "../routeAndProduct/route_utils";
+import { RouteApi } from "../route_product/route_utils";
 import {
     deleteLiquidacionGasto,
     deleteLiquidacionViaje,
@@ -76,12 +76,11 @@ function Liquidacion({ title }) {
 
     useEffect(() => {
         const loadLiquidacion = async () => {
-            const [resultViajes, resultGastos, resultLiquidacion] =
-                await Promise.all([
-                    getLiquidacionViajes(chofer, fecha),
-                    getLiquidacionGastos(chofer, fecha),
-                    getLiquidacion(chofer, fecha),
-                ]);
+            const [resultViajes, resultGastos, resultLiquidacion] = await Promise.all([
+                getLiquidacionViajes(chofer, fecha),
+                getLiquidacionGastos(chofer, fecha),
+                getLiquidacion(chofer, fecha),
+            ]);
 
             const newViajes = resultViajes?.map((viaje) => ({
                 ...viaje,
@@ -123,18 +122,12 @@ function Liquidacion({ title }) {
                 }
             });
 
-            setLiquidacionViajes(
-                liquidacionViajes.filter((entry) => entry.checked === false),
-            );
+            setLiquidacionViajes(liquidacionViajes.filter((entry) => entry.checked === false));
         }
 
         if (tab === "gastos") {
-            const toDeleteConBoleta = liquidacionGastos.conBoleta.filter(
-                (entry) => entry.checked,
-            );
-            const toDeleteSinBoleta = liquidacionGastos.sinBoleta.filter(
-                (entry) => entry.checked,
-            );
+            const toDeleteConBoleta = liquidacionGastos.conBoleta.filter((entry) => entry.checked);
+            const toDeleteSinBoleta = liquidacionGastos.sinBoleta.filter((entry) => entry.checked);
 
             const deletePromisesConBoleta = toDeleteConBoleta.map(
                 async (entrada) => await deleteLiquidacionGasto(entrada.id),
@@ -155,12 +148,8 @@ function Liquidacion({ title }) {
             });
 
             setLiquidacionGastos({
-                conBoleta: liquidacionGastos.conBoleta.filter(
-                    (entry) => entry.checked === false,
-                ),
-                sinBoleta: liquidacionGastos.sinBoleta.filter(
-                    (entry) => entry.checked === false,
-                ),
+                conBoleta: liquidacionGastos.conBoleta.filter((entry) => entry.checked === false),
+                sinBoleta: liquidacionGastos.sinBoleta.filter((entry) => entry.checked === false),
             });
         }
     };
@@ -190,14 +179,12 @@ function Liquidacion({ title }) {
 
         const preciosJSON = {};
         for (const entrada of newPrecios) {
-            preciosJSON[`${entrada.origen}/${entrada.destino}`] =
-                entrada.precioLiquidacion;
+            preciosJSON[`${entrada.origen}/${entrada.destino}`] = entrada.precioLiquidacion;
         }
 
         const updatedViajes = liquidacionViajes.map((viaje) => ({
             ...viaje,
-            precioLiquidacion:
-                preciosJSON[`${viaje.origen}/${viaje.destino}`] ?? 0,
+            precioLiquidacion: preciosJSON[`${viaje.origen}/${viaje.destino}`] ?? 0,
             fechaViaje: new Date(viaje.fechaViaje).toISOString().slice(0, 10),
             chofer: chofer,
         }));
@@ -236,10 +223,11 @@ function Liquidacion({ title }) {
         <div className="p-4">
             <div className="md:flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-left md:w-1/2">
-                    {`${chofer} - ${new Date(fecha).toLocaleDateString(
-                        "es-ES",
-                        { month: "long", day: "numeric", timeZone: "GMT" },
-                    )}`}
+                    {`${chofer} - ${new Date(fecha).toLocaleDateString("es-ES", {
+                        month: "long",
+                        day: "numeric",
+                        timeZone: "GMT",
+                    })}`}
                 </h2>
 
                 <div className="gap-5 md:flex justify-end md:1/2">
@@ -262,12 +250,7 @@ function Liquidacion({ title }) {
                             setLiquidacionGastos={setLiquidacionGastos}
                         />
                     )}
-                    <Button
-                        color="grass"
-                        variant="solid"
-                        size="4"
-                        onClick={handleExportar}
-                    >
+                    <Button color="grass" variant="solid" size="4" onClick={handleExportar}>
                         <TableIcon width="20" height="20" />
                         Exportar
                     </Button>
@@ -276,15 +259,9 @@ function Liquidacion({ title }) {
                         handleDelete={handleDelete}
                         disabled={
                             !(
-                                liquidacionViajes.some(
-                                    (viaje) => viaje.checked,
-                                ) ||
-                                liquidacionGastos.conBoleta.some(
-                                    (gasto) => gasto.checked,
-                                ) ||
-                                liquidacionGastos.sinBoleta.some(
-                                    (gasto) => gasto.checked,
-                                )
+                                liquidacionViajes.some((viaje) => viaje.checked) ||
+                                liquidacionGastos.conBoleta.some((gasto) => gasto.checked) ||
+                                liquidacionGastos.sinBoleta.some((gasto) => gasto.checked)
                             )
                         }
                     />
@@ -326,9 +303,7 @@ function Liquidacion({ title }) {
                                 setLiquidacionViajes={setLiquidacionViajes}
                             />
                             {liquidacionViajes.length === 0 && (
-                                <p className="text-center p-4 text-lg">
-                                    No hay datos ingresados
-                                </p>
+                                <p className="text-center p-4 text-lg">No hay datos ingresados</p>
                             )}
                         </Tabs.Content>
 
@@ -347,13 +322,7 @@ function Liquidacion({ title }) {
                     width="80"
                     ariaLabel="blocks-loading"
                     wrapperClass="w-1/3 h-1/3 m-auto"
-                    colors={[
-                        "#A2C0E8",
-                        "#8DABDF",
-                        "#7896D6",
-                        "#6381CD",
-                        "#6366F1",
-                    ]}
+                    colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
                 />
             </Tabs.Root>
         </div>

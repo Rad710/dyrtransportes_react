@@ -7,25 +7,17 @@ export const DriverApi = {
     getDriver: async (code: number | null) =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/driver/${code}`)
-            .then(
-                (response: AxiosResponse<Driver | null>) =>
-                    response.data ?? null
-            )
+            .then((response: AxiosResponse<Driver | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
-                if (errorResponse?.response?.status !== 404) {
-                    console.log({ errorResponse });
-                    toastAxiosError(errorResponse);
-                }
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
                 return null;
             }),
 
     getDriverList: async () =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/drivers`)
-            .then(
-                (response: AxiosResponse<Driver[] | null>) =>
-                    response.data ?? []
-            )
+            .then((response: AxiosResponse<Driver[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -55,10 +47,20 @@ export const DriverApi = {
     deleteDriver: async (code: number) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/driver/${code}`)
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<{ error: string }>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return null;
+            }),
+
+    // TODO CREATE ENDPOINT
+    deleteDriverList: async (codeList: number[]) =>
+        axios
+            .delete(`${import.meta.env.VITE_API_URL}/drivers`, {
+                data: codeList,
+            })
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -68,10 +70,7 @@ export const DriverApi = {
     reactivateDriver: async (code: number) =>
         axios
             .patch(`${import.meta.env.VITE_API_URL}/driver/${code}`)
-            .then(
-                (response: AxiosResponse<{ success: string } | null>) =>
-                    response.data ?? null
-            )
+            .then((response: AxiosResponse<{ success: string } | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
@@ -86,9 +85,8 @@ export const DriverApi = {
             .then((response: AxiosResponse<BlobPart>) => {
                 saveAs(
                     new Blob([response.data]),
-                    response.headers["content-disposition"]
-                        ?.split("filename=")
-                        ?.at(1) || "nomina_de_choferes.xlsx"
+                    response.headers["content-disposition"]?.split("filename=")?.at(1) ||
+                        "nomina_de_choferes.xlsx",
                 );
                 toastSuccess("Planilla exportada exitosamente.");
             })

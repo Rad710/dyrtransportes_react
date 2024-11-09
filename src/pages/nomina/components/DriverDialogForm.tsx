@@ -26,26 +26,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Driver } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitResult } from "@/types";
+import { DriverApi } from "../driver_utils";
+import { toastSuccess } from "@/utils/notification";
 
-type DriverFormSchema = {
-    driverCode?: number;
-    driverId: string;
-    driverName: string;
-    driverSurname: string;
-    truckPlate: string;
-    trailerPlate: string;
-    successMessage?: string;
-    errorMessage?: string;
-};
+const driverFormSchema = z.object({
+    driver_code: z.number().nullish(),
 
-export const driverFormSchema = z.object({
-    driverCode: z.number().optional(),
-
-    driverId: z
+    driver_id: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo C.I. requerido",
@@ -54,7 +47,7 @@ export const driverFormSchema = z.object({
             message: "Campo C.I. no puede estar vacío.",
         }),
 
-    driverName: z
+    driver_name: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Nombre requerido.",
@@ -63,7 +56,7 @@ export const driverFormSchema = z.object({
             message: "Campo Nombre no puede estar vacío.",
         }),
 
-    driverSurname: z
+    driver_surname: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Apellido requerido.",
@@ -72,7 +65,7 @@ export const driverFormSchema = z.object({
             message: "Campo Apellido no puede estar vacío.",
         }),
 
-    truckPlate: z
+    truck_plate: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Chapa de Camión requerido.",
@@ -81,7 +74,7 @@ export const driverFormSchema = z.object({
             message: "Campo Chapa de Camión no puede estar vacío.",
         }),
 
-    trailerPlate: z
+    trailer_plate: z
         .string({
             invalid_type_error: "Valor inválido.",
             required_error: "Campo Chapa de Carreta requerido.",
@@ -89,67 +82,267 @@ export const driverFormSchema = z.object({
         .min(1, {
             message: "Campo Chapa de Carreta no puede estar vacío.",
         }),
-
-    successMessage: z.string().optional(),
-    errorMessage: z.string().optional(),
 });
 
 type FormDriverProps = {
-    form: UseFormReturn<DriverFormSchema, any, undefined>;
-    handleSubmit: (formData: Driver) => Promise<void>;
+    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
+    driverToEdit: Driver | null;
+    setDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>;
 };
 
-export const DriverDialogForm = ({ form, handleSubmit }: FormDriverProps) => {
-    const [buttonDisabled, setButtonDisabled] = useState(false);
+export const DriverDialogForm = ({
+    setDriverList,
+    driverToEdit,
+    setDriverToEdit,
+}: FormDriverProps) => {
+    //STATE
+    const form = useForm<z.infer<typeof driverFormSchema>>({
+        resolver: zodResolver(driverFormSchema),
+    });
 
-    const button = !form.getValues("driverCode")
+    const button = !form.getValues("driver_code")
         ? ({
               text: "Agregar Chofer",
               description: "Completar datos del nuevo Chofer",
               variant: "indigo",
+              size: "md-lg",
           } as const)
         : ({
               text: "Editar Chofer",
               description: "Completar datos del Chofer a editar",
               variant: "cyan",
+              size: "md-lg",
           } as const);
 
-    const onSubmit = async (data: z.infer<typeof driverFormSchema>) => {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [buttonDisabled, setButtonDisabled] = useState(false);
+    const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+
+    // USE EFFECTS
+    useEffect(() => {
+        // show dialog when clicking editar action button
+        if (driverToEdit) {
+            setIsOpen(true);
+
+            form.reset({
+                driver_code: driverToEdit?.driver_code ?? null,
+                driver_id: driverToEdit?.driver_id ?? "",
+                driver_name: driverToEdit?.driver_name ?? "",
+                driver_surname: driverToEdit?.driver_surname ?? "",
+                truck_plate: driverToEdit?.truck_plate ?? "",
+                trailer_plate: driverToEdit?.trailer_plate ?? "",
+            });
+        }
+    }, [driverToEdit]);
+
+    useEffect(() => {
+        // hide submit result when there is new error (form is changing)
+        // this allows to change form description
+        setSubmitResult((prev) => (Object.keys(form.formState.errors).length ? null : prev));
+    }, [form.formState.errors]);
+
+    // HANDLERS
+    const handlePostDriver = async (formData: Driver) => {
+        if (formData.driver_code) {
+            setSubmitResult({ error: "Chofer ya existe" });
+            return;
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Posting driver...", { formData });
+        }
+        const result = await DriverApi.postDriver(formData);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Post result...", { result });
+        }
+
+        if (result?.success) {
+            setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newDriverList = await DriverApi.getDriverList();
+            setDriverList(newDriverList);
+
+            // reset dialog when succesfully created NEW route
+            form.reset({
+                driver_code: undefined,
+                driver_id: "",
+                driver_name: "",
+                driver_surname: "",
+                truck_plate: "",
+                trailer_plate: "",
+            });
+        }
+
+        if (result?.error) {
+            setSubmitResult({ error: result.error });
+            throw result.error;
+        }
+    };
+
+    const handlePutDriver = async (formData: Driver) => {
+        if (!formData.driver_code) {
+            setSubmitResult({ error: "Chofer no puede editarse" });
+            return;
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Putting driver...", { formData });
+        }
+        const result = await DriverApi.putDriver(formData.driver_code, formData);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Put result...", { result });
+        }
+
+        if (result?.success) {
+            setSubmitResult({ success: result.success });
+            toastSuccess(result.success);
+
+            const newDriverList = await DriverApi.getDriverList();
+            setDriverList(newDriverList);
+        }
+
+        if (result?.error) {
+            setSubmitResult({ error: result.error });
+            return;
+        }
+    };
+
+    const handleOnOpenChange = (open: boolean) => {
+        setIsOpen(open);
+
+        // timeout solves issue of form changing text/color when closing
+        setTimeout(() => {
+            form.clearErrors();
+            form.reset({
+                driver_code: undefined,
+                driver_id: "",
+                driver_name: "",
+                driver_surname: "",
+                truck_plate: "",
+                trailer_plate: "",
+            });
+
+            setSubmitResult(null);
+            setDriverToEdit(null);
+        }, 100);
+    };
+
+    const onFormSubmit = async (payload: z.infer<typeof driverFormSchema>) => {
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Submitting product formData...", { payload });
+        }
+
         setButtonDisabled(true);
-        await handleSubmit({
-            driver_code: data.driverCode ?? null,
-            driver_id: data.driverId.trim(),
-            driver_name: data.driverName.trim(),
-            driver_surname: data.driverSurname.trim(),
-            truck_plate: data.truckPlate.trim(),
-            trailer_plate: data.trailerPlate.trim(),
-        });
+        if (!payload.driver_code) {
+            await handlePostDriver(payload);
+        } else {
+            await handlePutDriver(payload);
+        }
+
         setButtonDisabled(false);
     };
 
-    const onFormClose = (open: boolean) => {
-        if (open) {
-            return;
-        }
-        form.clearErrors();
-        form.setValue("successMessage", undefined);
-        form.setValue("errorMessage", undefined);
-    };
+    const FormComponent = (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onFormSubmit)}
+                className="space-y-2 mt-2 ml-2 mr-2"
+                id="form-driver"
+            >
+                <div className="md:flex md:flex-row md:gap-6">
+                    <FormField
+                        control={form.control}
+                        name="driver_id"
+                        defaultValue={form.getValues("driver_id")}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>C.I.</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="C.I." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <div className="md:flex md:flex-row md:gap-6">
+                    <FormField
+                        control={form.control}
+                        name="driver_name"
+                        defaultValue={form.getValues("driver_name")}
+                        render={({ field }) => (
+                            <FormItem className="mt-2 md:mt-0">
+                                <FormLabel>Nombre</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Nombre" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="driver_surname"
+                        defaultValue={form.getValues("driver_surname")}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Apellido</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Apellido" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <div className="md:flex md:flex-row md:gap-6">
+                    <FormField
+                        control={form.control}
+                        name="truck_plate"
+                        defaultValue={form.getValues("truck_plate")}
+                        render={({ field }) => (
+                            <FormItem className="mt-2 md:mt-0">
+                                <FormLabel>Chapa de Camión</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Chapa de Camión" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="trailer_plate"
+                        defaultValue={form.getValues("trailer_plate")}
+                        render={({ field }) => (
+                            <FormItem className="mt-2 md:mt-0">
+                                <FormLabel>Chapa de Carreta</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Chapa de Carreta" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+            </form>
+        </Form>
+    );
 
     return (
-        <Dialog onOpenChange={onFormClose}>
+        <Dialog open={isOpen} onOpenChange={handleOnOpenChange}>
             <DialogTrigger asChild>
-                <Button
-                    id="dialog-form-driver-trigger"
-                    variant={button.variant}
-                    size="md-lg"
-                >
-                    {button.text}
+                <Button id="dialog-form-driver-trigger" variant="indigo" size="md-lg">
+                    Agregar Chofer
                 </Button>
             </DialogTrigger>
             <DialogContent
-                id="dialog-form-driver-content"
-                className="sm:max-w-xl p-0"
+                className="sm:max-w-2xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
                 onInteractOutside={(e) => e.preventDefault()}
             >
@@ -157,148 +350,21 @@ export const DriverDialogForm = ({ form, handleSubmit }: FormDriverProps) => {
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {!form.getValues("successMessage") &&
-                            !form.getValues("errorMessage") ? (
+                            {submitResult ? (
+                                <span
+                                    className={
+                                        submitResult.success ? "text-green-600" : "text-red-600"
+                                    }
+                                >
+                                    {submitResult.success || submitResult.error}
+                                </span>
+                            ) : (
                                 <span>{button.description}</span>
-                            ) : (
-                                ""
-                            )}
-
-                            {form.getValues("successMessage") ? (
-                                <Alert variant="success">
-                                    <CheckIcon className="h-5 w-5" />
-                                    <AlertDescription className="mt-1">
-                                        {form.getValues("successMessage")}
-                                    </AlertDescription>
-                                </Alert>
-                            ) : (
-                                ""
-                            )}
-
-                            {form.getValues("errorMessage") ? (
-                                <Alert variant="destructive">
-                                    <XIcon className="h-5 w-5" />
-                                    <AlertDescription className="mt-1">
-                                        {form.getValues("errorMessage")}
-                                    </AlertDescription>
-                                </Alert>
-                            ) : (
-                                ""
                             )}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-6 mt-4 ml-2 mr-2"
-                            id="form-driver"
-                        >
-                            <div className="md:flex md:flex-row md:gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="driverId"
-                                    defaultValue={form.getValues("driverId")}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>C.I.</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="C.I."
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="md:flex md:flex-row md:gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="driverName"
-                                    defaultValue={form.getValues("driverName")}
-                                    render={({ field }) => (
-                                        <FormItem className="mt-6 md:mt-0">
-                                            <FormLabel>Nombre</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Nombre"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="driverSurname"
-                                    defaultValue={form.getValues(
-                                        "driverSurname"
-                                    )}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Apellido</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Apellido"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="md:flex md:flex-row md:gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="truckPlate"
-                                    defaultValue={form.getValues("truckPlate")}
-                                    render={({ field }) => (
-                                        <FormItem className="mt-6 md:mt-0">
-                                            <FormLabel>
-                                                Chapa de Camión
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Chapa de Camión"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="trailerPlate"
-                                    defaultValue={form.getValues(
-                                        "trailerPlate"
-                                    )}
-                                    render={({ field }) => (
-                                        <FormItem className="mt-6 md:mt-0">
-                                            <FormLabel>
-                                                Chapa de Carreta
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Chapa de Carreta"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </form>
-                    </Form>
+                    {FormComponent}
 
                     <DialogFooter className="mt-6">
                         <DialogClose asChild>
@@ -309,16 +375,6 @@ export const DriverDialogForm = ({ form, handleSubmit }: FormDriverProps) => {
                             type="submit"
                             form="form-driver"
                             disabled={buttonDisabled}
-                            onClick={() => {
-                                if (
-                                    !driverFormSchema.safeParse(
-                                        form.getValues()
-                                    ).success
-                                ) {
-                                    form.setValue("successMessage", undefined);
-                                    form.setValue("errorMessage", undefined);
-                                }
-                            }}
                         >
                             {button.text}
                         </Button>

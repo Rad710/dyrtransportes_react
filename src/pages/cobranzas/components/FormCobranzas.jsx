@@ -1,12 +1,5 @@
 import { FileIcon, PlusIcon } from "@radix-ui/react-icons";
-import {
-    Button,
-    Dialog,
-    Flex,
-    Select,
-    Text,
-    TextField,
-} from "@radix-ui/themes";
+import { Button, Dialog, Flex, Select, Text, TextField } from "@radix-ui/themes";
 import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-router-dom";
 
@@ -22,7 +15,7 @@ import {
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
-import { RouteApi } from "../../../pages/routeAndProduct/route_utils";
+import { RouteApi } from "../../../pages/route_product/route_utils";
 
 function FormCobranzas({
     fechaCreacion,
@@ -90,9 +83,7 @@ function FormCobranzas({
         const queryKeywords = async () => {
             const [keywords, planillas] = await Promise.all([
                 getKeywords(),
-                getPlanillasOfYear(
-                    fechaCreacion.toISOString().slice(0, 10).slice(0, 4),
-                ),
+                getPlanillasOfYear(fechaCreacion.toISOString().slice(0, 10).slice(0, 4)),
             ]);
 
             if (!keywords?.response && !keywords?.message) {
@@ -100,9 +91,7 @@ function FormCobranzas({
             }
 
             if (!planillas?.response && !planillas?.message) {
-                setPlanillaList(
-                    planillas.map((planilla) => new Date(planilla)),
-                );
+                setPlanillaList(planillas.map((planilla) => new Date(planilla)));
             } else {
                 setError(planillas?.response?.data);
             }
@@ -171,13 +160,7 @@ function FormCobranzas({
         const string = e.target.value;
 
         if (
-            [
-                "tiquet",
-                "precio",
-                "kgOrigen",
-                "kgDestino",
-                "precioLiquidacion",
-            ].includes(fieldName)
+            ["tiquet", "precio", "kgOrigen", "kgDestino", "precioLiquidacion"].includes(fieldName)
         ) {
             if (isNaN(Number(string))) {
                 return;
@@ -186,8 +169,7 @@ function FormCobranzas({
 
         if (["chofer", "producto", "origen", "destino"].includes(fieldName)) {
             const newToSuggest = suggestions[fieldName].filter(
-                (suggested) =>
-                    string !== "" && new RegExp("^" + string).test(suggested),
+                (suggested) => string !== "" && new RegExp("^" + string).test(suggested),
             );
             setToSuggest({ ...toSuggest, [fieldName]: newToSuggest });
         }
@@ -234,15 +216,11 @@ function FormCobranzas({
         }
 
         if (!response?.response) {
-            setSuccess(
-                `Entrada ${formData.id === "" ? "añadida" : "editada"} correctamente`,
-            );
+            setSuccess(`Entrada ${formData.id === "" ? "añadida" : "editada"} correctamente`);
             setError("");
 
             //actualizar state
-            const responseUpdate = await getCobranza(
-                fechaCreacion.toISOString().slice(0, 10),
-            );
+            const responseUpdate = await getCobranza(fechaCreacion.toISOString().slice(0, 10));
 
             if (responseUpdate?.response) {
                 setDisableButton(false);
@@ -311,9 +289,7 @@ function FormCobranzas({
         const { grupo, index } = tracker.at(0);
         const viaje = {};
         for (const attribute in cobranzas[grupo].viajes[index].viaje) {
-            viaje[attribute] = String(
-                cobranzas[grupo].viajes[index].viaje[attribute] ?? "",
-            );
+            viaje[attribute] = String(cobranzas[grupo].viajes[index].viaje[attribute] ?? "");
         }
         setFormData({
             ...viaje,
@@ -397,14 +373,9 @@ function FormCobranzas({
                                         list="suggestedChofer"
                                     />
                                     <datalist id="suggestedChofer">
-                                        {[...new Set(suggestions.chofer)]
-                                            .sort()
-                                            .map((entry) => (
-                                                <option
-                                                    value={entry}
-                                                    key={entry}
-                                                ></option>
-                                            ))}
+                                        {[...new Set(suggestions.chofer)].sort().map((entry) => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -413,9 +384,7 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.chofer.at(
-                                                selectedSuggestion,
-                                            )}
+                                            {toSuggest.chofer.at(selectedSuggestion)}
                                         </Text>
                                     </div>
                                 </div>
@@ -476,14 +445,9 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedProducto">
-                                        {[...new Set(suggestions.producto)]
-                                            .sort()
-                                            .map((entry) => (
-                                                <option
-                                                    value={entry}
-                                                    key={entry}
-                                                ></option>
-                                            ))}
+                                        {[...new Set(suggestions.producto)].sort().map((entry) => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -492,9 +456,7 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.producto.at(
-                                                selectedSuggestion,
-                                            )}
+                                            {toSuggest.producto.at(selectedSuggestion)}
                                         </Text>
                                     </div>
                                 </div>
@@ -519,14 +481,9 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedOrigen">
-                                        {[...new Set(suggestions.origen)]
-                                            .sort()
-                                            .map((entry) => (
-                                                <option
-                                                    value={entry}
-                                                    key={entry}
-                                                ></option>
-                                            ))}
+                                        {[...new Set(suggestions.origen)].sort().map((entry) => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -535,9 +492,7 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.origen.at(
-                                                selectedSuggestion,
-                                            )}
+                                            {toSuggest.origen.at(selectedSuggestion)}
                                         </Text>
                                     </div>
                                 </div>
@@ -562,14 +517,9 @@ function FormCobranzas({
                                     />
 
                                     <datalist id="suggestedDestino">
-                                        {[...new Set(suggestions.destino)]
-                                            .sort()
-                                            .map((entry) => (
-                                                <option
-                                                    value={entry}
-                                                    key={entry}
-                                                ></option>
-                                            ))}
+                                        {[...new Set(suggestions.destino)].sort().map((entry) => (
+                                            <option value={entry} key={entry}></option>
+                                        ))}
                                     </datalist>
 
                                     <div className="absolute top-1.5">
@@ -578,9 +528,7 @@ function FormCobranzas({
                                             color="gray"
                                             size="2"
                                         >
-                                            {toSuggest.destino.at(
-                                                selectedSuggestion,
-                                            )}
+                                            {toSuggest.destino.at(selectedSuggestion)}
                                         </Text>
                                     </div>
                                 </div>
@@ -610,9 +558,7 @@ function FormCobranzas({
                                     {`Precio (P. sin IVA: ${
                                         isNaN(Number(formData.precio))
                                             ? ""
-                                            : (
-                                                  formData.precio / 1.1
-                                              ).toLocaleString("es-ES", {
+                                            : (formData.precio / 1.1).toLocaleString("es-ES", {
                                                   minimumFractionDigits: 2,
                                                   maximumFractionDigits: 2,
                                               })
@@ -646,9 +592,7 @@ function FormCobranzas({
                                     onChange={onChange}
                                     value={formData.precioLiquidacion}
                                     color={inputStyles.precioLiquidacion.color}
-                                    variant={
-                                        inputStyles.precioLiquidacion.variant
-                                    }
+                                    variant={inputStyles.precioLiquidacion.variant}
                                 />
                             </label>
                         </Flex>
@@ -688,12 +632,7 @@ function FormCobranzas({
 
                             {formData.id ? (
                                 <label>
-                                    <Text
-                                        as="div"
-                                        size="2"
-                                        mb="1"
-                                        weight="bold"
-                                    >
+                                    <Text as="div" size="2" mb="1" weight="bold">
                                         Fecha de Cobranza
                                     </Text>
                                     <Select.Root
@@ -709,22 +648,15 @@ function FormCobranzas({
                                         <Select.Content position="popper">
                                             {planillaList.map((planilla) => (
                                                 <Select.Item
-                                                    value={planilla
-                                                        .toISOString()
-                                                        .slice(0, 10)}
-                                                    key={planilla
-                                                        .toISOString()
-                                                        .slice(0, 10)}
+                                                    value={planilla.toISOString().slice(0, 10)}
+                                                    key={planilla.toISOString().slice(0, 10)}
                                                 >
-                                                    {planilla.toLocaleDateString(
-                                                        "es-ES",
-                                                        {
-                                                            year: "numeric",
-                                                            month: "numeric",
-                                                            day: "numeric",
-                                                            timeZone: "GMT",
-                                                        },
-                                                    )}
+                                                    {planilla.toLocaleDateString("es-ES", {
+                                                        year: "numeric",
+                                                        month: "numeric",
+                                                        day: "numeric",
+                                                        timeZone: "GMT",
+                                                    })}
                                                 </Select.Item>
                                             ))}
                                         </Select.Content>
@@ -738,11 +670,7 @@ function FormCobranzas({
 
                     <Flex gap="3" mt="4" justify="end">
                         <Dialog.Close>
-                            <Button
-                                variant="soft"
-                                color="gray"
-                                onClick={handleCerrar}
-                            >
+                            <Button variant="soft" color="gray" onClick={handleCerrar}>
                                 Cancelar
                             </Button>
                         </Dialog.Close>

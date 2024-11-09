@@ -158,12 +158,6 @@ export const RouteDialogForm = ({
     // STATE
     const form = useForm<z.infer<typeof routeFormSchema>>({
         resolver: zodResolver(routeFormSchema),
-        defaultValues: {
-            origin: "",
-            destination: "",
-            price: 0,
-            payroll_price: 0,
-        },
     });
 
     const button = !form.getValues("route_code")
@@ -216,9 +210,12 @@ export const RouteDialogForm = ({
             return;
         }
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Posting Route...", { formData });
+        }
         const result = await RouteApi.postRoute(formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Post Route...", { result });
+            console.log("Post result...", { result });
         }
 
         if (result?.success) {
@@ -250,9 +247,12 @@ export const RouteDialogForm = ({
             return;
         }
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Putting Route...", { formData });
+        }
         const result = await RouteApi.putRoute(formData.route_code, formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Put Route...", { result });
+            console.log("Put result...", { result });
         }
 
         if (result?.success) {

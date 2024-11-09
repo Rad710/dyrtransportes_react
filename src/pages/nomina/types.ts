@@ -1,13 +1,13 @@
 export type Driver = {
     driver_code?: number | null;
-    driver_id?: string | null;
-    driver_name?: string | null;
-    driver_surname?: string | null;
-    truck_plate?: string | null;
-    trailer_plate?: string | null;
-    deleted?: boolean | null;
-    company_id?: string | null;
-    modification_user?: string | null;
+    driver_id: string;
+    driver_name: string;
+    driver_surname: string;
+    truck_plate: string;
+    trailer_plate: string;
+    deleted?: boolean;
+    company_id?: string;
+    modification_user?: string;
 
     success?: string;
     error?: string;
