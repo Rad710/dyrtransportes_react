@@ -61,6 +61,9 @@ export const ProductDialogForm = ({
     //STATE
     const form = useForm<z.infer<typeof productFormSchema>>({
         resolver: zodResolver(productFormSchema),
+        defaultValues: {
+            product_name: "",
+        },
     });
 
     const button = !form.getValues("product_code")
@@ -68,11 +71,13 @@ export const ProductDialogForm = ({
               text: "Agregar Producto",
               description: "Completar datos del Producto",
               variant: "indigo",
+              size: "md-lg",
           } as const)
         : ({
               text: "Editar Producto",
               description: "Completar datos del Producto a editar",
               variant: "cyan",
+              size: "md-lg",
           } as const);
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -93,25 +98,18 @@ export const ProductDialogForm = ({
     }, [productToEdit]);
 
     useEffect(() => {
-        // reset dialog when succesfully created NEW route
-        if (!productToEdit) {
-            form.reset({
-                product_code: undefined,
-                product_name: "",
-            });
-        }
-    }, [submitResult]);
+        // hide submit result when there is new error (form is changing)
+        // this allows to change form description
+        setSubmitResult((prev) => (Object.keys(form.formState.errors).length ? null : prev));
+    }, [form.formState.errors]);
 
     // HANDLERS
     const handlePostProduct = async (formData: Product) => {
         if (formData.product_code) {
             setSubmitResult({ error: "Producto ya existe" });
-            throw new Error("Producto ya existe");
+            return;
         }
 
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Sending product...", { formData });
-        }
         const result = await ProductApi.postProduct(formData);
         if (import.meta.env.VITE_DEBUG) {
             console.log("Post product...", { result });
@@ -123,23 +121,26 @@ export const ProductDialogForm = ({
 
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
+
+            // reset dialog when succesfully created NEW
+            form.reset({
+                product_code: null,
+                product_name: "",
+            });
         }
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            throw result.error;
+            return;
         }
     };
 
     const handlePutProduct = async (formData: Product) => {
         if (!formData.product_code) {
             setSubmitResult({ error: "Producto no puede editarse" });
-            throw new Error("Producto no puede editarse");
+            return;
         }
 
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Sending product...", { formData });
-        }
         const result = await ProductApi.putProduct(formData.product_code, formData);
         if (import.meta.env.VITE_DEBUG) {
             console.log("Put product...", { result });
@@ -155,7 +156,7 @@ export const ProductDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            throw result.error;
+            return;
         }
     };
 
@@ -193,7 +194,7 @@ export const ProductDialogForm = ({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onFormSubmit)}
-                className="space-y-6 mt-4 ml-2 mr-2"
+                className="space-y-2 mt-2 ml-2 mr-2"
                 id="form-product"
             >
                 <FormField
@@ -222,7 +223,7 @@ export const ProductDialogForm = ({
                 </Button>
             </DialogTrigger>
             <DialogContent
-                className="sm:max-w-xl p-0"
+                className="sm:max-w-2xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
                 onInteractOutside={(e) => e.preventDefault()}
             >
@@ -230,16 +231,22 @@ export const ProductDialogForm = ({
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {submitResult ? (
-                                <span
-                                    className={
-                                        submitResult.success ? "text-green-600" : "text-red-600"
-                                    }
-                                >
-                                    {submitResult.success || submitResult.error}
-                                </span>
+                            {!Object.keys(form.formState.errors).length ? (
+                                submitResult ? (
+                                    <span
+                                        className={
+                                            submitResult.success ? "text-green-600" : "text-red-600"
+                                        }
+                                    >
+                                        {submitResult.success || submitResult.error}
+                                    </span>
+                                ) : (
+                                    <span>{button.description}</span>
+                                )
                             ) : (
-                                <span>{button.description}</span>
+                                <span className="text-red-500 font-bold">
+                                    Revise los campos requerido
+                                </span>
                             )}
                         </DialogDescription>
                     </DialogHeader>

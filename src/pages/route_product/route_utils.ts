@@ -75,14 +75,10 @@ export const RouteApi = {
                 return null;
             }),
 
-    exportRouteList: async (codeList?: number[]) =>
+    exportRouteList: async () =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/export-routes`, {
                 responseType: "blob",
-                params: { route_list: codeList },
-                paramsSerializer: {
-                    indexes: false,
-                },
             })
             .then((response: AxiosResponse<BlobPart>) => {
                 saveAs(new Blob([response.data]), "lista_de_precios.xlsx");
@@ -91,7 +87,6 @@ export const RouteApi = {
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
-                return null;
             }),
 };
 

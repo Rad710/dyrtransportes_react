@@ -1,6 +1,11 @@
 "use client";
 "use strict";
 
+import React, { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
 import {
     Form,
     FormControl,
@@ -27,14 +32,11 @@ import {
     DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Route } from "@/pages/route_product/types";
-import React, { useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
+
 import { toastSuccess } from "@/utils/notification";
 import { RouteApi } from "../route_utils";
-import { useForm } from "react-hook-form";
 import { SubmitResult } from "@/types";
 
 Globalize.load(cldrDataSupplementSubTags);
@@ -156,6 +158,12 @@ export const RouteDialogForm = ({
     // STATE
     const form = useForm<z.infer<typeof routeFormSchema>>({
         resolver: zodResolver(routeFormSchema),
+        defaultValues: {
+            origin: "",
+            destination: "",
+            price: 0,
+            payroll_price: 0,
+        },
     });
 
     const button = !form.getValues("route_code")
@@ -196,23 +204,16 @@ export const RouteDialogForm = ({
     }, [routeToEdit]);
 
     useEffect(() => {
-        // reset dialog when succesfully created NEW route
-        if (!routeToEdit) {
-            form.reset({
-                route_code: null,
-                origin: "",
-                destination: "",
-                price: 0,
-                payroll_price: 0,
-            });
-        }
-    }, [submitResult]);
+        // hide submit result when there is new error (form is changing)
+        // this allows to change form description
+        setSubmitResult((prev) => (Object.keys(form.formState.errors).length ? null : prev));
+    }, [form.formState.errors]);
 
     // HANDLERS
     const handlePostRoute = async (formData: Route) => {
         if (formData.route_code) {
             setSubmitResult({ error: "Ruta ya existe" });
-            throw new Error("Ruta ya existe");
+            return;
         }
 
         const result = await RouteApi.postRoute(formData);
@@ -226,18 +227,27 @@ export const RouteDialogForm = ({
 
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
+
+            // reset dialog when succesfully created NEW route
+            form.reset({
+                route_code: null,
+                origin: "",
+                destination: "",
+                price: 0,
+                payroll_price: 0,
+            });
         }
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            throw result.error;
+            return;
         }
     };
 
     const handlePutRoute = async (formData: Route) => {
         if (!formData.route_code) {
             setSubmitResult({ error: "Ruta no puede editarse" });
-            throw new Error("Ruta no puede editarse");
+            return;
         }
 
         const result = await RouteApi.putRoute(formData.route_code, formData);
@@ -255,7 +265,7 @@ export const RouteDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            throw result.error;
+            return;
         }
     };
 
@@ -290,11 +300,6 @@ export const RouteDialogForm = ({
             await handlePutRoute(payload);
         }
 
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting payload...", { payload });
-            console.log("Form values: ", form.getValues());
-        }
-
         setButtonDisabled(false);
     };
 
@@ -303,16 +308,16 @@ export const RouteDialogForm = ({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onFormSubmit)}
-                    className="space-y-6 mt-4 ml-2 mr-2"
+                    className="space-y-2 mt-2 ml-2 mr-2"
                     id="form-route"
                 >
-                    <div className="md:flex md:flex-row md:gap-6">
+                    <div className="md:flex md:flex-row md:gap-6 justify-evenly">
                         <FormField
                             control={form.control}
                             name="origin"
                             defaultValue={form.getValues("origin")}
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="w-full">
                                     <FormLabel>Origen</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Origen" {...field} />
@@ -326,7 +331,7 @@ export const RouteDialogForm = ({
                             name="destination"
                             defaultValue={form.getValues("destination")}
                             render={({ field }) => (
-                                <FormItem className="mt-6 md:mt-0">
+                                <FormItem className="mt-2 md:mt-0 w-full">
                                     <FormLabel>Destino</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Destino" {...field} />
@@ -337,13 +342,13 @@ export const RouteDialogForm = ({
                         />
                     </div>
 
-                    <div className="md:flex md:flex-row md:gap-6">
+                    <div className="md:flex md:flex-row md:gap-6 justify-evenly">
                         <FormField
                             control={form.control}
                             name="price"
                             defaultValue={form.getValues("price")}
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="w-full">
                                     <FormLabel>Precio</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Precio" {...field} type="text" />
@@ -357,7 +362,7 @@ export const RouteDialogForm = ({
                             name="payroll_price"
                             defaultValue={form.getValues("payroll_price")}
                             render={({ field }) => (
-                                <FormItem className="mt-6 md:mt-0">
+                                <FormItem className="mt-2 md:mt-0 w-full">
                                     <FormLabel>Precio Liquidación</FormLabel>
                                     <FormControl>
                                         <Input
@@ -384,7 +389,7 @@ export const RouteDialogForm = ({
                 </Button>
             </DialogTrigger>
             <DialogContent
-                className="sm:max-w-xl p-0"
+                className="sm:max-w-2xl p-0"
                 onCloseAutoFocus={(e) => e.preventDefault()}
                 onInteractOutside={(e) => e.preventDefault()}
             >
@@ -392,16 +397,22 @@ export const RouteDialogForm = ({
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {submitResult ? (
-                                <span
-                                    className={
-                                        submitResult.success ? "text-green-600" : "text-red-600"
-                                    }
-                                >
-                                    {submitResult.success || submitResult.error}
-                                </span>
+                            {!Object.keys(form.formState.errors).length ? (
+                                submitResult ? (
+                                    <span
+                                        className={
+                                            submitResult.success ? "text-green-600" : "text-red-600"
+                                        }
+                                    >
+                                        {submitResult.success || submitResult.error}
+                                    </span>
+                                ) : (
+                                    <span>{button.description}</span>
+                                )
                             ) : (
-                                <span>{button.description}</span>
+                                <span className="text-red-500 font-bold">
+                                    Revise los campos requerido
+                                </span>
                             )}
                         </DialogDescription>
                     </DialogHeader>

@@ -35,8 +35,7 @@ const RouteTabContent = () => {
     const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
     const [routeToDelete, setRouteToDelete] = useState<Route | null>(null);
 
-    // EVENT HANDLERS
-    // Route Handlers and Component
+    // DATATABLE
     const routeColumns = routeDataTableColumns(
         selectedRouteRows,
         setSelectedRouteRows,
@@ -44,6 +43,7 @@ const RouteTabContent = () => {
         setRouteToDelete,
     );
 
+    // USE EFFECTS
     useEffect(() => {
         const loadRoutes = async () => {
             const routes = await RouteApi.getRouteList();
@@ -77,20 +77,9 @@ const RouteTabContent = () => {
                     }
                     variant="green"
                     size="md-lg"
-                    onClickFunctionPromise={async () => {
-                        await RouteApi.exportRouteList(
-                            selectedRouteRows.length ? selectedRouteRows : undefined,
-                        );
-                    }}
+                    onClickFunctionPromise={RouteApi.exportRouteList}
                 >
-                    <span className="md:text-lg">
-                        Se exportarán{" "}
-                        <strong className="font-bold text-gray-700">
-                            {selectedRouteRows.length > 0
-                                ? "solo las Rutas seleccionadas."
-                                : "todas las Rutas."}
-                        </strong>
-                    </span>
+                    <span className="md:text-lg">Se exportarán las Rutas.</span>
                 </AlertDialogConfirm>
 
                 <RouteDialogDelete
@@ -167,9 +156,7 @@ const ProductTabContent = () => {
                     }
                     variant="green"
                     size="md-lg"
-                    onClickFunctionPromise={async () => {
-                        await ProductApi.exportProductList();
-                    }}
+                    onClickFunctionPromise={ProductApi.exportProductList}
                 >
                     <span className="md:text-lg">
                         Se exportarán{" "}
