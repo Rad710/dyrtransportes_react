@@ -187,11 +187,11 @@ export const DriverDialogForm = ({
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Putting driver...", { formData });
+            console.log("PUT driver...", { formData });
         }
         const result = await DriverApi.putDriver(formData.driver_code, formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Put result...", { result });
+            console.log("PUT result...", { result });
         }
 
         if (result?.success) {

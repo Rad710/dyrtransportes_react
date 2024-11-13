@@ -248,11 +248,11 @@ export const RouteDialogForm = ({
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Putting Route...", { formData });
+            console.log("PUT Route...", { formData });
         }
         const result = await RouteApi.putRoute(formData.route_code, formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Put result...", { result });
+            console.log("PUT result...", { result });
         }
 
         if (result?.success) {

@@ -141,9 +141,13 @@ export const ProductDialogForm = ({
             return;
         }
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("PUT product...", { formData });
+        }
+
         const result = await ProductApi.putProduct(formData.product_code, formData);
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Put product...", { result });
+            console.log("PUT result...", { result });
         }
 
         if (result?.success) {

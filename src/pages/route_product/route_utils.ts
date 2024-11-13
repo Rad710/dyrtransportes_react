@@ -113,7 +113,7 @@ export const ProductApi = {
     // TODO CHECK ENDPOINT
     putProduct: async (code: number, payload: Product) =>
         axios
-            .patch(`${import.meta.env.VITE_API_URL}/product/${code}`, payload)
+            .put(`${import.meta.env.VITE_API_URL}/product/${code}`, payload)
             .then((response: AxiosResponse<Product>) => response.data ?? null)
             .catch((errorResponse: AxiosError<Product>) => {
                 console.log({ errorResponse });
