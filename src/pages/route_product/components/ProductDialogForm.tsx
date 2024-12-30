@@ -51,12 +51,14 @@ type FormProductProps = {
     setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
     productToEdit: Product | null;
     setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
+    setSelectedProductRows: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export const ProductDialogForm = ({
     setProductList,
     productToEdit,
     setProductToEdit,
+    setSelectedProductRows,
 }: FormProductProps) => {
     //STATE
     const form = useForm<z.infer<typeof productFormSchema>>({
@@ -133,6 +135,8 @@ export const ProductDialogForm = ({
             setSubmitResult({ error: result.error });
             return;
         }
+
+        setSelectedProductRows([]);
     };
 
     const handlePutProduct = async (formData: Product) => {
@@ -162,6 +166,8 @@ export const ProductDialogForm = ({
             setSubmitResult({ error: result.error });
             return;
         }
+
+        setSelectedProductRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

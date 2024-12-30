@@ -110,7 +110,6 @@ export const ProductApi = {
                 return errorResponse.response?.data ?? null;
             }),
 
-    // TODO CHECK ENDPOINT
     putProduct: async (code: number, payload: Product) =>
         axios
             .put(`${import.meta.env.VITE_API_URL}/product/${code}`, payload)

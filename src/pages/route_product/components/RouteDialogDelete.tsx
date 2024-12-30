@@ -49,6 +49,7 @@ export const RouteDialogDelete = ({
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
         }
+        setSelectedRouteRows([]);
     };
 
     const handleDeleteRouteList = async () => {
@@ -64,11 +65,11 @@ export const RouteDialogDelete = ({
 
         if (result?.success) {
             toastSuccess(result.success);
-            setSelectedRouteRows([]);
 
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
         }
+        setSelectedRouteRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

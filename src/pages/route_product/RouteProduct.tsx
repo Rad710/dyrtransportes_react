@@ -66,6 +66,7 @@ const RouteTabContent = () => {
                     setRouteList={setRouteList}
                     routeToEdit={routeToEdit}
                     setRouteToEdit={setRouteToEdit}
+                    setSelectedRouteRows={setSelectedRouteRows}
                 />
 
                 <AlertDialogConfirm
@@ -145,6 +146,7 @@ const ProductTabContent = () => {
                     setProductList={setProductList}
                     productToEdit={productToEdit}
                     setProductToEdit={setProductToEdit}
+                    setSelectedProductRows={setSelectedProductRows}
                 />
 
                 <AlertDialogConfirm

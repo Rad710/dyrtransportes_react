@@ -65,11 +65,11 @@ export const ProductDialogDelete = ({
 
         if (result?.success) {
             toastSuccess(result.success);
-            setSelectedProductRows([]);
 
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
         }
+        setSelectedProductRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

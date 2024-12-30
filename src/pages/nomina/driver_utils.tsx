@@ -54,7 +54,6 @@ export const DriverApi = {
                 return null;
             }),
 
-    // TODO CREATE ENDPOINT
     deleteDriverList: async (codeList: number[]) =>
         axios
             .delete(`${import.meta.env.VITE_API_URL}/drivers`, {

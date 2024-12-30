@@ -148,12 +148,14 @@ type RouteDialogFormProps = {
     setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
     routeToEdit: Route | null;
     setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
+    setSelectedRouteRows: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export const RouteDialogForm = ({
     setRouteList,
     routeToEdit,
     setRouteToEdit,
+    setSelectedRouteRows,
 }: RouteDialogFormProps) => {
     // STATE
     const form = useForm<z.infer<typeof routeFormSchema>>({
@@ -239,6 +241,8 @@ export const RouteDialogForm = ({
             setSubmitResult({ error: result.error });
             return;
         }
+
+        setSelectedRouteRows([]);
     };
 
     const handlePutRoute = async (formData: Route) => {
@@ -267,6 +271,8 @@ export const RouteDialogForm = ({
             setSubmitResult({ error: result.error });
             return;
         }
+
+        setSelectedRouteRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {
