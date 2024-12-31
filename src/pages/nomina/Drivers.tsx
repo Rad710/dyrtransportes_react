@@ -6,51 +6,154 @@ import { Driver } from "./types";
 import { DriverApi } from "./driver_utils";
 import { DataTable } from "@/components/ui/data-table";
 import {
-    driverDataTableColumns,
-    driverFilterColumnList,
-} from "./components/DriverDataTableColumns";
+    activeDriverDataTableColumns,
+    activeDriverFilterColumnList,
+} from "./components/ActiveDriverDataTableColumns";
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 import { Table2Icon } from "lucide-react";
 import { DriverDialogForm } from "./components/DriverDialogForm";
-import { DriverDialogDelete } from "./components/DriverDialogDelete";
+import { ActiveDriverDialogDelete } from "./components/ActiveDriverDialogDelete";
+import {
+    deactivatedDriverDataTableColumns,
+    deactivatedDriverFilterColumnList,
+} from "./components/DeactivatedDriverDataTableColumns";
 
-export const Drivers = ({ title }: Readonly<PropsTitle>) => {
+const ActiveDriverTabContent = () => {
     //STATE
     const [loading, setLoading] = useState<boolean>(true);
 
-    //Routes State
-    const [driverList, setDriverList] = useState<Driver[]>([]);
-    const [selectedDriverRows, setSelectedDriverRows] = useState<number[]>([]);
-    const [driverToEdit, setDriverToEdit] = useState<Driver | null>(null);
-    const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
+    //Drivers State
+    const [activeDriverList, setActiveDriverList] = useState<Driver[]>([]);
+    const [selectedActiveDriverRows, setSelectedActiveDriverRows] = useState<number[]>([]);
+    const [activeDriverToEdit, setActiveDriverToEdit] = useState<Driver | null>(null);
+    const [activeDriverToDelete, setActiveDriverToDelete] = useState<Driver | null>(null);
 
     // DATATABLE
-    const driverColumns = driverDataTableColumns(
-        selectedDriverRows,
-        setSelectedDriverRows,
-        setDriverToEdit,
-        setDriverToDelete,
+    const activeDriverColumns = activeDriverDataTableColumns(
+        selectedActiveDriverRows,
+        setSelectedActiveDriverRows,
+        setActiveDriverToEdit,
+        setActiveDriverToDelete,
     );
 
     // USE EFFECTS
     useEffect(() => {
-        document.title = title;
-
-        const loadDrivers = async () => {
+        const loadActiveDrivers = async () => {
             const drivers = await DriverApi.getDriverList();
+            const filteredDrivers = drivers.filter((item) => !item.deleted);
 
-            setDriverList(drivers);
+            setActiveDriverList(filteredDrivers);
             setLoading(false);
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded drivers: ", { drivers });
+                console.log("Loaded filteredDrivers: ", { filteredDrivers });
             }
         };
 
-        loadDrivers();
+        loadActiveDrivers();
     }, []);
 
     const pageSize = 20;
+
+    return (
+        <>
+            <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
+                <DriverDialogForm
+                    setActiveDriverList={setActiveDriverList}
+                    activeDriverToEdit={activeDriverToEdit}
+                    setActiveDriverToEdit={setActiveDriverToEdit}
+                    setSelectedActiveDriverRows={setSelectedActiveDriverRows}
+                />
+
+                <AlertDialogConfirm
+                    buttonContent={
+                        <>
+                            <Table2Icon className="w-6 h-6" />
+                            Exportar
+                        </>
+                    }
+                    variant="green"
+                    size="md-lg"
+                    onClickFunctionPromise={DriverApi.exportDriverList}
+                >
+                    <span className="md:text-lg">Se exportará la Nómina de Choferes</span>
+                </AlertDialogConfirm>
+
+                <ActiveDriverDialogDelete
+                    setActiveDriverList={setActiveDriverList}
+                    selectedActiveDriverRows={selectedActiveDriverRows}
+                    setSelectedActiveDriverRows={setSelectedActiveDriverRows}
+                    activeDriverToDelete={activeDriverToDelete}
+                    setActiveDriverToDelete={setActiveDriverToDelete}
+                />
+            </div>
+
+            {!loading && (
+                <DataTable
+                    data={activeDriverList}
+                    columns={activeDriverColumns}
+                    pageSize={pageSize}
+                    filterColumnList={activeDriverFilterColumnList}
+                />
+            )}
+        </>
+    );
+};
+
+const DeactivatedDriverTabContent = () => {
+    //STATE
+    const [loading, setLoading] = useState<boolean>(true);
+
+    //Drivers State
+    const [deactivatedDriverList, setDeactivatedDriverList] = useState<Driver[]>([]);
+    const [selectedDeactivatedDriverRows, setSelectedDeactivatedDriverRows] = useState<number[]>(
+        [],
+    );
+
+    // DATATABLE
+    const deactivatedDriverColumns = deactivatedDriverDataTableColumns(
+        selectedDeactivatedDriverRows,
+        setSelectedDeactivatedDriverRows,
+    );
+
+    // USE EFFECTS
+    useEffect(() => {
+        const loadDeactivatedDrivers = async () => {
+            const drivers = await DriverApi.getDriverList();
+            const filteredDrivers = drivers.filter((item) => item.deleted);
+
+            setDeactivatedDriverList(filteredDrivers);
+            setLoading(false);
+
+            if (import.meta.env.VITE_DEBUG) {
+                console.log("Loaded filteredDrivers: ", { filteredDrivers });
+            }
+        };
+
+        loadDeactivatedDrivers();
+    }, []);
+
+    const pageSize = 20;
+
+    return (
+        <>
+            {!loading && (
+                <DataTable
+                    data={deactivatedDriverList}
+                    columns={deactivatedDriverColumns}
+                    pageSize={pageSize}
+                    filterColumnList={deactivatedDriverFilterColumnList}
+                />
+            )}
+        </>
+    );
+};
+
+export const Drivers = ({ title }: Readonly<PropsTitle>) => {
+    useEffect(() => {
+        document.title = title;
+    }, []);
+
     return (
         <div className="px-4">
             <div className="md:flex justify-between items-center">
@@ -70,54 +173,10 @@ export const Drivers = ({ title }: Readonly<PropsTitle>) => {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="drivers" className="md-lg:-mt-8">
-                        <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-                            <DriverDialogForm
-                                setDriverList={setDriverList}
-                                driverToEdit={driverToEdit}
-                                setDriverToEdit={setDriverToEdit}
-                            />
-
-                            <AlertDialogConfirm
-                                buttonContent={
-                                    <>
-                                        <Table2Icon className="w-6 h-6" />
-                                        Exportar
-                                    </>
-                                }
-                                variant="green"
-                                size="md-lg"
-                                onClickFunctionPromise={DriverApi.exportDriverList}
-                            >
-                                <span className="md:text-lg">
-                                    Se exportará la Nómina de Choferes
-                                </span>
-                            </AlertDialogConfirm>
-
-                            <DriverDialogDelete
-                                setDriverList={setDriverList}
-                                selectedDriverRows={selectedDriverRows}
-                                setSelectedDriverRows={setSelectedDriverRows}
-                                driverToDelete={driverToDelete}
-                                setDriverToDelete={setDriverToDelete}
-                            />
-                        </div>
-
-                        {!loading && (
-                            <DataTable
-                                data={driverList.filter((item) => !item.deleted)}
-                                columns={driverColumns}
-                                pageSize={pageSize}
-                                filterColumnList={driverFilterColumnList}
-                            />
-                        )}
+                        <ActiveDriverTabContent />
                     </TabsContent>
                     <TabsContent value="deactivated" className="md:mt-4">
-                        <DataTable
-                            data={driverList.filter((item) => item.deleted)}
-                            columns={driverColumns}
-                            pageSize={pageSize}
-                            filterColumnList={driverFilterColumnList}
-                        />
+                        <DeactivatedDriverTabContent />
                     </TabsContent>
                 </Tabs>
             </div>

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Driver } from "../types";
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 
 import Globalize from "globalize";
 import cldrDataES from "cldr-data/main/es/numbers.json";
@@ -28,9 +27,14 @@ const formatter = Globalize.numberFormatter({
     maximumFractionDigits: 0,
 });
 
-export const driverFilterColumnList = ["C.I.", "Nombre", "Chapa Camón", "Chapa Carreta"] as const;
+export const activeDriverFilterColumnList = [
+    "C.I.",
+    "Nombre",
+    "Chapa Camón",
+    "Chapa Carreta",
+] as const;
 
-export const driverDataTableColumns = (
+export const activeDriverDataTableColumns = (
     selectedDriverRows: number[],
     setSelectedDriverRows: React.Dispatch<React.SetStateAction<number[]>>,
     setDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>,
@@ -109,10 +113,11 @@ export const driverDataTableColumns = (
             },
             cell: ({ row }) => {
                 const driverIdString = formatter(parseInt(row.getValue("C.I.")) || 0);
+                const isValid = ((row.getValue("C.I.") || "") as string).length === driverIdString.length;
 
                 return (
                     <div className="text-right font-medium md:text-base">
-                        {driverIdString === "0" ? row.getValue("C.I.") : driverIdString}
+                        {!isValid ? row.getValue("C.I.") : driverIdString}
                     </div>
                 );
             },

@@ -8,67 +8,73 @@ import { toastSuccess } from "@/utils/notification";
 import { Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type DriverDialogDeleteProps = {
-    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
-    selectedDriverRows: number[];
-    setSelectedDriverRows: React.Dispatch<React.SetStateAction<number[]>>;
-    driverToDelete?: Driver | null;
-    setDriverToDelete: React.Dispatch<React.SetStateAction<Driver | null>>;
+type ActiveDriverDialogDelete = {
+    setActiveDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
+    selectedActiveDriverRows: number[];
+    setSelectedActiveDriverRows: React.Dispatch<React.SetStateAction<number[]>>;
+    activeDriverToDelete?: Driver | null;
+    setActiveDriverToDelete: React.Dispatch<React.SetStateAction<Driver | null>>;
 };
 
-export const DriverDialogDelete = ({
-    setDriverList,
-    selectedDriverRows,
-    setSelectedDriverRows,
-    driverToDelete,
-    setDriverToDelete,
-}: DriverDialogDeleteProps) => {
+export const ActiveDriverDialogDelete = ({
+    setActiveDriverList,
+    selectedActiveDriverRows,
+    setSelectedActiveDriverRows,
+    activeDriverToDelete,
+    setActiveDriverToDelete,
+    
+}: ActiveDriverDialogDelete) => {
     // STATE
     const [open, setOpen] = useState<boolean>(false);
 
     // USE EFFECT
     useEffect(() => {
-        setOpen(!!driverToDelete);
-    }, [driverToDelete]);
+        setOpen(!!activeDriverToDelete);
+    }, [activeDriverToDelete]);
 
     // HANDLERS
     const handleDeleteDriverItem = async () => {
-        if (!driverToDelete?.driver_code) {
+        if (!activeDriverToDelete?.driver_code) {
             return;
         }
 
-        const result = await DriverApi.deleteDriver(driverToDelete.driver_code);
+        const result = await DriverApi.deleteDriver(activeDriverToDelete.driver_code);
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
-            console.log("Deleting... ", driverToDelete.driver_code);
+            console.log("Deleting... ", activeDriverToDelete.driver_code);
         }
 
         if (result?.success) {
             toastSuccess(result.success);
 
             const newDriverList = await DriverApi.getDriverList();
-            setDriverList(newDriverList);
+            const filteredDrivers = newDriverList.filter((item) => !item.deleted);
+            setActiveDriverList(filteredDrivers);
         }
+
+        setSelectedActiveDriverRows([]);
     };
 
     const handleDeleteDriverList = async () => {
         if (import.meta.env.VITE_DEBUG) {
-            console.log("To delete: ", { selectedDriverRows });
+            console.log("To delete: ", { selectedActiveDriverRows });
         }
 
-        const result = await DriverApi.deleteDriverList(selectedDriverRows);
+        const result = await DriverApi.deleteDriverList(selectedActiveDriverRows);
         if (import.meta.env.VITE_DEBUG) {
             console.log({ result });
-            console.log({ selectedDriverRows });
+            console.log({ selectedActiveDriverRows });
         }
 
         if (result?.success) {
             toastSuccess(result.success);
-            setSelectedDriverRows([]);
 
             const newDriverList = await DriverApi.getDriverList();
-            setDriverList(newDriverList);
+            const filteredDrivers = newDriverList.filter((item) => !item.deleted);
+            setActiveDriverList(filteredDrivers);
         }
+
+        setSelectedActiveDriverRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {
@@ -76,7 +82,7 @@ export const DriverDialogDelete = ({
 
         // timeout solves issue of dialog changing text/color when closing
         setTimeout(() => {
-            setDriverToDelete(null);
+            setActiveDriverToDelete(null);
         }, 100);
     };
 
@@ -84,7 +90,7 @@ export const DriverDialogDelete = ({
         <AlertDialogConfirm
             size="md-lg"
             variant="destructive"
-            disabled={driverToDelete ? false : selectedDriverRows.length === 0}
+            disabled={activeDriverToDelete ? false : selectedActiveDriverRows.length === 0}
             open={open}
             onOpenChange={handleOnOpenChange}
             buttonContent={
@@ -94,21 +100,21 @@ export const DriverDialogDelete = ({
                 </>
             }
             onClickFunctionPromise={
-                driverToDelete ? handleDeleteDriverItem : handleDeleteDriverList
+                activeDriverToDelete ? handleDeleteDriverItem : handleDeleteDriverList
             }
         >
             <span className="md:text-lg">
                 Se <strong className="font-bold text-gray-700">deshabilitará:</strong>
                 <br />
                 <strong className="font-bold text-gray-700">
-                    {driverToDelete?.driver_code ? (
+                    {activeDriverToDelete?.driver_code ? (
                         <>
-                            {driverToDelete?.driver_name ??
-                                "" + " " + driverToDelete?.driver_surname ??
+                            {activeDriverToDelete?.driver_name ??
+                                "" + " " + activeDriverToDelete?.driver_surname ??
                                 ""}
                             {" - "}
-                            {driverToDelete?.truck_plate ??
-                                "" + " " + driverToDelete?.trailer_plate ??
+                            {activeDriverToDelete?.truck_plate ??
+                                "" + " " + activeDriverToDelete?.trailer_plate ??
                                 ""}
                         </>
                     ) : (

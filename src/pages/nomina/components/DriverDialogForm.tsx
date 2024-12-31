@@ -85,15 +85,17 @@ const driverFormSchema = z.object({
 });
 
 type FormDriverProps = {
-    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
-    driverToEdit: Driver | null;
-    setDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>;
+    setActiveDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
+    activeDriverToEdit: Driver | null;
+    setActiveDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>;
+    setSelectedActiveDriverRows: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export const DriverDialogForm = ({
-    setDriverList,
-    driverToEdit,
-    setDriverToEdit,
+    setActiveDriverList,
+    activeDriverToEdit,
+    setActiveDriverToEdit,
+    setSelectedActiveDriverRows,
 }: FormDriverProps) => {
     //STATE
     const form = useForm<z.infer<typeof driverFormSchema>>({
@@ -121,19 +123,19 @@ export const DriverDialogForm = ({
     // USE EFFECTS
     useEffect(() => {
         // show dialog when clicking editar action button
-        if (driverToEdit) {
+        if (activeDriverToEdit) {
             setIsOpen(true);
 
             form.reset({
-                driver_code: driverToEdit?.driver_code ?? null,
-                driver_id: driverToEdit?.driver_id ?? "",
-                driver_name: driverToEdit?.driver_name ?? "",
-                driver_surname: driverToEdit?.driver_surname ?? "",
-                truck_plate: driverToEdit?.truck_plate ?? "",
-                trailer_plate: driverToEdit?.trailer_plate ?? "",
+                driver_code: activeDriverToEdit?.driver_code ?? null,
+                driver_id: activeDriverToEdit?.driver_id ?? "",
+                driver_name: activeDriverToEdit?.driver_name ?? "",
+                driver_surname: activeDriverToEdit?.driver_surname ?? "",
+                truck_plate: activeDriverToEdit?.truck_plate ?? "",
+                trailer_plate: activeDriverToEdit?.trailer_plate ?? "",
             });
         }
-    }, [driverToEdit]);
+    }, [activeDriverToEdit]);
 
     useEffect(() => {
         // hide submit result when there is new error (form is changing)
@@ -161,7 +163,8 @@ export const DriverDialogForm = ({
             toastSuccess(result.success);
 
             const newDriverList = await DriverApi.getDriverList();
-            setDriverList(newDriverList);
+            const filteredDrivers = newDriverList.filter((item) => !item.deleted);
+            setActiveDriverList(filteredDrivers);
 
             // reset dialog when succesfully created NEW route
             form.reset({
@@ -178,6 +181,8 @@ export const DriverDialogForm = ({
             setSubmitResult({ error: result.error });
             throw result.error;
         }
+
+        setSelectedActiveDriverRows([]);
     };
 
     const handlePutDriver = async (formData: Driver) => {
@@ -199,13 +204,16 @@ export const DriverDialogForm = ({
             toastSuccess(result.success);
 
             const newDriverList = await DriverApi.getDriverList();
-            setDriverList(newDriverList);
+            const filteredDrivers = newDriverList.filter((item) => !item.deleted);
+            setActiveDriverList(filteredDrivers);
         }
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
             return;
         }
+
+        setSelectedActiveDriverRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {
@@ -224,7 +232,7 @@ export const DriverDialogForm = ({
             });
 
             setSubmitResult(null);
-            setDriverToEdit(null);
+            setActiveDriverToEdit(null);
         }, 100);
     };
 
