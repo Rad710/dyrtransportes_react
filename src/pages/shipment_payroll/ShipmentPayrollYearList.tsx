@@ -34,7 +34,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
 
         let shipmentPayrollYearList: number[] =
             shipmentPayrolls
-                ?.map((item) => DateTime.fromHTTP(item.creation_timestamp, { zone: "utc" }))
+                ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "utc" }))
                 ?.filter((item) => item?.isValid)
                 ?.map((item) => item.year) ?? [];
 
@@ -108,7 +108,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
         }
 
         const payload: ShipmentPayroll = {
-            creation_timestamp: newYear.toHTTP(),
+            payroll_timestamp: newYear.toHTTP(),
             collected: false,
             deleted: false,
         };
