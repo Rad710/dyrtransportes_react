@@ -40,7 +40,7 @@ const RouteTabContent = () => {
         selectedRouteRows,
         setSelectedRouteRows,
         setRouteToEdit,
-        setRouteToDelete,
+        setRouteToDelete
     );
 
     // USE EFFECTS
@@ -120,7 +120,7 @@ const ProductTabContent = () => {
         selectedProductRows,
         setSelectedProductRows,
         setProductToEdit,
-        setProductToDelete,
+        setProductToDelete
     );
 
     // USE EFFECT

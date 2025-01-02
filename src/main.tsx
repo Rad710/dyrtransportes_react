@@ -16,6 +16,9 @@ import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { Drivers } from "./pages/nomina/Drivers";
 import ErrorPage from "./components/ErrorPage";
 import PlanillasYears from "./pages/cobranzas/PlanillasYears";
+
+import { ShipmentPayrollYearList } from "./pages/shipment_payroll/ShipmentPayrollYearList";
+
 import ListaPlanillas from "./pages/cobranzas/ListaPlanillas";
 import ListaLiquidaciones from "./pages/liquidaciones/ListaLiquidaciones";
 import Liquidacion from "./pages/liquidaciones/Liquidacion";
@@ -32,18 +35,18 @@ const router = createBrowserRouter([
                 element: <Index title="D y R Transportes" />,
             },
             {
-                path: "/cobranzas",
+                path: "/shipment-payroll",
                 children: [
                     {
                         index: true,
-                        element: <PlanillasYears title="Planillas Años" />,
+                        element: <ShipmentPayrollYearList title="Planillas Años" />,
                     },
                     {
-                        path: "/cobranzas/:year/",
+                        path: "/shipment-payroll/:year/",
                         element: <ListaPlanillas title="Lista de Planillas" />,
                     },
                     {
-                        path: "/cobranzas/:year/:date",
+                        path: "/shipment-payroll/:year/:date",
                         element: <Cobranzas title="Cobranzas" />,
                     },
                 ],
@@ -86,5 +89,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthWrapper>
             <RouterProvider router={router} />
         </AuthWrapper>
-    </React.StrictMode>,
+    </React.StrictMode>
 );
