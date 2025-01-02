@@ -1,100 +1,107 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 
-import { Link, Form, useMatch } from "react-router-dom"
-import { Checkbox, Flex, Button } from "@radix-ui/themes"
+import { Link, Form, useMatch } from "react-router-dom";
+import { Checkbox, Flex, Button } from "@radix-ui/themes";
 import { PlusIcon, TableIcon } from "@radix-ui/react-icons";
 
-import AlertButton from "../../components/AlertButton"
+import AlertButton from "../../components/AlertButton";
 import CalloutMessage from "../../components/CalloutMessage";
 
-import { getPlanillasOfYear, deletePlanilla, postPlanilla, getExportarInforme } from "../../utils/cobranza";
+import {
+    getPlanillasOfYear,
+    deletePlanilla,
+    postPlanilla,
+    getExportarInforme,
+} from "../../utils/cobranza";
 
 import { ColorRing } from "react-loader-spinner";
 
 function ListaPlanillas({ title }) {
-
-    const [planillas, setPlanillas] = useState([])
-    const [error, setError] = useState(null)
+    const [planillas, setPlanillas] = useState([]);
+    const [error, setError] = useState(null);
 
     const match = useMatch("/cobranzas/:year");
     const { year } = match.params;
 
-    const [disableButton, setDisableButton] = useState(false)
+    const [disableButton, setDisableButton] = useState(false);
 
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         document.title = title;
 
         const fetchData = async () => {
-            const response = await getPlanillasOfYear(year)
+            const response = await getPlanillasOfYear(year);
 
             if (!response?.response && !response?.message) {
-                setPlanillas(response.map(planilla => ({ fecha: planilla, checked: false })))
-                setLoading(false)
+                setPlanillas(response.map((planilla) => ({ fecha: planilla, checked: false })));
+                setLoading(false);
             } else {
-                setError(response?.response?.data)
+                setError(response?.response?.data);
             }
-        }
-        fetchData()
-    }, [match])
+        };
+        fetchData();
+    }, [match]);
 
     const handleDelete = async () => {
-        const planillasChecked = planillas.filter(planilla => planilla.checked === true)
-            .map(planilla => new Date(planilla.fecha).toISOString().slice(0, 10))
+        const planillasChecked = planillas
+            .filter((planilla) => planilla.checked === true)
+            .map((planilla) => new Date(planilla.fecha).toISOString().slice(0, 10));
 
-        const deletePromises = planillasChecked.map(async (item) => (await deletePlanilla(item)))
+        const deletePromises = planillasChecked.map(async (item) => await deletePlanilla(item));
 
         const confirmDelete = await Promise.all(deletePromises);
 
-        confirmDelete.forEach(element => {
+        confirmDelete.forEach((element) => {
             if (element?.response || element?.message) {
-                setError(element.response.data)
+                setError(element.response.data);
             }
         });
 
-        const newPlanillas = planillas.filter(planilla => planilla.checked !== true)
-        setPlanillas(newPlanillas)
-    }
+        const newPlanillas = planillas.filter((planilla) => planilla.checked !== true);
+        setPlanillas(newPlanillas);
+    };
 
     const handleCheckboxChange = (fecha) => {
-        const newPlanillas = planillas.map(planilla => {
+        const newPlanillas = planillas.map((planilla) => {
             if (planilla.fecha === fecha) {
-                return { ...planilla, checked: !planilla.checked }
+                return { ...planilla, checked: !planilla.checked };
             }
-            return planilla
-        })
-        setPlanillas(newPlanillas)
-    }
+            return planilla;
+        });
+        setPlanillas(newPlanillas);
+    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setDisableButton(true)
-        document.body.style.cursor = 'wait'
+        e.preventDefault();
+        setDisableButton(true);
+        document.body.style.cursor = "wait";
 
-        const currentFecha = new Date()
-        const newFecha = new Date(year, currentFecha.getMonth(), currentFecha.getDate())
-        const result = await postPlanilla(newFecha)
+        const currentFecha = new Date();
+        const newFecha = new Date(year, currentFecha.getMonth(), currentFecha.getDate());
+        const result = await postPlanilla(newFecha);
         if (!result?.response && !result?.message) {
-            setPlanillas([{ fecha: newFecha, checked: false }, ...planillas])
+            setPlanillas([{ fecha: newFecha, checked: false }, ...planillas]);
         } else {
-            setError(result?.response?.data)
+            setError(result?.response?.data);
         }
-        setDisableButton(false)
-        document.body.style.cursor = 'default'
-    }
+        setDisableButton(false);
+        document.body.style.cursor = "default";
+    };
 
     const handleExportar = async () => {
-        const checkedPlanillas = planillas.filter(planilla => planilla.checked)
-            .map(planilla => new Date(planilla.fecha).toISOString().slice(0, 10)).sort()
+        const checkedPlanillas = planillas
+            .filter((planilla) => planilla.checked)
+            .map((planilla) => new Date(planilla.fecha).toISOString().slice(0, 10))
+            .sort();
 
-        const fechaInicio = checkedPlanillas.at(0)
-        const fechaFin = checkedPlanillas.at(-1)
+        const fechaInicio = checkedPlanillas.at(0);
+        const fechaFin = checkedPlanillas.at(-1);
 
         if (fechaInicio && fechaFin) {
-            await getExportarInforme(fechaInicio, fechaFin)
+            await getExportarInforme(fechaInicio, fechaFin);
         }
-    }
+    };
 
     return (
         <div className="p-4">
@@ -102,11 +109,13 @@ function ListaPlanillas({ title }) {
                 <h2 className="text-3xl font-bold text-left md:w-1/3">{`Planillas del ${year}`}</h2>
 
                 <div className="gap-5 flex flex-col justify-end md:2/3 md:flex-row">
-                    <Form
-                        onSubmit={handleSubmit}>
-                        {error ?
-                            (<CalloutMessage color="red" size="3">A ocurrido un error</CalloutMessage>) :
-                            (<Button
+                    <Form onSubmit={handleSubmit}>
+                        {error ? (
+                            <CalloutMessage color="red" size="3">
+                                A ocurrido un error
+                            </CalloutMessage>
+                        ) : (
+                            <Button
                                 color="grass"
                                 variant="surface"
                                 size="4"
@@ -114,39 +123,52 @@ function ListaPlanillas({ title }) {
                                 ml="6"
                                 disabled={disableButton}
                             >
-                                <PlusIcon width="20" height="20" />Agregar Planilla
-                            </Button>)
-                        }
+                                <PlusIcon width="20" height="20" />
+                                Agregar Planilla
+                            </Button>
+                        )}
                     </Form>
 
-                    <Button color="grass" variant="solid" size="4"
+                    <Button
+                        color="grass"
+                        variant="solid"
+                        size="4"
                         onClick={handleExportar}
-                        disabled={planillas.filter(planilla => planilla.checked).length > 2}
+                        disabled={planillas.filter((planilla) => planilla.checked).length > 2}
                     >
-                        <TableIcon width="20" height="20" />Exportar
+                        <TableIcon width="20" height="20" />
+                        Exportar
                     </Button>
 
                     <AlertButton
                         handleDelete={handleDelete}
-                        disabled={!planillas.some(planilla => planilla.checked === true)}
+                        disabled={!planillas.some((planilla) => planilla.checked === true)}
                     />
                 </div>
             </div>
 
             {!loading && (
                 <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
-                    {planillas.map(planilla => (
-                        <li className="flex"
-                            key={planilla.fecha}>
+                    {planillas.map((planilla) => (
+                        <li className="flex" key={planilla.fecha}>
                             <Flex align="center">
-                                <Checkbox mr="4"
+                                <Checkbox
+                                    mr="4"
                                     checked={planilla.checked}
-                                    onCheckedChange={() => handleCheckboxChange(planilla.fecha)} />
+                                    onCheckedChange={() => handleCheckboxChange(planilla.fecha)}
+                                />
                                 <Link
                                     className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                    to={`/cobranzas/${year}/${(new Date(planilla.fecha).toISOString().slice(5, 10))}`}
-                                >{new Date(planilla.fecha).toLocaleDateString("es-ES",
-                                    { month: "long", day: "numeric", timeZone: "GMT" })}</Link>
+                                    to={`/cobranzas/${year}/${new Date(planilla.fecha)
+                                        .toISOString()
+                                        .slice(5, 10)}`}
+                                >
+                                    {new Date(planilla.fecha).toLocaleDateString("es-ES", {
+                                        month: "long",
+                                        day: "numeric",
+                                        timeZone: "GMT",
+                                    })}
+                                </Link>
                             </Flex>
                         </li>
                     ))}
@@ -162,7 +184,7 @@ function ListaPlanillas({ title }) {
                 colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
             />
         </div>
-    )
+    );
 }
 
-export default ListaPlanillas
+export default ListaPlanillas;

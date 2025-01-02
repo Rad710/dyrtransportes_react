@@ -18,6 +18,7 @@ import ErrorPage from "./components/ErrorPage";
 import PlanillasYears from "./pages/cobranzas/PlanillasYears";
 
 import { ShipmentPayrollYearList } from "./pages/shipment_payroll/ShipmentPayrollYearList";
+import { ShipmentPayrollList } from "./pages/shipment_payroll/ShipmentPayrollList";
 
 import ListaPlanillas from "./pages/cobranzas/ListaPlanillas";
 import ListaLiquidaciones from "./pages/liquidaciones/ListaLiquidaciones";
@@ -35,18 +36,18 @@ const router = createBrowserRouter([
                 element: <Index title="D y R Transportes" />,
             },
             {
-                path: "/shipment-payroll",
+                path: "/shipment-payroll-list",
                 children: [
                     {
                         index: true,
                         element: <ShipmentPayrollYearList title="Planillas Años" />,
                     },
                     {
-                        path: "/shipment-payroll/:year/",
-                        element: <ListaPlanillas title="Lista de Planillas" />,
+                        path: "/shipment-payroll-list/:year/",
+                        element: <ShipmentPayrollList title="Lista de Planillas" />,
                     },
                     {
-                        path: "/shipment-payroll/:year/:date",
+                        path: "/shipment-payroll-list/payroll/:payroll_code",
                         element: <Cobranzas title="Cobranzas" />,
                     },
                 ],
@@ -84,7 +85,12 @@ const router = createBrowserRouter([
     },
 ]);
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+    throw new Error("Root element not found");
+}
+
+ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
         <AuthWrapper>
             <RouterProvider router={router} />

@@ -163,33 +163,6 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                 </h2>
 
                 <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
-                    {/* <div className="gap-5 flex flex-col justify-end md:2/3 md:flex-row">
-                    <Form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            handleSubmit(years.at(0) ? years.at(0).year + 1 : 2023);
-                        }}
-                    >
-                        {error ? (
-                            <CalloutMessage color="red" size="3">
-                                A ocurrido un error
-                            </CalloutMessage>
-                        ) : (
-                            <Button
-                                color="grass"
-                                variant="surface"
-                                size="4"
-                                type="submit"
-                                ml="6"
-                                disabled={disableButton}
-                            >
-                                <PlusIcon width="20" height="20" />
-                                Agregar Año
-                            </Button>
-                        )}
-                    </Form>
-                </div> */}
-
                     <AlertDialogConfirm
                         buttonContent={
                             <>
@@ -270,7 +243,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
 
                                     <Link
                                         className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                        to={`/shipment-payroll/${year}`}
+                                        to={`/shipment-payroll-list/${year}`}
                                     >
                                         {year}
                                     </Link>

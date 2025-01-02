@@ -31,10 +31,10 @@ const Navigation = () => {
 
                 <Box>
                     <Flex gap="5" align="center" wrap="wrap">
-                        <Link to="/shipment-payroll">
+                        <Link to="/shipment-payroll-list">
                             <p
                                 className={`font-bold text-2xl mt-2 hover:cursor-pointer ${
-                                    path.includes("/shipment-payroll")
+                                    path.includes("/shipment-payroll-list")
                                         ? "text-indigo-300"
                                         : "text-white hover:text-indigo-300"
                                 }`}
