@@ -1,8 +1,15 @@
 # Steps (desde root del proyecto)
 # 1. Agregar token para Sonarqube
-# 2. docker build -t node-agent:latest -f jenkins/Dockerfile.agent .
-# 4. docker tag node-agent:latest localhost:5000/dev/node-agent:23.5.0
-# 5. docker push localhost:5000/dev/node-agent:23.5.0
+# 2. docker build -t localhost:5000/dev/node-agent:23.5.0 -f jenkins/Dockerfile.agent .
+# 3. docker push localhost:5000/dev/node-agent:23.5.0
+
+# For multiplataform use buildx: (if http check https://stackoverflow.com/questions/63409755/how-to-use-docker-buildx-pushing-image-to-registry-use-http-protocol)
+# and (https://github.com/docker/buildx/issues/336)
+# 1. docker buildx rm mybuilder
+# 2. docker buildx create --name mybuilder --config ./buildkitd.toml --use
+# 3. docker buildx inspect --bootstrap
+# 4. docker buildx build --platform linux/amd64,linux/arm64 -t localhost:5000/dev/node-agent:23.5.0 -f jenkins/Dockerfile.agent --push .
+
 
 FROM node:23.5.0 AS builder
 

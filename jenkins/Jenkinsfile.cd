@@ -111,8 +111,11 @@ pipeline {
                         echo "Cache already exists!"
                     }
 
-                    sh "npm install"
-                    sh "npm audit fix"
+                    // sh "npm install"
+                    // sh "npm audit fix"
+
+                    sh "npm install --no-audit"
+
                     sh "npm run build"
                 }
             }
