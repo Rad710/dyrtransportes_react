@@ -6,7 +6,7 @@ def imageName = ''
 def dockerImage
 def dockerComposeFile = 'docker/docker-compose-dev.yaml'
 
-def dockerRegistry = 'http://docker-registry-server:5000'
+def dockerRegistry = 'http://raspberrypi.local:5000'
 // def registryCredentials = 'localhost-docker-registry'
 
 def numberCommits = 5
@@ -32,7 +32,7 @@ pipeline {
     agent {
         docker {
             image 'dev/node-agent:23.5.0'
-            registryUrl "http://docker-registry-server:5000"
+            registryUrl "http://raspberrypi.local:5000"
             // docker group gid: 999
             // stat -c '%g' /var/run/docker.sock
             args """
@@ -205,7 +205,7 @@ pipeline {
                 script {
                     echo "Archiving..."
 
-                    sh "echo -n \"REGISTRY = 'docker-registry-server:5000'\" > docker/.env"
+                    sh "echo -n \"REGISTRY = 'raspberrypi.local:5000'\" > docker/.env"
 
                     // usar el docker compose para tener env de diferentes ambientes
                     sh "docker compose -f ${dockerComposeFile} up -d"
