@@ -14,8 +14,6 @@ import {
     getExportarInforme,
 } from "../../utils/cobranza";
 
-import { ColorRing } from "react-loader-spinner";
-
 function ListaPlanillas({ title }) {
     const [planillas, setPlanillas] = useState([]);
     const [error, setError] = useState(null);
@@ -174,15 +172,6 @@ function ListaPlanillas({ title }) {
                     ))}
                 </ul>
             )}
-
-            <ColorRing
-                visible={loading}
-                height="80"
-                width="80"
-                ariaLabel="blocks-loading"
-                wrapperClass="w-1/3 h-1/3 m-auto"
-                colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
-            />
         </div>
     );
 }

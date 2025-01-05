@@ -19,7 +19,7 @@ def releasePattern = ~/release\/\d+\.\d+\.\d+$/
 pipeline {
     agent {
         docker {
-            image 'dev/node-agent:20.11'
+            image 'dev/node-agent:23.5.0'
             registryUrl "http://docker-registry-server:5000"
             // docker group gid: 999
             // stat -c '%g' /var/run/docker.sock
@@ -88,12 +88,12 @@ pipeline {
                         tag += ".${BUILD_ID}"
                     }
 
-                    if (BRANCH_NAME == 'develop') {
-                        imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
-                        dockerComposeFile = 'docker/docker-compose-dev.yaml'
+                    // if (BRANCH_NAME == 'develop') {
+                    //     imageName = 'dyrtransportes/frontend/dev/dyrtransportes-react'
+                    //     dockerComposeFile = 'docker/docker-compose-dev.yaml'
 
-                        tag = "0.0.${BUILD_ID}-dev"
-                    }
+                    //     tag = "0.0.${BUILD_ID}-dev"
+                    // }
 
 
                     username = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
@@ -122,8 +122,8 @@ pipeline {
                     echo 'Building...'
 
 
-                    sh "rm -r .env*"
-                    sh "echo -n \"VITE_API_URL=VITE_API_URL_PLACEHOLDER\" > .env"
+                    // sh "rm -r .env*"
+                    // sh "echo -n \"VITE_API_URL=VITE_API_URL_PLACEHOLDER\" > .env"
                     try {
                         sh "mv /home/node/node_modules ${WORKSPACE}"
                     } catch (Exception e) {

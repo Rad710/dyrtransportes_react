@@ -360,7 +360,7 @@ function FormCobranzas({
                                 </Text>
 
                                 <div className="relative">
-                                    <TextField.Input
+                                    <TextField.Slot
                                         name="chofer"
                                         placeholder="Chofer"
                                         ref={inputRefs[0]}
@@ -394,7 +394,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Fecha
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="fechaViaje"
                                     type="date"
                                     ref={inputRefs[1]}
@@ -411,7 +411,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Chapa
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="chapa"
                                     placeholder="Chapa"
                                     ref={inputRefs[2]}
@@ -431,7 +431,7 @@ function FormCobranzas({
                                 </Text>
 
                                 <div className="relative">
-                                    <TextField.Input
+                                    <TextField.Slot
                                         name="producto"
                                         placeholder="Producto"
                                         ref={inputRefs[3]}
@@ -467,7 +467,7 @@ function FormCobranzas({
                                 </Text>
 
                                 <div className="relative">
-                                    <TextField.Input
+                                    <TextField.Slot
                                         name="origen"
                                         placeholder="Origen"
                                         ref={inputRefs[4]}
@@ -503,7 +503,7 @@ function FormCobranzas({
                                 </Text>
 
                                 <div className="relative">
-                                    <TextField.Input
+                                    <TextField.Slot
                                         name="destino"
                                         placeholder="Destino"
                                         ref={inputRefs[5]}
@@ -540,7 +540,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Tiquet
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="tiquet"
                                     placeholder="Tiquet"
                                     ref={inputRefs[6]}
@@ -564,7 +564,7 @@ function FormCobranzas({
                                               })
                                     })`}
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="precio"
                                     type="number"
                                     placeholder="Precio"
@@ -582,7 +582,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Precio Liquidacion
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="precioLiquidacion"
                                     type="number"
                                     placeholder="Precio de Liquidacion"
@@ -602,7 +602,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Kg. Origen
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="kgOrigen"
                                     placeholder="Kg. Origen"
                                     ref={inputRefs[9]}
@@ -618,7 +618,7 @@ function FormCobranzas({
                                 <Text as="div" size="2" mb="1" weight="bold">
                                     Kg. Destino
                                 </Text>
-                                <TextField.Input
+                                <TextField.Slot
                                     name="kgDestino"
                                     placeholder="Kg. Destino"
                                     ref={inputRefs[10]}

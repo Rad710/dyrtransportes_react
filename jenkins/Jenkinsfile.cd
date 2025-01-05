@@ -31,7 +31,7 @@ if (TARGET_ENV == 'DEV') {
 pipeline {
     agent {
         docker {
-            image 'dev/node-agent:20.11'
+            image 'dev/node-agent:23.5.0'
             registryUrl "http://docker-registry-server:5000"
             // docker group gid: 999
             // stat -c '%g' /var/run/docker.sock

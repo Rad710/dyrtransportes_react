@@ -1,148 +1,151 @@
 import { useEffect, useState } from "react";
 
-import { Button, Checkbox, Flex, IconButton } from "@radix-ui/themes"
-import { CheckIcon, Cross2Icon, PlusIcon } from "@radix-ui/react-icons"
+import { Button, Checkbox, Flex, IconButton } from "@radix-ui/themes";
+import { CheckIcon, Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import { Link, useMatch } from "react-router-dom";
 
-import AlertButton from "../../components/AlertButton"
-import { deleteLiquidacionesChofer, getLiquidacionesChofer, postLiquidacion } from "../../utils/liquidaciones";
-
-import { ColorRing } from "react-loader-spinner";
+import AlertButton from "../../components/AlertButton";
+import {
+    deleteLiquidacionesChofer,
+    getLiquidacionesChofer,
+    postLiquidacion,
+} from "../../utils/liquidaciones";
 
 function LiquidacionesChofer({ title }) {
-  useEffect(() => {
-    document.title = title;
-  }, []);
+    useEffect(() => {
+        document.title = title;
+    }, []);
 
-  const match = useMatch("/liquidaciones/:chofer");
-  const { chofer } = match.params;
+    const match = useMatch("/liquidaciones/:chofer");
+    const { chofer } = match.params;
 
-  const [liquidaciones, setLiquidaciones] = useState([])
+    const [liquidaciones, setLiquidaciones] = useState([]);
 
-  const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
 
-  const loadLiquidaciones = async (chofer) => {
-    const result = await getLiquidacionesChofer(chofer)
+    const loadLiquidaciones = async (chofer) => {
+        const result = await getLiquidacionesChofer(chofer);
 
-    if (!result?.response && !result?.message) {
-      const formattedResult = result.map(liquidacion => ({ 
-        fecha: new Date(liquidacion.fechaLiquidacion).toISOString().slice(0, 10), 
-        checked: false, pagado: liquidacion.pagado 
-      }))
+        if (!result?.response && !result?.message) {
+            const formattedResult = result.map((liquidacion) => ({
+                fecha: new Date(liquidacion.fechaLiquidacion).toISOString().slice(0, 10),
+                checked: false,
+                pagado: liquidacion.pagado,
+            }));
 
-      setLiquidaciones(formattedResult)
-      setLoading(false)
-    }
-  }
+            setLiquidaciones(formattedResult);
+            setLoading(false);
+        }
+    };
 
-  useEffect(() => {
-    loadLiquidaciones(chofer)
-  }, [])
+    useEffect(() => {
+        loadLiquidaciones(chofer);
+    }, []);
 
+    const handleAdd = async () => {
+        const response = await postLiquidacion(chofer);
+        if (!response?.response && !response?.message) {
+            loadLiquidaciones(chofer);
+        }
+    };
 
-  const handleAdd = async () => {
-    const response = await postLiquidacion(chofer)
-    if (!response?.response && !response?.message) {
-      loadLiquidaciones(chofer)
-    }
-  }
+    const handleCheckboxChange = (fecha) => {
+        const newLiquidaciones = liquidaciones.map((liquidacion) =>
+            liquidacion.fecha === fecha
+                ? { ...liquidacion, checked: !liquidacion.checked }
+                : liquidacion
+        );
 
+        setLiquidaciones(newLiquidaciones);
+    };
 
-  const handleCheckboxChange = (fecha) => {
-    const newLiquidaciones = liquidaciones.map(liquidacion => (
-      liquidacion.fecha === fecha ? { ...liquidacion, checked: !liquidacion.checked } : liquidacion
-    ))
+    const handleDelete = async () => {
+        const toDelete = liquidaciones
+            .filter((liquidacion) => liquidacion.checked)
+            .map((liquidacion) => liquidacion.fecha);
 
-    setLiquidaciones(newLiquidaciones)
-  }
+        const deletePromises = toDelete.map(
+            async (fecha) => await deleteLiquidacionesChofer(chofer, fecha)
+        );
 
+        const confirmDelete = await Promise.all(deletePromises);
 
-  const handleDelete = async () => {
-    const toDelete = liquidaciones.filter(liquidacion => liquidacion.checked)
-      .map(liquidacion => liquidacion.fecha)
+        confirmDelete.forEach((element) => {
+            if (element?.response || element?.message) {
+                return;
+            }
+        });
 
-    const deletePromises = toDelete.map(async (fecha) => (await deleteLiquidacionesChofer(chofer, fecha)))
+        const newLiquidaciones = liquidaciones.filter(
+            (liquidacion) => liquidacion.checked !== true
+        );
+        setLiquidaciones(newLiquidaciones);
+    };
 
-    const confirmDelete = await Promise.all(deletePromises);
+    return (
+        <div className="p-4">
+            <div className="md:flex justify-between mb-8 items-center">
+                <h2 className="text-3xl font-bold text-left md:w-1/3">
+                    {`Liquidación de ${chofer}`}
+                </h2>
 
-    confirmDelete.forEach(element => {
-      if (element?.response || element?.message) {
-        return
-      }
-    });
+                <div className="gap-5 md:flex justify-end md:2/3">
+                    <Button
+                        color="indigo"
+                        variant="solid"
+                        size="4"
+                        onClick={handleAdd}
+                        disabled={true}
+                    >
+                        <PlusIcon width="20" height="20" />
+                        Agregar
+                    </Button>
 
-    const newLiquidaciones = liquidaciones.filter(liquidacion => liquidacion.checked !== true)
-    setLiquidaciones(newLiquidaciones)
-  }
+                    <AlertButton
+                        handleDelete={handleDelete}
+                        disabled={!liquidaciones.some((liquidacion) => liquidacion.checked)}
+                    />
+                </div>
+            </div>
 
-
-  return (
-    <div className="p-4">
-      <div className="md:flex justify-between mb-8 items-center">
-        <h2 className="text-3xl font-bold text-left md:w-1/3">
-          {`Liquidación de ${chofer}`}
-        </h2>
-
-        <div className="gap-5 md:flex justify-end md:2/3">
-          <Button color="indigo" variant="solid" size="4"
-            onClick={handleAdd}
-            disabled={true}
-          >
-            <PlusIcon width="20" height="20" />Agregar
-          </Button>
-
-          <AlertButton
-            handleDelete={handleDelete}
-            disabled={!liquidaciones.some(liquidacion => liquidacion.checked)}
-          />
+            {!loading && (
+                <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
+                    {liquidaciones.map((liquidacion) => (
+                        <li key={liquidacion.fecha}>
+                            <Flex align="center">
+                                <Checkbox
+                                    mr="4"
+                                    checked={liquidacion.checked}
+                                    onCheckedChange={() => handleCheckboxChange(liquidacion.fecha)}
+                                />
+                                <Link
+                                    className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
+                                    to={`/liquidaciones/${chofer}/${liquidacion.fecha}`}
+                                >
+                                    {new Date(liquidacion.fecha).toLocaleDateString("es-ES", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                        timeZone: "GMT",
+                                    })}
+                                </Link>
+                                <span className="text-xl ml-4 mr-4">Pagado: </span>
+                                {liquidacion.pagado ? (
+                                    <IconButton color="grass" variant="soft">
+                                        <CheckIcon width="18" height="18" />
+                                    </IconButton>
+                                ) : (
+                                    <IconButton color="tomato" variant="soft">
+                                        <Cross2Icon width="18" height="18" />
+                                    </IconButton>
+                                )}
+                            </Flex>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
-      </div>
-
-      {!loading && (
-        <ul className="text-2xl font-bold items-center flex flex-col space-y-5">
-          {liquidaciones.map(liquidacion => (
-            <li key={liquidacion.fecha}>
-              <Flex align="center">
-                <Checkbox mr="4"
-                  checked={liquidacion.checked}
-                  onCheckedChange={() => handleCheckboxChange(liquidacion.fecha)} />
-                <Link
-                  className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                  to={`/liquidaciones/${chofer}/${liquidacion.fecha}`}
-                >
-                  {
-                    new Date(liquidacion.fecha).toLocaleDateString("es-ES",
-                      {year: "numeric", month: "long", day: "numeric", timeZone: "GMT" })
-                  }
-                </Link>
-                <span className="text-xl ml-4 mr-4">Pagado: </span>
-                {
-                  liquidacion.pagado ? (
-                    <IconButton color="grass" variant="soft">
-                      <CheckIcon width="18" height="18" />
-                    </IconButton>
-                  ) : (
-                    <IconButton color="tomato" variant="soft">
-                      <Cross2Icon width="18" height="18" />
-                    </IconButton>
-                  )
-                }
-              </Flex>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <ColorRing
-        visible={loading}
-        height="80"
-        width="80"
-        ariaLabel="blocks-loading"
-        wrapperClass="w-1/3 h-1/3 m-auto"
-        colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
-      />
-    </div>
-  )
+    );
 }
 
-export default LiquidacionesChofer
+export default LiquidacionesChofer;

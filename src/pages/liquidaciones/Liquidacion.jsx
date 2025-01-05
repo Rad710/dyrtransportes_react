@@ -23,7 +23,6 @@ import {
 } from "../../utils/liquidaciones";
 import { toast } from "@/components/ui/use-toast";
 import AlertSwitch from "./components/AlertSwitch";
-import { ColorRing } from "react-loader-spinner";
 
 function Liquidacion({ title }) {
     useEffect(() => {
@@ -315,15 +314,6 @@ function Liquidacion({ title }) {
                         </Tabs.Content>
                     </Box>
                 )}
-
-                <ColorRing
-                    visible={loading}
-                    height="80"
-                    width="80"
-                    ariaLabel="blocks-loading"
-                    wrapperClass="w-1/3 h-1/3 m-auto"
-                    colors={["#A2C0E8", "#8DABDF", "#7896D6", "#6381CD", "#6366F1"]}
-                />
             </Tabs.Root>
         </div>
     );

@@ -1,5 +1,5 @@
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons"
-import { Text, TextField, IconButton } from "@radix-ui/themes"
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { Text, TextField, IconButton } from "@radix-ui/themes";
 
 function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
     return (
@@ -8,16 +8,16 @@ function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
                 <Text as="div" size="3" mb="1" weight="bold">
                     Fecha Inicio
                 </Text>
-                <TextField.Input
+                <TextField.Slot
                     name="startDate"
                     type="date"
-                    onChange={e => {
+                    onChange={(e) => {
                         const inputDate = new Date(e.target.value);
 
                         if (!isNaN(inputDate)) {
                             setStartDate(inputDate);
                         } else {
-                            setStartDate(null)
+                            setStartDate(null);
                         }
                     }}
                     value={startDate?.toISOString()?.slice(0, 10)}
@@ -27,16 +27,16 @@ function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
                 <Text as="div" size="3" mb="1" weight="bold">
                     Fecha Fin
                 </Text>
-                <TextField.Input
+                <TextField.Slot
                     name="endDate"
                     type="date"
-                    onChange={e => {
+                    onChange={(e) => {
                         const inputDate = new Date(e.target.value);
 
                         if (!isNaN(inputDate)) {
                             setEndDate(inputDate);
                         } else {
-                            setEndDate(null)
+                            setEndDate(null);
                         }
                     }}
                     value={endDate?.toISOString()?.slice(0, 10)}
@@ -48,7 +48,7 @@ function FormDate({ startDate, setStartDate, endDate, setEndDate, onClick }) {
                 </IconButton>
             </div>
         </div>
-    )
+    );
 }
 
-export default FormDate
+export default FormDate;

@@ -1,10 +1,10 @@
 # Steps (desde root del proyecto)
 # 1. Agregar token para Sonarqube
 # 2. docker build -t node-agent:latest -f jenkins/Dockerfile.agent .
-# 4. docker tag node-agent:latest localhost:5000/dev/node-agent:20.11
-# 5. docker push localhost:5000/dev/node-agent:20.11
+# 4. docker tag node-agent:latest localhost:5000/dev/node-agent:23.5.0
+# 5. docker push localhost:5000/dev/node-agent:23.5.0
 
-FROM node:20.11 AS builder
+FROM node:23.5.0 AS builder
 
 #Jenkins user (node user already exists)
 # RUN groupadd --gid 1000 jenkins \
@@ -19,11 +19,14 @@ RUN chmod -R 777 . \
 #Cache npm install
 USER node
 
+# RUN npm cache clean --force \
+#     && npm install && npm audit fix
+
 RUN npm cache clean --force \
-    && npm install && npm audit fix
+    && npm install --no-audit
 
 
-FROM node:20.11
+FROM node:23.5.0
 # Add Docker's official GPG key:
 RUN apt-get -y update \
     && apt-get -y install ca-certificates curl gnupg \
