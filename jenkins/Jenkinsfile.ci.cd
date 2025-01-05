@@ -147,15 +147,9 @@ pipeline {
                 script {
                     catchError(buildResult: tag.isEmpty() ? 'SUCCESS' : 'FAILURE', stageResult: 'FAILURE') {
                         echo "Starting ESLint..."
-                        sh "eslint src --ext js,jsx \
-                            --report-unused-disable-directives \
-                            --max-warnings 0 \
-                            --format checkstyle > eslint.xml | exit 0"
+                        sh "eslint --format checkstyle > eslint.xml | exit 0"
 
-                        sh "eslint src --ext js,jsx \
-                            --report-unused-disable-directives \
-                            --max-warnings 0 \
-                            --format json > eslint.json | exit 0"
+                        sh "eslint --format json > eslint.json | exit 0"
 
                         recordIssues enabledForFailure: true, 
                             aggregatingResults: true, 
