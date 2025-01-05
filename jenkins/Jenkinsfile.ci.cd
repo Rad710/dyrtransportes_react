@@ -179,7 +179,7 @@ pipeline {
 
                             echo 'Sonar start'
                             sh "sonar-scanner -Dsonar.eslint.reportPaths=eslint.json \
-                                -Dsonar.projectKey=D-y-R-Transportes-React \
+                                -Dsonar.projectKey=dyrtransportes-frontend-react \
                                 -Dsonar.sourceEncoding=UTF-8"
                             echo 'Sonar end'
                         }
@@ -407,9 +407,9 @@ pipeline {
                 echo "Custom measurements: ${customMeasurementFields}. Custom tags: ${myTags}"
 
 
-                mail to: "rolmedro@gmail.com",
-                    subject: tagComment,
-                    body : notificationMessage
+                // mail to: "rolmedro@gmail.com",
+                //     subject: tagComment,
+                //     body : notificationMessage
 
                 withSonarQubeEnv("http://sonarqube-community:9000") {
                     influxDbPublisher(selectedTarget: 'influxdb', 

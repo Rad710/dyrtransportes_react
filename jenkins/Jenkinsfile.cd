@@ -153,7 +153,7 @@ pipeline {
 
                         echo 'Sonar start'
                         sh "sonar-scanner -Dsonar.eslint.reportPaths=eslint.json \
-                            -Dsonar.projectKey=D-y-R-Transportes-React \
+                            -Dsonar.projectKey=dyrtransportes-frontend-react \
                             -Dsonar.sourceEncoding=UTF-8"
 
                         echo 'Sonar end'
