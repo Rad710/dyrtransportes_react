@@ -1,10 +1,6 @@
-"use client";
-"use strict";
-
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 import { Route } from "../types";
-import { RouteApi } from "../route_utils";
-import { toastSuccess } from "@/utils/notification";
+import { RouteApi } from "../route_product_utils";
 import { Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -39,37 +35,29 @@ export const RouteDialogDelete = ({
 
         const result = await RouteApi.deleteRoute(routeToDelete.route_code);
         if (import.meta.env.VITE_DEBUG) {
-            console.log({ result });
             console.log("Deleting... ", routeToDelete.route_code);
+            console.log({ result });
         }
+        setSelectedRouteRows([]);
 
         if (result?.success) {
-            toastSuccess(result.success);
-
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
         }
-        setSelectedRouteRows([]);
     };
 
     const handleDeleteRouteList = async () => {
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("To delete: ", { selectedRouteRows });
-        }
-
         const result = await RouteApi.deleteRouteList(selectedRouteRows);
         if (import.meta.env.VITE_DEBUG) {
+            console.log("Deleting...: ", { selectedRouteRows });
             console.log({ result });
-            console.log({ selectedRouteRows });
         }
+        setSelectedRouteRows([]);
 
         if (result?.success) {
-            toastSuccess(result.success);
-
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
         }
-        setSelectedRouteRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

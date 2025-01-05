@@ -9,7 +9,7 @@ import FormLiquidacionViajes from "./components/FormLiquidacionViajes";
 import TableLiquidacionViajes from "./components/TableLiquidacionViajes";
 import FormLiquidacionGastos from "./components/FormLiquidacionGastos";
 import TableLiquidacionGastos from "./components/TableLiquidacionGastos";
-import { RouteApi } from "../route_product/route_utils";
+import { RouteApi } from "../route_product/route_product_utils";
 import {
     deleteLiquidacionGasto,
     deleteLiquidacionViaje,
@@ -111,7 +111,7 @@ function Liquidacion({ title }) {
             const toDelete = liquidacionViajes.filter((entry) => entry.checked);
 
             const deletePromises = toDelete.map(
-                async (entrada) => await deleteLiquidacionViaje(entrada.id),
+                async (entrada) => await deleteLiquidacionViaje(entrada.id)
             );
 
             const results = await Promise.all(deletePromises);
@@ -130,10 +130,10 @@ function Liquidacion({ title }) {
             const toDeleteSinBoleta = liquidacionGastos.sinBoleta.filter((entry) => entry.checked);
 
             const deletePromisesConBoleta = toDeleteConBoleta.map(
-                async (entrada) => await deleteLiquidacionGasto(entrada.id),
+                async (entrada) => await deleteLiquidacionGasto(entrada.id)
             );
             const deletePromisesSinBoleta = toDeleteSinBoleta.map(
-                async (entrada) => await deleteLiquidacionGasto(entrada.id),
+                async (entrada) => await deleteLiquidacionGasto(entrada.id)
             );
 
             const results = await Promise.all([
@@ -193,7 +193,7 @@ function Liquidacion({ title }) {
                 await putLiquidacionViaje({
                     ...entrada,
                     fechaLiquidacion: fecha,
-                }),
+                })
         );
 
         const result = await Promise.all(putPromises);

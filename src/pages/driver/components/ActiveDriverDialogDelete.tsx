@@ -1,10 +1,6 @@
-"use client";
-"use strict";
-
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 import { Driver } from "../types";
 import { DriverApi } from "../driver_utils";
-import { toastSuccess } from "@/utils/notification";
 import { Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -22,7 +18,6 @@ export const ActiveDriverDialogDelete = ({
     setSelectedActiveDriverRows,
     activeDriverToDelete,
     setActiveDriverToDelete,
-    
 }: ActiveDriverDialogDelete) => {
     // STATE
     const [open, setOpen] = useState<boolean>(false);
@@ -44,15 +39,13 @@ export const ActiveDriverDialogDelete = ({
             console.log("Deleting... ", activeDriverToDelete.driver_code);
         }
 
-        if (result?.success) {
-            toastSuccess(result.success);
+        setSelectedActiveDriverRows([]);
 
+        if (result?.success) {
             const newDriverList = await DriverApi.getDriverList();
             const filteredDrivers = newDriverList.filter((item) => !item.deleted);
             setActiveDriverList(filteredDrivers);
         }
-
-        setSelectedActiveDriverRows([]);
     };
 
     const handleDeleteDriverList = async () => {
@@ -66,15 +59,13 @@ export const ActiveDriverDialogDelete = ({
             console.log({ selectedActiveDriverRows });
         }
 
-        if (result?.success) {
-            toastSuccess(result.success);
+        setSelectedActiveDriverRows([]);
 
+        if (result?.success) {
             const newDriverList = await DriverApi.getDriverList();
             const filteredDrivers = newDriverList.filter((item) => !item.deleted);
             setActiveDriverList(filteredDrivers);
         }
-
-        setSelectedActiveDriverRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

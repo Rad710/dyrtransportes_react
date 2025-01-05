@@ -15,7 +15,7 @@ interface HasError {
     error?: string;
 }
 
-export const toastAxiosError = (errorResponse: AxiosError<HasError>) => {
+export const toastAxiosError = (errorResponse: AxiosError<HasError | undefined | null>) => {
     let errorMessage = "";
 
     if (errorResponse?.code === "ERR_NETWORK") {

@@ -1,15 +1,7 @@
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Driver } from "../types";
 
@@ -36,7 +28,7 @@ export const deactivatedDriverFilterColumnList = [
 
 export const deactivatedDriverDataTableColumns = (
     selectedDeactivatedDriverRows: number[],
-    setSelectedDeactivatedDriverRows: React.Dispatch<React.SetStateAction<number[]>>,
+    setSelectedDeactivatedDriverRows: React.Dispatch<React.SetStateAction<number[]>>
 ): ColumnDef<Driver>[] => {
     return [
         {
@@ -60,7 +52,7 @@ export const deactivatedDriverDataTableColumns = (
                             console.log("Select all value: ", !!value);
                             console.log(
                                 "current selectedDriverRows: ",
-                                selectedDeactivatedDriverRows,
+                                selectedDeactivatedDriverRows
                             );
                             console.log("new newSelectedRows: ", newSelectedRows);
                         }
@@ -78,14 +70,14 @@ export const deactivatedDriverDataTableColumns = (
                         const newSelectedRows = !!value
                             ? [...selectedDeactivatedDriverRows, row.original.driver_code ?? 0]
                             : selectedDeactivatedDriverRows.filter(
-                                  (item) => item !== row.original.driver_code,
+                                  (item) => item !== row.original.driver_code
                               );
 
                         if (import.meta.env.VITE_DEBUG) {
                             console.log("Select item value: ", !!value);
                             console.log(
                                 "current selectedDriverRows: ",
-                                selectedDeactivatedDriverRows,
+                                selectedDeactivatedDriverRows
                             );
                             console.log("new newSelectedRows: ", newSelectedRows);
                         }
@@ -117,7 +109,8 @@ export const deactivatedDriverDataTableColumns = (
             },
             cell: ({ row }) => {
                 const driverIdString = formatter(parseInt(row.getValue("C.I.")) || 0);
-                const isValid = ((row.getValue("C.I.") || "") as string).length === driverIdString.length;
+                const isValid =
+                    ((row.getValue("C.I.") || "") as string).length === driverIdString.length;
 
                 return (
                     <div className="text-right font-medium md:text-base">

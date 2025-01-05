@@ -1,7 +1,4 @@
-"use client";
-"use strict";
-
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -35,9 +32,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Route } from "@/pages/route_product/types";
 
-import { toastSuccess } from "@/utils/notification";
-import { RouteApi } from "../route_utils";
-import { SubmitResult } from "@/types";
+import { RouteApi } from "../route_product_utils";
+import { PromiseResult } from "@/types";
 
 Globalize.load(cldrDataSupplementSubTags);
 Globalize.load(cldrDataEN);
@@ -160,6 +156,13 @@ export const RouteDialogForm = ({
     // STATE
     const form = useForm<z.infer<typeof routeFormSchema>>({
         resolver: zodResolver(routeFormSchema),
+        defaultValues: {
+            route_code: null, // Default to null instead of undefined, avoid warning message
+            origin: "",
+            destination: "",
+            price: 0,
+            payroll_price: 0,
+        },
     });
 
     const button = !form.getValues("route_code")
@@ -178,7 +181,7 @@ export const RouteDialogForm = ({
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+    const [submitResult, setSubmitResult] = useState<PromiseResult | null>(null);
 
     // USE EFFECTS
     useEffect(() => {
@@ -190,10 +193,10 @@ export const RouteDialogForm = ({
                 route_code: routeToEdit?.route_code ?? null,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                price: typeof routeToEdit?.price === "number" ? (routeToEdit?.price ?? 0) : 0,
+                price: typeof routeToEdit?.price === "number" ? routeToEdit?.price ?? 0 : 0,
                 payroll_price:
                     typeof routeToEdit?.payroll_price === "number"
-                        ? (routeToEdit.payroll_price ?? 0)
+                        ? routeToEdit.payroll_price ?? 0
                         : 0,
             });
         }
@@ -220,9 +223,10 @@ export const RouteDialogForm = ({
             console.log("Post result...", { result });
         }
 
+        setSelectedRouteRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
@@ -239,10 +243,7 @@ export const RouteDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            return;
         }
-
-        setSelectedRouteRows([]);
     };
 
     const handlePutRoute = async (formData: Route) => {
@@ -259,9 +260,10 @@ export const RouteDialogForm = ({
             console.log("PUT result...", { result });
         }
 
+        setSelectedRouteRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newRouteList = await RouteApi.getRouteList();
             setRouteList(newRouteList);
@@ -269,10 +271,7 @@ export const RouteDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            return;
         }
-
-        setSelectedRouteRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

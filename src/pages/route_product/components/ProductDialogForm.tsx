@@ -1,6 +1,3 @@
-"use client";
-"use strict";
-
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,9 +27,8 @@ import {
 } from "@/components/ui/dialog";
 
 import { Product } from "../types";
-import { ProductApi } from "../route_utils";
-import { toastSuccess } from "@/utils/notification";
-import { SubmitResult } from "@/types";
+import { ProductApi } from "../route_product_utils";
+import { PromiseResult } from "@/types";
 
 const productFormSchema = z.object({
     product_code: z.number().nullish(),
@@ -64,6 +60,7 @@ export const ProductDialogForm = ({
     const form = useForm<z.infer<typeof productFormSchema>>({
         resolver: zodResolver(productFormSchema),
         defaultValues: {
+            product_code: null, // Default to null instead of undefined, avoid warning message
             product_name: "",
         },
     });
@@ -84,7 +81,7 @@ export const ProductDialogForm = ({
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+    const [submitResult, setSubmitResult] = useState<PromiseResult | null>(null);
 
     // USE EFFECTS
     useEffect(() => {
@@ -117,9 +114,10 @@ export const ProductDialogForm = ({
             console.log("Post product...", { result });
         }
 
+        setSelectedProductRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
@@ -133,10 +131,7 @@ export const ProductDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            return;
         }
-
-        setSelectedProductRows([]);
     };
 
     const handlePutProduct = async (formData: Product) => {
@@ -154,9 +149,10 @@ export const ProductDialogForm = ({
             console.log("PUT result...", { result });
         }
 
+        setSelectedProductRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
@@ -164,10 +160,7 @@ export const ProductDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            return;
         }
-
-        setSelectedProductRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

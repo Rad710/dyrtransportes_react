@@ -15,7 +15,7 @@ import {
 import CalloutMessage from "../../../components/CalloutMessage";
 import { resetFormStyle } from "../../../utils/utils";
 import { getNomina } from "../../../utils/nomina";
-import { RouteApi } from "../../../pages/route_product/route_utils";
+import { RouteApi } from "../../../pages/route_product/route_product_utils";
 
 function FormCobranzas({
     fechaCreacion,
@@ -114,7 +114,7 @@ function FormCobranzas({
             const nomina = result?.filter(
                 (nomina) =>
                     nomina.chofer === formData.chofer ||
-                    nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion),
+                    nomina.chofer === toSuggest?.chofer?.at(selectedSuggestion)
             );
             const [chapaNomina] = nomina;
 
@@ -128,7 +128,7 @@ function FormCobranzas({
         } else if ("destino" === fieldName) {
             const result = await RouteApi.getRoute(
                 formData.origen,
-                toSuggest.destino.at(selectedSuggestion),
+                toSuggest.destino.at(selectedSuggestion)
             );
             setFormData({
                 ...formData,
@@ -169,7 +169,7 @@ function FormCobranzas({
 
         if (["chofer", "producto", "origen", "destino"].includes(fieldName)) {
             const newToSuggest = suggestions[fieldName].filter(
-                (suggested) => string !== "" && new RegExp("^" + string).test(suggested),
+                (suggested) => string !== "" && new RegExp("^" + string).test(suggested)
             );
             setToSuggest({ ...toSuggest, [fieldName]: newToSuggest });
         }

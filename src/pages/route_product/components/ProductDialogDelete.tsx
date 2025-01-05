@@ -1,13 +1,10 @@
-"use client";
-"use strict";
 import { useEffect, useState } from "react";
 import { Trash2Icon } from "lucide-react";
 
-import { toastSuccess } from "@/utils/notification";
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 
 import { Product } from "../types";
-import { ProductApi } from "../route_utils";
+import { ProductApi } from "../route_product_utils";
 
 type ProductDialogDeleteProps = {
     setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
@@ -45,8 +42,6 @@ export const ProductDialogDelete = ({
         }
 
         if (result?.success) {
-            toastSuccess(result.success);
-
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
         }
@@ -63,13 +58,12 @@ export const ProductDialogDelete = ({
             console.log({ selectedProductRows });
         }
 
-        if (result?.success) {
-            toastSuccess(result.success);
+        setSelectedProductRows([]);
 
+        if (result?.success) {
             const newProductList = await ProductApi.getProductList();
             setProductList(newProductList);
         }
-        setSelectedProductRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {

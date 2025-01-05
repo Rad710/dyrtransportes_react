@@ -13,14 +13,12 @@ import Index from "./pages/homepage/Index";
 import Cobranzas from "./pages/cobranzas/Cobranzas";
 import LiquidacionesChofer from "./pages/liquidaciones/LiquidacionesChofer";
 import { RouteProduct } from "./pages/route_product/RouteProduct";
-import { Drivers } from "./pages/nomina/Drivers";
+import { Drivers } from "./pages/driver/Drivers";
 import ErrorPage from "./components/ErrorPage";
-import PlanillasYears from "./pages/cobranzas/PlanillasYears";
 
 import { ShipmentPayrollYearList } from "./pages/shipment_payroll/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "./pages/shipment_payroll/ShipmentPayrollList";
 
-import ListaPlanillas from "./pages/cobranzas/ListaPlanillas";
 import ListaLiquidaciones from "./pages/liquidaciones/ListaLiquidaciones";
 import Liquidacion from "./pages/liquidaciones/Liquidacion";
 import Dinatran from "./pages/dinatran/Dinatran";

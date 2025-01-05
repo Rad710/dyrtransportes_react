@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Form,
     FormControl,
@@ -8,10 +6,6 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-
-import { XIcon, CheckIcon } from "lucide-react";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,9 +25,8 @@ import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { Driver } from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitResult } from "@/types";
+import { PromiseResult } from "@/types";
 import { DriverApi } from "../driver_utils";
-import { toastSuccess } from "@/utils/notification";
 
 const driverFormSchema = z.object({
     driver_code: z.number().nullish(),
@@ -100,6 +93,14 @@ export const DriverDialogForm = ({
     //STATE
     const form = useForm<z.infer<typeof driverFormSchema>>({
         resolver: zodResolver(driverFormSchema),
+        defaultValues: {
+            driver_code: null, // Default to null instead of undefined, avoid warning message
+            driver_id: "",
+            driver_name: "",
+            driver_surname: "",
+            truck_plate: "",
+            trailer_plate: "",
+        },
     });
 
     const button = !form.getValues("driver_code")
@@ -118,7 +119,7 @@ export const DriverDialogForm = ({
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+    const [submitResult, setSubmitResult] = useState<PromiseResult | null>(null);
 
     // USE EFFECTS
     useEffect(() => {
@@ -158,9 +159,10 @@ export const DriverDialogForm = ({
             console.log("Post result...", { result });
         }
 
+        setSelectedActiveDriverRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newDriverList = await DriverApi.getDriverList();
             const filteredDrivers = newDriverList.filter((item) => !item.deleted);
@@ -179,10 +181,7 @@ export const DriverDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            throw result.error;
         }
-
-        setSelectedActiveDriverRows([]);
     };
 
     const handlePutDriver = async (formData: Driver) => {
@@ -199,9 +198,10 @@ export const DriverDialogForm = ({
             console.log("PUT result...", { result });
         }
 
+        setSelectedActiveDriverRows([]);
+
         if (result?.success) {
             setSubmitResult({ success: result.success });
-            toastSuccess(result.success);
 
             const newDriverList = await DriverApi.getDriverList();
             const filteredDrivers = newDriverList.filter((item) => !item.deleted);
@@ -210,10 +210,7 @@ export const DriverDialogForm = ({
 
         if (result?.error) {
             setSubmitResult({ error: result.error });
-            return;
         }
-
-        setSelectedActiveDriverRows([]);
     };
 
     const handleOnOpenChange = (open: boolean) => {
@@ -358,16 +355,22 @@ export const DriverDialogForm = ({
                     <DialogHeader className="ml-2 mr-2 gap-y-4">
                         <DialogTitle>{button.text}</DialogTitle>
                         <DialogDescription>
-                            {submitResult ? (
-                                <span
-                                    className={
-                                        submitResult.success ? "text-green-600" : "text-red-600"
-                                    }
-                                >
-                                    {submitResult.success || submitResult.error}
-                                </span>
+                            {!Object.keys(form.formState.errors).length ? (
+                                submitResult ? (
+                                    <span
+                                        className={
+                                            submitResult.success ? "text-green-600" : "text-red-600"
+                                        }
+                                    >
+                                        {submitResult.success || submitResult.error}
+                                    </span>
+                                ) : (
+                                    <span>{button.description}</span>
+                                )
                             ) : (
-                                <span>{button.description}</span>
+                                <span className="text-red-500 font-bold">
+                                    Revise los campos requerido
+                                </span>
                             )}
                         </DialogDescription>
                     </DialogHeader>

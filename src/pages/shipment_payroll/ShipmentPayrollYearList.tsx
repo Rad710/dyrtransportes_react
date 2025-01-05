@@ -85,21 +85,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     //     setYears(newYears);
     // };
 
-    // const handleSubmit = async (newYear) => {
-    //     setDisableButton(true);
-    //     document.body.style.cursor = "wait";
-    //     const result = await postPlanilla(new Date(newYear, 0, 1));
-
-    //     if (!result?.response && !result?.message) {
-    //         setYears([{ year: newYear, checked: false }, ...years]);
-    //     } else {
-    //         setError(result.response?.data);
-    //     }
-    //     setDisableButton(false);
-    //     document.body.style.cursor = "default";
-    // };
-
-    const handleAddYear = async () => {
+    const handlePostPlanilla = async () => {
         const latestYear = yearList.at(0) || 2023;
         const newYear = DateTime.fromObject({ year: latestYear + 1 }, { zone: "utc" });
 
@@ -121,14 +107,12 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
             console.log("Post result...", { result });
         }
 
+        setSelectedYearList([]);
+
         if (result?.success) {
             toastSuccess(result.success);
 
             await loadShipmentPayrollYearList();
-        }
-
-        if (result?.error) {
-            return;
         }
     };
 
@@ -172,7 +156,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                         }
                         variant="outline"
                         size="md-lg"
-                        onClickFunctionPromise={handleAddYear}
+                        onClickFunctionPromise={handlePostPlanilla}
                     >
                         <span className="md:text-lg">Se creará una nueva planilla.</span>
                     </AlertDialogConfirm>

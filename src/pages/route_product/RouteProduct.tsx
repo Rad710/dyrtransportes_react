@@ -1,6 +1,3 @@
-"use client";
-"use strict";
-
 import { useState, useEffect } from "react";
 
 import { Table2Icon } from "lucide-react";
@@ -23,7 +20,7 @@ import { ProductDialogDelete } from "./components/ProductDialogDelete";
 
 import { Product, Route } from "./types";
 
-import { ProductApi, RouteApi } from "./route_utils";
+import { ProductApi, RouteApi } from "./route_product_utils";
 
 const RouteTabContent = () => {
     //STATE

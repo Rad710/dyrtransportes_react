@@ -2,7 +2,7 @@ export type PropsTitle = {
     title: string;
 };
 
-export type SubmitResult = {
+export type PromiseResult = {
     success?: string;
     error?: string;
 };
