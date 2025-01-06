@@ -100,13 +100,13 @@ export const ActiveDriverDialogDelete = ({
                 <strong className="font-bold text-gray-700">
                     {activeDriverToDelete?.driver_code ? (
                         <>
-                            {activeDriverToDelete?.driver_name ??
-                                "" + " " + activeDriverToDelete?.driver_surname ??
-                                ""}
+                            {(activeDriverToDelete?.driver_name ?? "") +
+                                " " +
+                                (activeDriverToDelete?.driver_surname ?? "")}
                             {" - "}
-                            {activeDriverToDelete?.truck_plate ??
-                                "" + " " + activeDriverToDelete?.trailer_plate ??
-                                ""}
+                            {(activeDriverToDelete?.truck_plate ?? "") +
+                                " " +
+                                (activeDriverToDelete?.trailer_plate ?? "")}
                         </>
                     ) : (
                         "Todos los Choferes seleccionadas"

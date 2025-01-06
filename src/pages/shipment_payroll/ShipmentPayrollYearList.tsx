@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 import { DateTime } from "luxon";
 
-import { Link, Form } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // import {
 //     getPlanillas,
@@ -123,13 +123,13 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
             {
                 year: checkedYears?.at(0) ?? undefined,
             },
-            { zone: "utc" }
+            { zone: "utc" },
         );
         const endDate = DateTime.fromObject(
             {
                 year: checkedYears?.at(-1) ?? undefined,
             },
-            { zone: "utc" }
+            { zone: "utc" },
         );
 
         if (!startDate.isValid || !endDate.isValid) {
@@ -204,7 +204,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                                                 newSelectedYearList = [...selectedYearList, year];
                                             } else {
                                                 newSelectedYearList = selectedYearList.filter(
-                                                    (item) => item !== year
+                                                    (item) => item !== year,
                                                 );
                                             }
 
@@ -212,11 +212,11 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                                                 console.log("Select item value: ", year);
                                                 console.log(
                                                     "current selectedYearList: ",
-                                                    selectedYearList
+                                                    selectedYearList,
                                                 );
                                                 console.log(
                                                     "new selectedYearList: ",
-                                                    newSelectedYearList
+                                                    newSelectedYearList,
                                                 );
                                             }
 
