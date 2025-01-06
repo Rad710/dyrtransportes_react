@@ -183,12 +183,15 @@ pipeline {
         }
 
         stage("SonarQube Quality Gate") {
+            when {
+                expression {
+                    return !tag.isEmpty() && BRANCH_NAME ==~ releasePattern
+                }
+            }
             steps {
                 script {
-                    catchError(buildResult: tag.isEmpty() ? 'SUCCESS' : 'FAILURE', stageResult: 'FAILURE') {
-                        timeout(time: 5, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: true
-                        }
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
