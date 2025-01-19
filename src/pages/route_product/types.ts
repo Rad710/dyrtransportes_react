@@ -2,11 +2,12 @@ export type Route = {
     route_code?: number | null;
     origin: string;
     destination: string;
-    price: string | number;
-    payroll_price: string | number;
+    price: string;
+    payroll_price: string;
     deleted?: boolean;
     company_id?: string;
     modification_user?: string;
+    modification_timestamp?: string;
 
     success?: string;
     error?: string;
@@ -18,6 +19,7 @@ export type Product = {
     deleted?: boolean;
     company_id?: string;
     modification_user?: string;
+    modification_timestamp?: string;
 
     success?: string;
     error?: string;

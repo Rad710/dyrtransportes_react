@@ -8,6 +8,7 @@ export type Driver = {
     deleted?: boolean;
     company_id?: string;
     modification_user?: string;
+    modification_timestamp?: string;
 
     success?: string;
     error?: string;

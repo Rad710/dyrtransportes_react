@@ -13,21 +13,9 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Route } from "../types";
 import React from "react";
+import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 
-import Globalize from "globalize";
-import cldrDataES from "cldr-data/main/es/numbers.json";
-import cldrDataEN from "cldr-data/main/en/numbers.json";
-import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
-
-Globalize.load(cldrDataSupplementSubTags);
-Globalize.load(cldrDataEN);
-Globalize.load(cldrDataES);
-Globalize.locale("es");
-
-const formatter = Globalize.numberFormatter({
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
+const formatter = getGlobalizeNumberFormatter(2, 2);
 
 export const routeFilterColumnList = ["Origen", "Destino"] as const;
 
@@ -149,7 +137,9 @@ export const routeDataTableColumns = (
                 );
             },
             cell: ({ row }) => (
-                <div className="text-right md:text-base">{formatter(row.getValue("Precio"))}</div>
+                <div className="text-right md:text-base">
+                    {formatter(parseFloat(row.getValue("Precio") ?? "") || 0)}
+                </div>
             ),
         },
         {
@@ -171,7 +161,7 @@ export const routeDataTableColumns = (
             },
             cell: ({ row }) => (
                 <div className="text-right md:text-base">
-                    {formatter(row.getValue("Precio Liquidación"))}
+                    {formatter(parseFloat(row.getValue("Precio Liquidación") ?? "") || 0)}
                 </div>
             ),
         },

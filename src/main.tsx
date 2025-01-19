@@ -10,7 +10,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import Index from "./pages/homepage/Index";
-import Cobranzas from "./pages/cobranzas/Cobranzas";
 import LiquidacionesChofer from "./pages/liquidaciones/LiquidacionesChofer";
 import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { Drivers } from "./pages/driver/Drivers";
@@ -23,6 +22,7 @@ import ListaLiquidaciones from "./pages/liquidaciones/ListaLiquidaciones";
 import Liquidacion from "./pages/liquidaciones/Liquidacion";
 import Dinatran from "./pages/dinatran/Dinatran";
 import AuthWrapper from "./hooks/AuthWrapper";
+import { ShipmentList } from "./pages/shipment_payroll/ShipmentList";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -45,8 +45,8 @@ const router = createBrowserRouter([
                         element: <ShipmentPayrollList title="Lista de Planillas" />,
                     },
                     {
-                        path: "/shipment-payroll-list/payroll/:payroll_code",
-                        element: <Cobranzas title="Cobranzas" />,
+                        path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
+                        element: <ShipmentList title="Cobranzas" />,
                     },
                 ],
             },
@@ -93,5 +93,5 @@ ReactDOM.createRoot(rootElement).render(
         <AuthWrapper>
             <RouterProvider router={router} />
         </AuthWrapper>
-    </React.StrictMode>
+    </React.StrictMode>,
 );

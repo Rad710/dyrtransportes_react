@@ -18,16 +18,7 @@ export const RouteApi = {
     getRouteList: async (): Promise<Route[]> =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/routes`)
-            .then(
-                (response: AxiosResponse<Route[] | null>) =>
-                    response.data?.map(
-                        (item: Route): Route => ({
-                            ...item,
-                            price: parseFloat(item.price?.toString() ?? "") || 0,
-                            payroll_price: parseFloat(item.payroll_price?.toString() ?? "") || 0,
-                        })
-                    ) ?? []
-            )
+            .then((response: AxiosResponse<Route[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<{ error: string } | null>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);

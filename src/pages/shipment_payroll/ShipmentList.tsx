@@ -4,34 +4,32 @@ import { Table2Icon } from "lucide-react";
 import { DateTime } from "luxon";
 
 import { PropsTitle } from "@/types";
-import { ShipmentPayroll } from "./types";
+import { Shipment } from "./types";
 
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { ShipmentPayrollApi } from "./shipment_payroll_utils";
-import { ShipmentPayrollDialogForm } from "./components/ShipmentPayrollDialogForm";
-import { ShipmentPayrollDialogDelete } from "./components/ShipmentPayrollDialogDelete";
+import { ShipmentApi } from "./shipment_payroll_utils";
 
-export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
-    const match = useMatch("/shipment-payroll-list/:year");
-    const year = parseInt(match?.params?.year ?? "") || 0;
+export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
+    const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
+    const payroll_code = parseInt(match?.params?.payroll_code ?? "") || 0;
     //State
     const [loading, setLoading] = useState(true);
 
-    const [payrollList, setPayrollList] = useState<ShipmentPayroll[]>([]);
-    const [selectedPayrollList, setSelectedPayrollList] = useState<number[]>([]);
+    const [shipmentList, setShipmentList] = useState<Shipment[]>([]);
+    const [selectedShipmentList, setSelectedShipmentList] = useState<number[]>([]);
 
-    const [payrollToDelete, setPayrollToDelete] = useState<ShipmentPayroll | null>(null);
+    const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
 
-    const loadShipmentPayrollListList = async () => {
-        const shipmentPayrolls = await ShipmentPayrollApi.getShipmentPayrollList(year);
+    const loadShipmentList = async () => {
+        const shipments = await ShipmentApi.getShipmentList(payroll_code);
 
-        setPayrollList(shipmentPayrolls);
+        setShipmentList(shipments);
         setLoading(false);
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded shipment payrolls ", { shipmentPayrolls });
+            console.log("Loaded shipments ", { shipments });
         }
     };
 
@@ -39,10 +37,10 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     useEffect(() => {
         document.title = title;
 
-        loadShipmentPayrollListList();
+        loadShipmentList();
     }, []);
 
-    const handleExportShipmentPayrollList = async () => {
+    const handleExportShipmentList = async () => {
         console.log("Testing...");
     };
 
@@ -50,15 +48,15 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
         <div className="px-4">
             <div className="flex flex-wrap gap-2">
                 <h2 className="section-header text-xl md:text-2xl text-left md:mb-0 justify-start">
-                    Lista de Planillas de {year}
+                    Lista de Cargas del fecha
                 </h2>
 
                 <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
-                    <ShipmentPayrollDialogForm
+                    {/* <ShipmentPayrollDialogForm
                         year={year}
                         setPayrollList={setPayrollList}
                         setSelectedPayrollList={setSelectedPayrollList}
-                    />
+                    /> */}
 
                     <AlertDialogConfirm
                         buttonContent={
@@ -69,15 +67,11 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                         }
                         variant="green"
                         size="md-lg"
-                        onClickFunctionPromise={handleExportShipmentPayrollList}
+                        onClickFunctionPromise={handleExportShipmentList}
                     >
-                        <span className="md:text-lg">
-                            {`Se exportarán todas las Cobranzas ${
-                                selectedPayrollList.length > 0 ? "seleccionadas" : ""
-                            }.`}
-                        </span>
+                        <span className="md:text-lg">Se exportará la Planilla</span>
                     </AlertDialogConfirm>
-
+                    {/* 
                     <ShipmentPayrollDialogDelete
                         year={year}
                         setPayrollList={setPayrollList}
@@ -85,24 +79,26 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                         setSelectedPayrollList={setSelectedPayrollList}
                         payrollToDelete={payrollToDelete}
                         setPayrollToDelete={setPayrollToDelete}
-                    />
+                    /> */}
                 </div>
             </div>
 
             {!loading && (
                 <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
-                    {payrollList.map((payroll) => {
-                        const isChecked = selectedPayrollList.some(
-                            (item) => item === payroll.payroll_code,
+                    {shipmentList.map((shipment) => {
+                        const isChecked = selectedShipmentList.some(
+                            (item) => item === shipment.shipment_code,
                         );
 
                         return (
                             <li
                                 className={`flex ${isChecked ? "bg-gray-200" : ""}`}
-                                key={payroll.payroll_code}
+                                key={shipment.shipment_code}
                             >
                                 <div className="flex flex-row gap-6 justify-center items-center px-4 py-3">
-                                    <Checkbox
+                                    {shipment.receipt_code}
+
+                                    {/* <Checkbox
                                         checked={isChecked}
                                         onCheckedChange={(value) => {
                                             let newSelectedPayrollList: number[] = [];
@@ -152,7 +148,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                         <span className=" text-gray-400">
                                             [#{payroll.payroll_code ?? 0}]
                                         </span>
-                                    </Link>
+                                    </Link> */}
                                 </div>
                             </li>
                         );

@@ -12,11 +12,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 
-import Globalize from "globalize";
-import cldrDataES from "cldr-data/main/es/numbers.json";
-import cldrDataEN from "cldr-data/main/en/numbers.json";
-import cldrDataSupplementSubTags from "cldr-data/supplemental/likelySubtags.json";
-
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -34,13 +29,10 @@ import { Route } from "@/pages/route_product/types";
 
 import { RouteApi } from "../route_product_utils";
 import { PromiseResult } from "@/types";
+import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 
-Globalize.load(cldrDataSupplementSubTags);
-Globalize.load(cldrDataEN);
-Globalize.load(cldrDataES);
-Globalize.locale("es");
-
-const parser = Globalize.numberParser();
+const parser = getGlobalizeParser();
+const formatter = getGlobalizeNumberFormatter(2, 2);
 
 const routeFormSchema = z.object({
     route_code: z.number().nullish(),
@@ -80,7 +72,7 @@ const routeFormSchema = z.object({
             }
 
             const val = parser(arg);
-            if (isNaN(val)) {
+            if (!val) {
                 return ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
                     message: "Número inválido",
@@ -88,18 +80,8 @@ const routeFormSchema = z.object({
                     received: "unknown",
                 });
             }
-
-            if (val < 0) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 0,
-                    type: "number",
-                    inclusive: true,
-                    message: "Precio debe ser positivo",
-                });
-            }
         })
-        .transform((arg) => parser(arg)),
+        .transform((arg) => parser(arg).toFixed(2)),
 
     payroll_price: z.coerce
         .string({
@@ -118,7 +100,7 @@ const routeFormSchema = z.object({
             }
 
             const val = parser(arg);
-            if (isNaN(val)) {
+            if (!val) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
                     message: "Número inválido",
@@ -126,18 +108,8 @@ const routeFormSchema = z.object({
                     received: "unknown",
                 });
             }
-
-            if (val < 0) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 0,
-                    type: "number",
-                    inclusive: true,
-                    message: "Precio Liquidación debe ser positivo",
-                });
-            }
         })
-        .transform((arg) => parser(arg)),
+        .transform((arg) => parser(arg).toFixed(2)),
 });
 
 type RouteDialogFormProps = {
@@ -160,8 +132,8 @@ export const RouteDialogForm = ({
             route_code: null, // Default to null instead of undefined, avoid warning message
             origin: "",
             destination: "",
-            price: 0,
-            payroll_price: 0,
+            price: "0",
+            payroll_price: "0",
         },
     });
 
@@ -193,11 +165,8 @@ export const RouteDialogForm = ({
                 route_code: routeToEdit?.route_code ?? null,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                price: typeof routeToEdit?.price === "number" ? routeToEdit?.price ?? 0 : 0,
-                payroll_price:
-                    typeof routeToEdit?.payroll_price === "number"
-                        ? routeToEdit.payroll_price ?? 0
-                        : 0,
+                price: formatter(parseFloat(routeToEdit?.price ?? "") || 0),
+                payroll_price: formatter(parseFloat(routeToEdit?.payroll_price ?? "") || 0),
             });
         }
     }, [routeToEdit]);
@@ -236,8 +205,8 @@ export const RouteDialogForm = ({
                 route_code: null,
                 origin: "",
                 destination: "",
-                price: 0,
-                payroll_price: 0,
+                price: "0",
+                payroll_price: "0",
             });
         }
 
@@ -284,8 +253,8 @@ export const RouteDialogForm = ({
                 route_code: null,
                 origin: "",
                 destination: "",
-                price: 0,
-                payroll_price: 0,
+                price: "0",
+                payroll_price: "0",
             });
 
             setSubmitResult(null);
@@ -309,81 +278,79 @@ export const RouteDialogForm = ({
     };
 
     const FormComponent = (
-        <>
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onFormSubmit)}
-                    className="space-y-2 mt-2 ml-2 mr-2"
-                    id="form-route"
-                >
-                    <div className="md:flex md:flex-row md:gap-6 justify-evenly">
-                        <FormField
-                            control={form.control}
-                            name="origin"
-                            defaultValue={form.getValues("origin")}
-                            render={({ field }) => (
-                                <FormItem className="w-full">
-                                    <FormLabel>Origen</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Origen" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="destination"
-                            defaultValue={form.getValues("destination")}
-                            render={({ field }) => (
-                                <FormItem className="mt-2 md:mt-0 w-full">
-                                    <FormLabel>Destino</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Destino" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onFormSubmit)}
+                className="space-y-2 mt-2 ml-2 mr-2"
+                id="form-route"
+            >
+                <div className="md:flex md:flex-row md:gap-6 justify-evenly">
+                    <FormField
+                        control={form.control}
+                        name="origin"
+                        defaultValue={form.getValues("origin")}
+                        render={({ field }) => (
+                            <FormItem className="w-full">
+                                <FormLabel>Origen</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Origen" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="destination"
+                        defaultValue={form.getValues("destination")}
+                        render={({ field }) => (
+                            <FormItem className="mt-2 md:mt-0 w-full">
+                                <FormLabel>Destino</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Destino" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
 
-                    <div className="md:flex md:flex-row md:gap-6 justify-evenly">
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            defaultValue={form.getValues("price")}
-                            render={({ field }) => (
-                                <FormItem className="w-full">
-                                    <FormLabel>Precio</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Precio" {...field} type="text" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="payroll_price"
-                            defaultValue={form.getValues("payroll_price")}
-                            render={({ field }) => (
-                                <FormItem className="mt-2 md:mt-0 w-full">
-                                    <FormLabel>Precio Liquidación</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Precio Liquidación"
-                                            {...field}
-                                            type="text"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </form>
-            </Form>
-        </>
+                <div className="md:flex md:flex-row md:gap-6 justify-evenly">
+                    <FormField
+                        control={form.control}
+                        name="price"
+                        defaultValue={form.getValues("price")}
+                        render={({ field }) => (
+                            <FormItem className="w-full">
+                                <FormLabel>Precio</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Precio" {...field} type="text" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="payroll_price"
+                        defaultValue={form.getValues("payroll_price")}
+                        render={({ field }) => (
+                            <FormItem className="mt-2 md:mt-0 w-full">
+                                <FormLabel>Precio Liquidación</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Precio Liquidación"
+                                        {...field}
+                                        type="text"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+            </form>
+        </Form>
     );
 
     return (

@@ -1,26 +1,16 @@
-"use client";
-"use strict";
-
 import { useState, useEffect } from "react";
-
-import { DateTime } from "luxon";
-
 import { Link } from "react-router-dom";
-
-// import {
-//     getPlanillas,
-//     postPlanilla,
-//     deletePlanilla,
-//     getExportarInforme,
-// } from "../../utils/cobranza";
+import { DateTime } from "luxon";
+import { PlusIcon, Table2Icon } from "lucide-react";
 
 import { PropsTitle } from "@/types";
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { PlusIcon, Table2Icon } from "lucide-react";
-import { ShipmentPayrollApi } from "./shipment_payroll_utils";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ShipmentPayroll } from "./types";
+
+import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toastSuccess } from "@/utils/notification";
+
+import { ShipmentPayrollApi } from "./shipment_payroll_utils";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     //State
@@ -32,14 +22,14 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     const loadShipmentPayrollYearList = async () => {
         const shipmentPayrolls = await ShipmentPayrollApi.getShipmentPayrollList();
 
-        let shipmentPayrollYearList: number[] =
+        const shipmentPayrollYearSet: Set<number> = new Set(
             shipmentPayrolls
-                ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "utc" }))
+                ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "local" }))
                 ?.filter((item) => item?.isValid)
-                ?.map((item) => item.year) ?? [];
+                ?.map((item) => item.year) ?? [],
+        );
 
-        shipmentPayrollYearList = Array.from(new Set(shipmentPayrollYearList));
-        shipmentPayrollYearList.sort((a, b) => b - a);
+        const shipmentPayrollYearList = Array.from(shipmentPayrollYearSet).sort((a, b) => b - a);
 
         setYearList(shipmentPayrollYearList);
         setLoading(false);
@@ -57,37 +47,9 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
         loadShipmentPayrollYearList();
     }, []);
 
-    // const handleDelete = async () => {
-    //     const yearsChecked = yearsList
-    //         .filter((planilla) => planilla.checked === true)
-    //         .map((planilla) => planilla.year);
-
-    //     const result = await getPlanillas();
-
-    //     const toDelete = result
-    //         ?.filter((fecha) => {
-    //             const year = Number(new Date(fecha).toISOString().slice(0, 4));
-    //             return yearsChecked.includes(year);
-    //         })
-    //         .map((fecha) => new Date(fecha).toISOString().slice(0, 10));
-
-    //     const deletePromises = toDelete.map(async (item) => await deletePlanilla(item));
-
-    //     const confirmDelete = await Promise.all(deletePromises);
-
-    //     confirmDelete.forEach((element) => {
-    //         if (element?.response || element?.message) {
-    //             setError(element.response?.data);
-    //         }
-    //     });
-
-    //     const newYears = years.filter((planilla) => planilla.checked !== true);
-    //     setYears(newYears);
-    // };
-
-    const handlePostPlanilla = async () => {
+    const handlePostShipmentPayroll = async () => {
         const latestYear = yearList.at(0) || 2023;
-        const newYear = DateTime.fromObject({ year: latestYear + 1 }, { zone: "utc" });
+        const newYear = DateTime.fromObject({ year: latestYear + 1 }, { zone: "local" });
 
         if (!newYear.isValid) {
             return;
@@ -123,13 +85,13 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
             {
                 year: checkedYears?.at(0) ?? undefined,
             },
-            { zone: "utc" },
+            { zone: "local" },
         );
         const endDate = DateTime.fromObject(
             {
                 year: checkedYears?.at(-1) ?? undefined,
             },
-            { zone: "utc" },
+            { zone: "local" },
         );
 
         if (!startDate.isValid || !endDate.isValid) {
@@ -156,7 +118,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                         }
                         variant="outline"
                         size="md-lg"
-                        onClickFunctionPromise={handlePostPlanilla}
+                        onClickFunctionPromise={handlePostShipmentPayroll}
                     >
                         <span className="md:text-lg">Se creará una nueva planilla.</span>
                     </AlertDialogConfirm>
@@ -176,14 +138,6 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                             Se exportarán todas las Cobranzas del año.
                         </span>
                     </AlertDialogConfirm>
-
-                    {/* <RouteDialogDelete
-                    setRouteList={setRouteList}
-                    selectedRouteRows={selectedRouteRows}
-                    setSelectedRouteRows={setSelectedRouteRows}
-                    routeToDelete={routeToDelete}
-                    setRouteToDelete={setRouteToDelete}
-                /> */}
                 </div>
             </div>
 

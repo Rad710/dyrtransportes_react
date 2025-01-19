@@ -1,7 +1,7 @@
 import { toastAxiosError, toastSuccess } from "@/utils/notification";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { saveAs } from "file-saver";
-import { ShipmentPayroll } from "./types";
+import { Shipment, ShipmentPayroll } from "./types";
 import { DateTime } from "luxon";
 
 export const ShipmentPayrollApi = {
@@ -12,10 +12,10 @@ export const ShipmentPayrollApi = {
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
-                return [];
+                return null;
             }),
 
-    getShipmentPayrollList: async (year?: number) =>
+    getShipmentPayrollList: async (year?: number | null) =>
         axios
             .get(`${import.meta.env.VITE_API_URL}/shipment-payrolls?year=${year ?? ""}`)
             .then((response: AxiosResponse<ShipmentPayroll[] | null>) => response.data ?? [])
@@ -75,7 +75,7 @@ export const ShipmentPayrollApi = {
                 }/export-shipment-payrolls?startDate=${startDate}&endDate=${endDate}`,
                 {
                     responseType: "blob",
-                }
+                },
             )
             .then((response: AxiosResponse<BlobPart>) => {
                 saveAs(new Blob([response.data]), "lista_de_cobranzas.xlsx");
@@ -84,5 +84,19 @@ export const ShipmentPayrollApi = {
             .catch((errorResponse: AxiosError<{ error: string }>) => {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
+            }),
+};
+
+export const ShipmentApi = {
+    getShipmentList: async (shipment_payroll_code: number | null) =>
+        axios
+            .get(
+                `${import.meta.env.VITE_API_URL}/shipments?shipment_payroll_code=${shipment_payroll_code ?? ""}`,
+            )
+            .then((response: AxiosResponse<Shipment[] | null>) => response.data ?? [])
+            .catch((errorResponse: AxiosError<{ error: string }>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return [];
             }),
 };
