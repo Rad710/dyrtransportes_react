@@ -1,31 +1,29 @@
 import { useState, useEffect } from "react";
-import { Link, useMatch } from "react-router-dom";
+import { useMatch } from "react-router-dom";
 import { Table2Icon } from "lucide-react";
-import { DateTime } from "luxon";
 
 import { PropsTitle } from "@/types";
-import { Shipment } from "./types";
+import { Shipment, ShipmentAggregated } from "./types";
 
 import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { ShipmentApi } from "./shipment_payroll_utils";
+import { ShipmentDialogForm } from "./components/ShipmentDialogForm";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
-    const payroll_code = parseInt(match?.params?.payroll_code ?? "") || 0;
+    const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
     //State
     const [loading, setLoading] = useState(true);
 
-    const [shipmentList, setShipmentList] = useState<Shipment[]>([]);
+    const [shipmentAggregatedList, setShipmentAggegatedList] = useState<ShipmentAggregated[]>([]);
     const [selectedShipmentList, setSelectedShipmentList] = useState<number[]>([]);
 
     const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
 
     const loadShipmentList = async () => {
-        const shipments = await ShipmentApi.getShipmentList(payroll_code);
-
-        setShipmentList(shipments);
+        const shipments = await ShipmentApi.getShipmentAggregated(payrollCode);
+        setShipmentAggegatedList(shipments);
         setLoading(false);
 
         if (import.meta.env.VITE_DEBUG) {
@@ -52,11 +50,11 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 </h2>
 
                 <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
-                    {/* <ShipmentPayrollDialogForm
-                        year={year}
-                        setPayrollList={setPayrollList}
-                        setSelectedPayrollList={setSelectedPayrollList}
-                    /> */}
+                    <ShipmentDialogForm
+                        payrollCode={payrollCode}
+                        setShipmentAggegatedList={setShipmentAggegatedList}
+                        setSelectedShipmentList={setSelectedShipmentList}
+                    />
 
                     <AlertDialogConfirm
                         buttonContent={
@@ -85,7 +83,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
             {!loading && (
                 <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
-                    {shipmentList.map((shipment) => {
+                    {shipmentAggregatedList.map((shipment) => {
                         const isChecked = selectedShipmentList.some(
                             (item) => item === shipment.shipment_code,
                         );

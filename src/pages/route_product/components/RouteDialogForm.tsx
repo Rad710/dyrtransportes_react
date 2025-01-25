@@ -49,10 +49,10 @@ const routeFormSchema = z.object({
     destination: z
         .string({
             invalid_type_error: "Valor inválido.",
-            required_error: "El campo Destino s obligatorio.",
+            required_error: "El campo Destino es obligatorio.",
         })
         .min(1, {
-            message: "El campo destination no puede estar vacío.",
+            message: "El campo destino no puede estar vacío.",
         }),
 
     price: z.coerce

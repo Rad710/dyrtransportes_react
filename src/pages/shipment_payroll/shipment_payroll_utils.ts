@@ -1,7 +1,7 @@
 import { toastAxiosError, toastSuccess } from "@/utils/notification";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { saveAs } from "file-saver";
-import { Shipment, ShipmentPayroll } from "./types";
+import { Shipment, ShipmentAggregated, ShipmentPayroll } from "./types";
 import { DateTime } from "luxon";
 
 export const ShipmentPayrollApi = {
@@ -98,5 +98,37 @@ export const ShipmentApi = {
                 console.log({ errorResponse });
                 toastAxiosError(errorResponse);
                 return [];
+            }),
+
+    getShipmentAggregated: async (shipment_payroll_code: number | null) =>
+        axios
+            .get(
+                `${import.meta.env.VITE_API_URL}/shipments-aggregated?shipment_payroll_code=${shipment_payroll_code ?? ""}`,
+            )
+            .then((response: AxiosResponse<ShipmentAggregated[] | null>) => response.data ?? [])
+            .catch((errorResponse: AxiosError<{ error: string }>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return [];
+            }),
+
+    postShipment: async (payload: Shipment) =>
+        axios
+            .post(`${import.meta.env.VITE_API_URL}/shipment`, payload)
+            .then((response: AxiosResponse<Shipment>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<Shipment>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return errorResponse.response?.data ?? null;
+            }),
+
+    putShipment: async (code: number, payload: Shipment) =>
+        axios
+            .put(`${import.meta.env.VITE_API_URL}/shipment/${code}`, payload)
+            .then((response: AxiosResponse<Shipment>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<Shipment>) => {
+                console.log({ errorResponse });
+                toastAxiosError(errorResponse);
+                return errorResponse.response?.data ?? null;
             }),
 };
