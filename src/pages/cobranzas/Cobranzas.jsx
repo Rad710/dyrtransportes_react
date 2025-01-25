@@ -28,7 +28,7 @@ function Cobranzas({ title }) {
     id: "", fechaCreacion: planillaDate.toISOString().slice(0, 10),
     fechaViaje: new Date().toISOString().slice(0, 10), chofer: "", chapa: "", producto: "",
     origen: "", destino: "", tiquet: "", precio: "",
-    kgOrigen: "", kgDestino: "", precioLiquidacion: "0"
+    kgOrigen: "", kgDestino: "", precioLiquidacion: "0", tiquetRemision: "",
   })
 
   const [tracker, setTracker] = useState([])

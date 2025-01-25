@@ -36,6 +36,7 @@ function FormCobranzas({
         kgOrigen: { color: 'indigo', variant: 'surface' },
         kgDestino: { color: 'indigo', variant: 'surface' },
         precioLiquidacion: { color: 'indigo', variant: 'surface' },
+        tiquetRemision: { color: 'indigo', variant: 'surface' },
     })
 
     const [error, setError] = useState('')
@@ -130,7 +131,7 @@ function FormCobranzas({
         const fieldName = e.target.name
         const string = e.target.value
 
-        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion'].includes(fieldName)) {
+        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion', 'tiquetRemision'].includes(fieldName)) {
             if (isNaN(Number(string))) {
                 return
             }
@@ -584,6 +585,23 @@ function FormCobranzas({
                                     value={formData.kgDestino}
                                     color={inputStyles.kgDestino.color}
                                     variant={inputStyles.kgDestino.variant}
+                                />
+                            </label>
+
+                            <label>
+                                <Text as="div" size="2" mb="1" weight="bold">
+                                    Tiquet Remision
+                                </Text>
+                                <TextField.Input
+                                    name="tiquetRemision"
+                                    placeholder="Remisión"
+                                    ref={inputRefs[6]}
+                                    onKeyDown={(e) => handleKeyDown(e, 6)}
+                                    onBlur={e => handleBlur(e)}
+                                    onChange={onChange}
+                                    value={formData.tiquetRemision}
+                                    color={inputStyles.tiquetRemision.color}
+                                    variant={inputStyles.tiquetRemision.variant}
                                 />
                             </label>
                             

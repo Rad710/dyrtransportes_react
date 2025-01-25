@@ -45,6 +45,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                     <Table.ColumnHeaderCell>Origen</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Destino</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Tiquet</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Tiquet Remisión</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Kg. Origen</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Kg. Destino</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Dif</Table.ColumnHeaderCell>
@@ -80,6 +81,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                                     <Table.Cell>
                                         {Number(cobranza.viaje.tiquet).toLocaleString("es-ES")}
                                     </Table.Cell>
+                                    <Table.Cell>{cobranza.viaje.tiquetRemision}</Table.Cell>
                                     <Table.Cell>
                                         {Number(cobranza.viaje.kgOrigen).toLocaleString("es-ES")}
                                     </Table.Cell>
@@ -106,6 +108,7 @@ function TableCobranzas({ cobranzas, setCobranzas, tracker, setTracker }) {
                                 <Table.RowHeaderCell>
                                     <em className="font-bold">Subtotal:</em>
                                 </Table.RowHeaderCell>
+                                <Table.Cell></Table.Cell>
                                 <Table.Cell></Table.Cell>
                                 <Table.Cell></Table.Cell>
                                 <Table.Cell></Table.Cell>
