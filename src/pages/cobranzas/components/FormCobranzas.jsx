@@ -131,7 +131,7 @@ function FormCobranzas({
         const fieldName = e.target.name
         const string = e.target.value
 
-        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion', 'tiquetRemision'].includes(fieldName)) {
+        if (['tiquet', 'precio', 'kgOrigen', 'kgDestino', 'precioLiquidacion'].includes(fieldName)) {
             if (isNaN(Number(string))) {
                 return
             }
