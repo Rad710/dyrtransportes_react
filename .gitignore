@@ -30,3 +30,6 @@ eslint.json
 
 #sonar-scanner
 .scannerwork/
+
+#env
+.env
