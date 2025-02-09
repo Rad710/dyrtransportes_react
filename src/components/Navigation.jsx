@@ -1,6 +1,6 @@
 import { DropdownMenu, Flex, Box } from "@radix-ui/themes";
 import { HomeIcon } from "@radix-ui/react-icons";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 
 const Navigation = () => {
     const [_, pathPrimary] = useLocation()?.pathname?.split("/");

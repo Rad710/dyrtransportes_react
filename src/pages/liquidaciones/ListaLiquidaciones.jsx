@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Checkbox, Flex, TextField } from "@radix-ui/themes";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { deleteLiquidaciones, getLiquidaciones } from "../../utils/liquidaciones";
 
 import AlertButton from "../../components/AlertButton";

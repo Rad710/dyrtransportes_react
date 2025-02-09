@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useMatch } from "react-router-dom";
+import { useMatch } from "react-router";
 import { Table2Icon } from "lucide-react";
 
 import { PropsTitle } from "@/types";
@@ -85,7 +85,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
                     {shipmentAggregatedList.map((shipment) => {
                         const isChecked = selectedShipmentList.some(
-                            (item) => item === shipment.shipment_code,
+                            (item) => item === shipment.shipment_code
                         );
 
                         return (

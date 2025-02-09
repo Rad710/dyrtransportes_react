@@ -1,16 +1,17 @@
-import { GroupBase } from "react-select";
-
 export type PropsTitle = {
     title: string;
 };
 
-export type PromiseResult = {
-    success?: string;
-    error?: string;
+export type ApiResponse = {
+    message: string;
 };
 
-export type SelectOption = {
-    label: string;
-    value: string;
-} & GroupBase<number> &
-    GroupBase<string>;
+export interface AuthResponse extends ApiResponse {
+    token: string;
+    user: User;
+}
+
+export interface User {
+    user_id: number;
+    email: string;
+}

@@ -1,5 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { AxiosError } from "axios";
+import { api } from "./axios";
 
 export const resetFormStyle = (inputStyles, setInputStyles) => {
     const defaultStyles = {};
@@ -24,3 +25,7 @@ export const toastError = (errorResponse: AxiosError<{ error: string }>) => {
         description: errorMessage,
     });
 };
+
+export const getHelloWorld = () => api.get(`/api/hello-world`);
+
+export const getProtectedHelloWorld = () => api.get(`/api/protected/hello-world`);
