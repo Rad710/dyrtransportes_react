@@ -13,7 +13,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
-import { SitemarkIcon } from "@/components/CustomIcons";
+import { DyRTransportesIcon } from "@/components/CustomIcons";
 import { useNavigate } from "react-router";
 import { LogInApi } from "./login_utils";
 import { isAxiosError } from "axios";
@@ -94,7 +94,7 @@ export const LogIn = () => {
             sessionStorage.setItem("token", resp.token);
             sessionStorage.setItem("user", JSON.stringify(resp.user));
 
-            navigate("/home");
+            navigate("/");
         } else {
             setFormErrorMessage(resp?.response?.data?.message ?? "Error");
             setEmailError(true);
@@ -133,7 +133,7 @@ export const LogIn = () => {
         <LogInContainer direction="column" justifyContent="space-between">
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
             <Card variant="outlined">
-                <SitemarkIcon />
+                <DyRTransportesIcon />
                 <Typography
                     component="h1"
                     variant="h4"
@@ -141,7 +141,12 @@ export const LogIn = () => {
                 >
                     Sign in
                 </Typography>
-                {formErrorMessage && <span style={{ color: "red" }}>{formErrorMessage}</span>}
+                {formErrorMessage && (
+                    <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
+                        {formErrorMessage}
+                    </Box>
+                )}
+
                 <Box
                     component="form"
                     onSubmit={handleSubmit}

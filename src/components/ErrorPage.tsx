@@ -1,8 +1,14 @@
 import { useRouteError } from "react-router";
 
-export default function ErrorPage() {
-    const error = useRouteError();
+export const ErrorPage = () => {
+    const error = useRouteError() as {
+        statusText?: string;
+        message?: string;
+        status?: string;
+    };
+
     console.log(error);
+
     return (
         <div className="space-y-8">
             <h1 className="text-center text-6xl font-extrabold mt-20 text-gray-500">
@@ -12,4 +18,4 @@ export default function ErrorPage() {
             <p className="text-center">{`${error.statusText || error.message} ${error.status}`}</p>
         </div>
     );
-}
+};

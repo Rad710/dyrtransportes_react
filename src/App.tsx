@@ -7,6 +7,8 @@ import { SignUp } from "@/pages/signup/SignUp";
 import { Home } from "@/pages/home/Home";
 import { useEffect } from "react";
 import { hydrateAuth } from "./stores/authStore";
+import { Layout } from "./components/Layout";
+import { ErrorPage } from "./components/ErrorPage";
 
 const router = createBrowserRouter([
     {
@@ -19,8 +21,15 @@ const router = createBrowserRouter([
     },
 
     {
-        path: "/home",
-        element: <Home />,
+        path: "/",
+        element: <Layout />,
+        errorElement: <ErrorPage />,
+        children: [
+            {
+                index: true,
+                element: <Home />,
+            },
+        ],
     },
 ]);
 
@@ -31,7 +40,7 @@ export const App = () => {
 
     return (
         <StyledEngineProvider injectFirst>
-            <AppTheme disableCustomTheme={false}>
+            <AppTheme disableCustomTheme={true}>
                 <CssBaseline enableColorScheme />
 
                 <RouterProvider router={router} />

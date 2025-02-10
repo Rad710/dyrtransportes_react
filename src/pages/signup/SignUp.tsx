@@ -1,9 +1,7 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import CssBaseline from "@mui/material/CssBaseline";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
@@ -12,7 +10,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
-import { SitemarkIcon } from "@/components/CustomIcons";
+import { DyRTransportesIcon } from "@/components/CustomIcons";
 import { SignUpApi } from "./sign_up_utils";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
@@ -127,7 +125,7 @@ export const SignUp = () => {
             localStorage.setItem("token", resp.token ?? "");
             localStorage.setItem("user", JSON.stringify(resp.user));
 
-            navigate("/home");
+            navigate("/");
         } else {
             setFormErrorMessage(resp?.response?.data?.message ?? "Error");
             setEmailError(true);
@@ -141,7 +139,7 @@ export const SignUp = () => {
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
             <RegisterContainer direction="column" justifyContent="space-between">
                 <Card variant="outlined">
-                    <SitemarkIcon />
+                    <DyRTransportesIcon />
                     <Typography
                         component="h1"
                         variant="h4"
@@ -149,7 +147,12 @@ export const SignUp = () => {
                     >
                         Sign up
                     </Typography>
-                    {formErrorMessage && <span style={{ color: "red" }}>{formErrorMessage}</span>}
+                    {formErrorMessage && (
+                        <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
+                            {formErrorMessage}
+                        </Box>
+                    )}
+
                     <Box
                         component="form"
                         onSubmit={handleSubmit}
@@ -200,10 +203,7 @@ export const SignUp = () => {
                                 color={passwordError ? "error" : "primary"}
                             />
                         </FormControl>
-                        <FormControlLabel
-                            control={<Checkbox value="allowExtraEmails" color="primary" />}
-                            label="I want to receive updates via email."
-                        />
+
                         <Button
                             type="submit"
                             fullWidth
