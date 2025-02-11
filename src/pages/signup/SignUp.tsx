@@ -13,7 +13,7 @@ import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/CustomIcons";
 import { SignUpApi } from "./sign_up_utils";
 import { isAxiosError } from "axios";
-import { useNavigate } from "react-router";
+import { useAuthStore } from "@/stores/authStore";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -66,7 +66,7 @@ export const SignUp = () => {
     const [nameErrorMessage, setNameErrorMessage] = React.useState("");
     const [formErrorMessage, setFormErrorMessage] = React.useState("");
 
-    const navigate = useNavigate();
+    const setAuth = useAuthStore((state) => state.setAuth);
 
     const validateInputs = () => {
         const email = document.getElementById("email") as HTMLInputElement;
@@ -122,10 +122,8 @@ export const SignUp = () => {
 
         if (!isAxiosError(resp)) {
             setFormErrorMessage("");
-            localStorage.setItem("token", resp.token ?? "");
-            localStorage.setItem("user", JSON.stringify(resp.user));
-
-            navigate("/");
+            // Store in Zustand
+            setAuth(resp.token, resp.user);
         } else {
             setFormErrorMessage(resp?.response?.data?.message ?? "Error");
             setEmailError(true);

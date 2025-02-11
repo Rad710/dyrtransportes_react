@@ -11,29 +11,13 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import { Link } from "react-router";
-import { styled } from "@mui/material";
+
+import { Link as RouterLink } from "react-router";
+
 import { DyRTransportesIcon } from "./CustomIcons";
+import { useAuthStore } from "@/stores/authStore";
 
-type NavBarPage = {
-    name: string;
-    url: string;
-};
-
-const StyledLink = styled(Link)`
-    text-decoration: none;
-    color: inherit;
-
-    &:visited {
-        color: inherit;
-    }
-
-    &:hover {
-        color: inherit;
-    }
-`;
-
-const pages: NavBarPage[] = [
+const pages = [
     {
         name: "Products",
         url: "/product",
@@ -46,8 +30,9 @@ const pages: NavBarPage[] = [
         name: "Blog",
         url: "/product",
     },
-];
-const settings: NavBarPage[] = [
+] as const;
+
+const settings = [
     {
         name: "Profile",
         url: "/product",
@@ -58,13 +43,19 @@ const settings: NavBarPage[] = [
     },
     {
         name: "Logout",
-        url: "/product",
+        url: "/log-out",
     },
-];
+] as const;
 
 export const ResponsiveAppBar = () => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+
+    const logout = useAuthStore((state) => state.logout);
+
+    const handleLogout = async () => {
+        logout();
+    };
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -85,32 +76,25 @@ export const ResponsiveAppBar = () => {
         <AppBar position="static">
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
-                    <StyledLink
+                    <Typography
                         to="/"
+                        component={RouterLink}
+                        variant="h6"
+                        noWrap
                         sx={{
                             mr: 2,
                             display: { xs: "none", md: "flex" },
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                            letterSpacing: ".2rem",
                             color: "inherit",
                             textDecoration: "none",
+                            "&:visited": { color: "inherit" },
+                            "&:hover": { color: "inherit" },
                         }}
                     >
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            component="div"
-                            sx={{
-                                mr: 2,
-                                display: { xs: "none", md: "flex" },
-                                fontFamily: "monospace",
-                                fontWeight: 700,
-                                letterSpacing: ".2rem",
-                                color: "inherit",
-                                textDecoration: "none",
-                            }}
-                        >
-                            <DyRTransportesIcon />
-                        </Typography>
-                    </StyledLink>
+                        <DyRTransportesIcon />
+                    </Typography>
 
                     <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
                         <IconButton
@@ -141,51 +125,63 @@ export const ResponsiveAppBar = () => {
                         >
                             {pages.map((page) => (
                                 <MenuItem key={page.name} onClick={handleCloseNavMenu}>
-                                    <StyledLink to={page.url}>
-                                        <Typography sx={{ textAlign: "center" }} component="div">
-                                            {page.name}
-                                        </Typography>
-                                    </StyledLink>
+                                    <Typography
+                                        to={page.url}
+                                        sx={{
+                                            textAlign: "center",
+                                            textDecoration: "none",
+                                            color: "inherit",
+                                            "&:visited": { color: "inherit" },
+                                            "&:hover": { color: "inherit" },
+                                        }}
+                                        component={RouterLink}
+                                    >
+                                        {page.name}
+                                    </Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
                     </Box>
-                    <StyledLink
+
+                    <Typography
                         to="/"
+                        variant="h5"
+                        noWrap
+                        component={RouterLink}
                         sx={{
+                            mr: 2,
                             display: { xs: "flex", md: "none" },
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                            letterSpacing: ".3rem",
+                            color: "inherit",
+                            textDecoration: "none",
                             flexGrow: 1,
+                            "&:visited": { color: "inherit" },
+                            "&:hover": { color: "inherit" },
                         }}
                     >
-                        <Typography
-                            variant="h5"
-                            noWrap
-                            component="div"
-                            sx={{
-                                mr: 2,
-                                display: { xs: "flex", md: "none" },
-                                fontFamily: "monospace",
-                                fontWeight: 700,
-                                letterSpacing: ".3rem",
-                                color: "inherit",
-                                textDecoration: "none",
-                            }}
-                        >
-                            <DyRTransportesIcon />
-                        </Typography>
-                    </StyledLink>
+                        <DyRTransportesIcon />
+                    </Typography>
+
                     <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
                         {pages.map((page) => (
-                            <StyledLink to={page.url} key={page.name}>
-                                <Button
-                                    onClick={handleCloseNavMenu}
-                                    sx={{ my: 2, color: "white", display: "block" }}
-                                >
-                                    <Typography sx={{ textAlign: "center" }} component="div">
-                                        {page.name}
-                                    </Typography>
-                                </Button>
-                            </StyledLink>
+                            <Button
+                                to={page.url}
+                                key={page.name}
+                                onClick={handleCloseNavMenu}
+                                sx={{
+                                    my: 2,
+                                    color: "white",
+                                    display: "block",
+                                    textDecoration: "none",
+                                    "&:visited": { color: "inherit" },
+                                    "&:hover": { color: "inherit" },
+                                }}
+                                component={RouterLink}
+                            >
+                                <Typography sx={{ textAlign: "center" }}>{page.name}</Typography>
+                            </Button>
                         ))}
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
@@ -212,11 +208,23 @@ export const ResponsiveAppBar = () => {
                         >
                             {settings.map((setting) => (
                                 <MenuItem key={setting.name} onClick={handleCloseUserMenu}>
-                                    <StyledLink to={setting.url} key={setting.name}>
-                                        <Typography sx={{ textAlign: "center" }} component="div">
-                                            {setting.name}
-                                        </Typography>
-                                    </StyledLink>
+                                    <Typography
+                                        to={setting.url}
+                                        key={setting.name}
+                                        component={RouterLink}
+                                        sx={{
+                                            textAlign: "center",
+                                            textDecoration: "none",
+                                            color: "inherit",
+                                            "&:visited": { color: "inherit" },
+                                            "&:hover": { color: "inherit" },
+                                        }}
+                                        onClick={
+                                            setting.name === "Logout" ? handleLogout : undefined
+                                        }
+                                    >
+                                        {setting.name}
+                                    </Typography>
                                 </MenuItem>
                             ))}
                         </Menu>

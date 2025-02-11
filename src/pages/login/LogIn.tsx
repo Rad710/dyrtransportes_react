@@ -6,7 +6,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Divider from "@mui/material/Divider";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
-import Link from "@mui/material/Link";
+import { Link as MuiLink } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
@@ -14,10 +14,11 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/CustomIcons";
-import { useNavigate } from "react-router";
 import { LogInApi } from "./login_utils";
 import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
+
+import { Link as RouterLink } from "react-router";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -68,7 +69,6 @@ export const LogIn = () => {
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
     const [formErrorMessage, setFormErrorMessage] = React.useState("");
 
-    const navigate = useNavigate();
     const setAuth = useAuthStore((state) => state.setAuth);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -89,12 +89,6 @@ export const LogIn = () => {
             setFormErrorMessage("");
             // Store in Zustand
             setAuth(resp.token, resp.user);
-
-            // Optionally store in sessionStorage for page refreshes
-            sessionStorage.setItem("token", resp.token);
-            sessionStorage.setItem("user", JSON.stringify(resp.user));
-
-            navigate("/");
         } else {
             setFormErrorMessage(resp?.response?.data?.message ?? "Error");
             setEmailError(true);
@@ -130,16 +124,16 @@ export const LogIn = () => {
     };
 
     return (
-        <LogInContainer direction="column" justifyContent="space-between">
+        <LogInContainer direction="column" justifyContent="space-between" overflow="auto">
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
-            <Card variant="outlined">
+            <Card variant="outlined" sx={{ overflowY: "visible" }}>
                 <DyRTransportesIcon />
                 <Typography
                     component="h1"
                     variant="h4"
                     sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
                 >
-                    Sign in
+                    Log in
                 </Typography>
                 {formErrorMessage && (
                     <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
@@ -197,16 +191,21 @@ export const LogIn = () => {
                         label="Remember me"
                     />
                     <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
-                        Sign in
+                        Log in
                     </Button>
                 </Box>
                 <Divider>or</Divider>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <Typography sx={{ textAlign: "center" }}>
                         Don&apos;t have an account?{" "}
-                        <Link href="/sign-up/" variant="body2" sx={{ alignSelf: "center" }}>
+                        <MuiLink
+                            to="/sign-up"
+                            variant="body2"
+                            sx={{ alignSelf: "center" }}
+                            component={RouterLink}
+                        >
                             Sign up
-                        </Link>
+                        </MuiLink>
                     </Typography>
                 </Box>
             </Card>
