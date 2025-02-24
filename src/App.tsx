@@ -9,6 +9,9 @@ import { ReactNode, useEffect, useState } from "react";
 import { hydrateAuth, useAuthStore } from "./stores/authStore";
 import { Layout } from "./components/Layout";
 import { ErrorPage } from "./components/ErrorPage";
+import { RouteProduct } from "./pages/route_product/RouteProduct";
+import { ConfirmationProvider } from "@/context/ConfirmationContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -53,7 +56,7 @@ const router = createBrowserRouter([
         path: "/log-in",
         element: (
             <PublicRoute>
-                <LogIn />
+                <LogIn title="Log in" />
             </PublicRoute>
         ),
     },
@@ -61,7 +64,7 @@ const router = createBrowserRouter([
         path: "/sign-up",
         element: (
             <PublicRoute>
-                <SignUp />
+                <SignUp title="Sign Up" />
             </PublicRoute>
         ),
     },
@@ -77,8 +80,20 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Home />,
+                element: <Home title="D y R Transportes" />,
             },
+            {
+                path: "/routes",
+                element: <RouteProduct title="Price List" />,
+            },
+            // {
+            //     path: "/drivers",
+            //     element: <Drivers title="Nomina de Choferes" />,
+            // },
+            // {
+            //     path: "/dinatran",
+            //     element: <Dinatran title="DINATRAN" />,
+            // },
         ],
     },
 ]);
@@ -89,7 +104,11 @@ export const App = () => {
             <AppTheme disableCustomTheme={true}>
                 <CssBaseline enableColorScheme />
 
-                <RouterProvider router={router} />
+                <ConfirmationProvider>
+                    <ToastProvider>
+                        <RouterProvider router={router} />
+                    </ToastProvider>
+                </ConfirmationProvider>
             </AppTheme>
         </StyledEngineProvider>
     );

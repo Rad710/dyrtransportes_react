@@ -1,3 +1,5 @@
+import { ApiResponse } from "@/types";
+
 export type Route = {
     route_code?: number | null;
     origin: string;
@@ -5,19 +7,16 @@ export type Route = {
     price: string;
     payroll_price: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
-
-    success?: string;
-    error?: string;
 };
+
+export type RouteFormResponse = Route & ApiResponse;
 
 export type Product = {
     product_code?: number | null;
     product_name: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
 

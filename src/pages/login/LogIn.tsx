@@ -19,6 +19,7 @@ import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
 import { Link as RouterLink } from "react-router";
+import { PropsTitle } from "@/types";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -62,7 +63,7 @@ const LogInContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export const LogIn = () => {
+export const LogIn = ({ title }: PropsTitle) => {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
     const [passwordError, setPasswordError] = React.useState(false);
@@ -71,30 +72,9 @@ export const LogIn = () => {
 
     const setAuth = useAuthStore((state) => state.setAuth);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        if (emailError || passwordError) {
-            return;
-        }
-        const data = new FormData(event.currentTarget);
-
-        const resp = await LogInApi.loginUser(data);
-
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("LogIn response: ", { resp });
-        }
-
-        if (!isAxiosError(resp)) {
-            setFormErrorMessage("");
-            // Store in Zustand
-            setAuth(resp.token, resp.user);
-        } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
-            setEmailError(true);
-            setPasswordError(true);
-        }
-    };
+    React.useEffect(() => {
+        document.title = title;
+    }, []);
 
     const validateInputs = () => {
         const email = document.getElementById("email") as HTMLInputElement;
@@ -123,6 +103,32 @@ export const LogIn = () => {
         return isValid;
     };
 
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!validateInputs()) {
+            return; // Stop here if validation fails
+        }
+
+        const data = new FormData(event.currentTarget);
+
+        const resp = await LogInApi.loginUser(data);
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("LogIn response: ", { resp });
+        }
+
+        if (!isAxiosError(resp)) {
+            setFormErrorMessage("");
+            // Store in Zustand
+            setAuth(resp.token, resp.user);
+        } else {
+            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
+            setEmailError(true);
+            setPasswordError(true);
+        }
+    };
+
     return (
         <LogInContainer direction="column" justifyContent="space-between" overflow="auto">
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
@@ -145,6 +151,7 @@ export const LogIn = () => {
                     component="form"
                     onSubmit={handleSubmit}
                     noValidate
+                    autoComplete="on"
                     sx={{
                         display: "flex",
                         flexDirection: "column",
@@ -190,7 +197,7 @@ export const LogIn = () => {
                         control={<Checkbox value="remember" color="primary" />}
                         label="Remember me"
                     />
-                    <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
+                    <Button type="submit" fullWidth variant="contained">
                         Log in
                     </Button>
                 </Box>

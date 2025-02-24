@@ -5,7 +5,7 @@ import { api } from "@/utils/axios";
 export const LogInApi = {
     loginUser: (formData: FormData) =>
         api
-            .post(`/api/auth/log-in`, formData, {
+            .post(`/auth/log-in`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             })
             .then((response: AxiosResponse<AuthResponse>) => response.data)

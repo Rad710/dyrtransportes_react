@@ -1,7 +1,9 @@
-import { getHelloWorld, getProtectedHelloWorld } from "@/utils/utils";
 import { useEffect } from "react";
 
-export const Home = () => {
+import { PropsTitle } from "@/types";
+import { getHelloWorld, getProtectedHelloWorld } from "@/utils/utils";
+
+export const Home = ({ title }: PropsTitle) => {
     useEffect(() => {
         const testProtected = async () => {
             const helloWorld = await getHelloWorld();
@@ -14,6 +16,8 @@ export const Home = () => {
         if (import.meta.env.VITE_DEBUG) {
             testProtected();
         }
+
+        document.title = title;
     });
 
     return <>aaaaaa</>;

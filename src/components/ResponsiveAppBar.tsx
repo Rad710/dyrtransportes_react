@@ -23,8 +23,8 @@ const pages = [
         url: "/product",
     },
     {
-        name: "Pricing",
-        url: "/product",
+        name: "Routes",
+        url: "/routes",
     },
     {
         name: "Blog",

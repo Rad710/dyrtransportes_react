@@ -26,6 +26,6 @@ export const toastError = (errorResponse: AxiosError<{ error: string }>) => {
     });
 };
 
-export const getHelloWorld = () => api.get(`/api/hello-world`);
+export const getHelloWorld = () => api.get(`/hello-world`);
 
-export const getProtectedHelloWorld = () => api.get(`/api/protected/hello-world`);
+export const getProtectedHelloWorld = () => api.get(`/protected/hello-world`);

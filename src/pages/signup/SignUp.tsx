@@ -13,6 +13,7 @@ import { DyRTransportesIcon } from "@/components/CustomIcons";
 import { SignUpApi } from "./sign_up_utils";
 import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
+import { PropsTitle } from "@/types";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -56,7 +57,7 @@ const RegisterContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export const SignUp = () => {
+export const SignUp = ({ title }: PropsTitle) => {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
     const [passwordError, setPasswordError] = React.useState(false);
@@ -66,6 +67,10 @@ export const SignUp = () => {
     const [formErrorMessage, setFormErrorMessage] = React.useState("");
 
     const setAuth = useAuthStore((state) => state.setAuth);
+
+    React.useEffect(() => {
+        document.title = title;
+    }, []);
 
     const validateInputs = () => {
         const email = document.getElementById("email") as HTMLInputElement;
