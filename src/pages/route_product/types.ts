@@ -11,7 +11,7 @@ export type Route = {
     modification_timestamp?: string;
 };
 
-export type RouteFormResponse = Route & ApiResponse;
+export type RouteApiResponse = Route & ApiResponse;
 
 export type Product = {
     product_code?: number | null;
@@ -23,3 +23,5 @@ export type Product = {
     success?: string;
     error?: string;
 };
+
+export type ProductApiResponse = Product & ApiResponse;

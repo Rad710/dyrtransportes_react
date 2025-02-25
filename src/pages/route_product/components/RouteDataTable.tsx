@@ -4,58 +4,79 @@ import { Route } from "../types";
 import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
+import { useEffect } from "react";
+import { RouteApi } from "../route_product_utils";
+import { isAxiosError } from "axios";
+import { useToast } from "@/context/ToastContext";
 
 type RouteDataTableProps = {
+    loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     routeList: Route[];
     selectedRows: GridRowSelectionModel;
+    setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
     setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
-    loading: boolean;
+    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
+    setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const RouteDataTable = ({
+    loading,
+    setLoading,
     routeList,
     selectedRows,
+    setRouteList,
     setSelectedRows,
-    loading,
+    setRouteToEdit,
+    setEditFormDialogOpen,
 }: RouteDataTableProps) => {
-    //     const handleDeleteRouteItem = async () => {
-    //         if (!routeToDelete?.route_code) {
-    //             return;
-    //         }
-
-    //         const result = await RouteApi.deleteRoute(routeToDelete.route_code);
-    //         if (import.meta.env.VITE_DEBUG) {
-    //             console.log("Deleting... ", routeToDelete.route_code);
-    //             console.log({ result });
-    //         }
-    //         setSelectedRouteRows([]);
-
-    //         if (result?.success) {
-    //             const newRouteList = await RouteApi.getRouteList();
-    //             setRouteList(newRouteList);
-    //         }
-    //     };
-
-    //     const handleDeleteRouteList = async () => {
-    //         const result = await RouteApi.deleteRouteList(selectedRouteRows);
-    //         if (import.meta.env.VITE_DEBUG) {
-    //             console.log("Deleting...: ", { selectedRouteRows });
-    //             console.log({ result });
-    //         }
-    //         setSelectedRouteRows([]);
-
-    //         if (result?.success) {
-    //             const newRouteList = await RouteApi.getRouteList();
-    //             setRouteList(newRouteList);
-    //         }
-    //     };
-
+    // context
     const { openConfirmDialog } = useConfirmation();
+    const { showToastSuccess, showToastAxiosError } = useToast();
+
+    useEffect(() => {
+        // on route list rerender empty selection
+        setSelectedRows([]);
+    }, [routeList]);
 
     const paginationModel = { page: 0, pageSize: 5 };
 
     const handleEditRoute = (row: Route) => {
-        console.log("Editing...");
+        setRouteToEdit(row);
+        setEditFormDialogOpen(true);
+    };
+
+    const handleDeleteSelected = () => {
+        openConfirmDialog({
+            title: "Confirm Delete",
+            message: `Are you sure you want to delete all selected Routes?`,
+            confirmText: "Delete",
+            confirmButtonProps: {
+                color: "error",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Routes...", selectedRows);
+                }
+
+                setLoading(true);
+                const resp = await RouteApi.deleteRouteList(selectedRows as number[]);
+                setLoading(false);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Routes resp: ", { resp });
+                }
+
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+
+                showToastSuccess(resp.message);
+
+                const routeListResp = await RouteApi.getRouteList();
+                setRouteList(!isAxiosError(routeListResp) ? routeListResp : []);
+            },
+        });
     };
 
     const handleDeleteRouteItem = (row: Route) => {
@@ -72,12 +93,26 @@ export const RouteDataTable = ({
                 color: "error",
             },
             onConfirm: async () => {
-                try {
-                    console.log("Deleting...", row);
-                    // Update your table data
-                } catch (error) {
-                    console.error("Delete failed:", error);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Route", row);
                 }
+
+                setLoading(true);
+                const resp = await RouteApi.deleteRoute(row.route_code ?? 0);
+                setLoading(false);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Route resp: ", { resp });
+                }
+
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+
+                showToastSuccess(resp.message);
+
+                const routeListResp = await RouteApi.getRouteList();
+                setRouteList(!isAxiosError(routeListResp) ? routeListResp : []);
             },
         });
     };
@@ -135,30 +170,11 @@ export const RouteDataTable = ({
         },
     ];
 
-    const handleSelectedDelete = () => {
-        openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Routes?`,
-            confirmText: "Delete",
-            confirmButtonProps: {
-                color: "error",
-            },
-            onConfirm: async () => {
-                try {
-                    console.log("Deleting...", selectedRows);
-                    // Update your table data
-                } catch (error) {
-                    console.error("Delete failed:", error);
-                }
-            },
-        });
-    };
-
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <CustomTableToolbar
                 numSelected={selectedRows.length}
-                handleDelete={handleSelectedDelete}
+                handleDelete={handleDeleteSelected}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
@@ -176,6 +192,7 @@ export const RouteDataTable = ({
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }
+                    rowSelectionModel={selectedRows}
                 />
             </Paper>
         </Box>

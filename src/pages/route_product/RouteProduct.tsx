@@ -18,8 +18,9 @@ import { RouteFormDialog } from "./components/RouteFormDialog";
 
 const RouteTabContent = () => {
     // //STATE
-    const [loading, setLoading] = useState<boolean>(true);
-    const [addDialogFormOpen, setAddDialogFormOpen] = useState<boolean>(false);
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
     //Routes State
     const [routeList, setRouteList] = useState<Route[]>([]);
@@ -27,18 +28,23 @@ const RouteTabContent = () => {
     const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
     // context
-    const { showToast } = useToast();
+    const { showToastSuccess, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
     useEffect(() => {
         const loadRoutes = async () => {
-            const routes = await RouteApi.getRouteList();
-            setRouteList(routes);
-            setLoading(false);
+            setLoadingTable(true);
+            const resp = await RouteApi.getRouteList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                setRouteList(resp);
+            } else {
+                showToastAxiosError(resp);
+            }
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded routes: ", { routes });
+                console.log("Loaded routes: ", { resp });
             }
         };
 
@@ -54,36 +60,24 @@ const RouteTabContent = () => {
                 color: "info",
             },
             onConfirm: async () => {
-                try {
-                    console.log("Exporting...");
-                    const resp = await RouteApi.exportRouteList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Routes...");
+                }
+                const resp = await RouteApi.exportRouteList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Routes resp: ", { resp });
+                }
 
-                    if (!isAxiosError(resp) && resp) {
-                        saveAs(new Blob([resp]), "lista_de_precios.xlsx");
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_precios.xlsx");
 
-                        showToast("Planilla exportada exitosamente.", "success");
-                    } else {
-                        showToast("Error al exportar planilla.", "error");
-                    }
-
-                    // Update your table data
-                } catch (error) {
-                    console.error("Export failed:", error);
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
                 }
             },
         });
     };
-
-    // return (
-    //     <>
-    //         <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-    //             <RouteDialogForm
-    //                 setRouteList={setRouteList}
-    //                 routeToEdit={routeToEdit}
-    //                 setRouteToEdit={setRouteToEdit}
-    //                 setSelectedRouteRows={setSelectedRouteRows}
-    //             />
-    //         </div>
 
     return (
         <>
@@ -91,24 +85,46 @@ const RouteTabContent = () => {
                 sx={{
                     display: "flex",
                     justifyContent: "flex-end",
+                    gap: "1rem",
                 }}
             >
-                <Button onClick={() => setAddDialogFormOpen(true)}>Add</Button>
-                <Button onClick={handleExportRouteList}>Exportar</Button>
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => setAddFormDialogOpen(true)}
+                >
+                    Add
+                </Button>
+                <RouteFormDialog
+                    setRouteList={setRouteList}
+                    open={addFormDialogOpen}
+                    setOpen={setAddFormDialogOpen}
+                    setLoading={setLoadingTable}
+                />
+
+                <RouteFormDialog
+                    setRouteList={setRouteList}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    setLoading={setLoadingTable}
+                    routeToEdit={routeToEdit}
+                    setRouteToEdit={setRouteToEdit}
+                />
+
+                <Button variant="contained" color="info" onClick={handleExportRouteList}>
+                    Exportar
+                </Button>
             </Box>
 
-            <RouteFormDialog
-                setRouteList={setRouteList}
-                setSelectedRows={setSelectedRows}
-                open={addDialogFormOpen}
-                setOpen={setAddDialogFormOpen}
-            />
-
             <RouteDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
                 routeList={routeList}
                 selectedRows={selectedRows}
+                setRouteList={setRouteList}
                 setSelectedRows={setSelectedRows}
-                loading={loading}
+                setRouteToEdit={setRouteToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
             />
         </>
     );
