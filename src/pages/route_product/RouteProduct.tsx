@@ -1,20 +1,23 @@
 import { useState, useEffect } from "react";
 
-import { PropsTitle } from "@/types";
-
-import { Product, Route } from "./types";
-import { saveAs } from "file-saver";
-import { ProductApi, RouteApi } from "./route_product_utils";
 import { Box, Button, Tab, Tabs } from "@mui/material";
-import { CustomTabPanel } from "@/components/CustomTabPanel";
-
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 
-import { RouteDataTable } from "./components/RouteDataTable";
-import { useConfirmation } from "@/context/ConfirmationContext";
 import { isAxiosError } from "axios";
+import { saveAs } from "file-saver";
+
 import { useToast } from "@/context/ToastContext";
+import { useConfirmation } from "@/context/ConfirmationContext";
+import { CustomTabPanel } from "@/components/CustomTabPanel";
+
+import { RouteDataTable } from "./components/RouteDataTable";
 import { RouteFormDialog } from "./components/RouteFormDialog";
+
+import { PropsTitle } from "@/types";
+import { Product, Route } from "./types";
+import { ProductApi, RouteApi } from "./route_product_utils";
+import { ProductDataTable } from "./components/ProductDataTable";
+import { ProductFormDialog } from "./components/ProductFormDialog";
 
 const RouteTabContent = () => {
     // //STATE
@@ -132,87 +135,116 @@ const RouteTabContent = () => {
 
 const ProductTabContent = () => {
     // //STATE
-    // const [loading, setLoading] = useState<boolean>(true);
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
-    // //Products State
-    // const [productList, setProductList] = useState<Product[]>([]);
-    // const [selectedProductRows, setSelectedProductRows] = useState<number[]>([]);
-    // const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-    // const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    //Product State
+    const [productList, setProductList] = useState<Product[]>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
-    // // EVENT HANDLERS
-    // // Product Handlers and Component
-    // const productColumns = productDataTableColumns(
-    //     selectedProductRows,
-    //     setSelectedProductRows,
-    //     setProductToEdit,
-    //     setProductToDelete,
-    // );
+    // context
+    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
-    // // USE EFFECT
-    // useEffect(() => {
-    //     const loadProducts = async () => {
-    //         const products = await ProductApi.getProductList();
-    //         setProductList(products);
-    //         setLoading(false);
+    // USE EFFECTS
+    useEffect(() => {
+        const loadProducts = async () => {
+            setLoadingTable(true);
+            const resp = await ProductApi.getProductList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                setProductList(resp);
+            } else {
+                showToastAxiosError(resp);
+            }
 
-    //         if (import.meta.env.VITE_DEBUG) {
-    //             console.log("Loaded products: ", { products });
-    //         }
-    //     };
+            if (import.meta.env.VITE_DEBUG) {
+                console.log("Loaded products: ", { resp });
+            }
+        };
 
-    //     loadProducts();
-    // }, []);
+        loadProducts();
+    }, []);
 
-    // const pageSize = 20;
-    // return (
-    //     <>
-    //         <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-    //             <ProductDialogForm
-    //                 setProductList={setProductList}
-    //                 productToEdit={productToEdit}
-    //                 setProductToEdit={setProductToEdit}
-    //                 setSelectedProductRows={setSelectedProductRows}
-    //             />
+    const handleExportProductList = () => {
+        openConfirmDialog({
+            title: "Confirm Export",
+            message: "All products will be exported.",
+            confirmText: "Export",
+            confirmButtonProps: {
+                color: "info",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting products...");
+                }
+                const resp = await ProductApi.exportProductList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting products resp: ", { resp });
+                }
 
-    //             <AlertDialogConfirm
-    //                 buttonContent={
-    //                     <>
-    //                         <Table2Icon className="w-6 h-6" />
-    //                         Exportar
-    //                     </>
-    //                 }
-    //                 variant="green"
-    //                 size="md-lg"
-    //                 onClickFunctionPromise={ProductApi.exportProductList}
-    //             >
-    //                 <span className="md:text-lg">
-    //                     Se exportarán{" "}
-    //                     <strong className="font-bold text-gray-700">todos los Productos</strong>
-    //                 </span>
-    //             </AlertDialogConfirm>
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_product.xlsx");
 
-    //             <ProductDialogDelete
-    //                 setProductList={setProductList}
-    //                 selectedProductRows={selectedProductRows}
-    //                 setSelectedProductRows={setSelectedProductRows}
-    //                 productToDelete={productToDelete}
-    //                 setProductToDelete={setProductToDelete}
-    //             />
-    //         </div>
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
+    };
 
-    //         {!loading && (
-    //             <DataTable
-    //                 data={productList}
-    //                 columns={productColumns}
-    //                 pageSize={pageSize}
-    //                 filterColumnList={productFilterColumnList}
-    //             />
-    //         )}
-    //     </>
-    // );
+    return (
+        <>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem",
+                }}
+            >
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => setAddFormDialogOpen(true)}
+                >
+                    Add
+                </Button>
+                <ProductFormDialog
+                    setProductList={setProductList}
+                    open={addFormDialogOpen}
+                    setOpen={setAddFormDialogOpen}
+                    setLoading={setLoadingTable}
+                />
 
-    return <></>;
+                <ProductFormDialog
+                    setProductList={setProductList}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    setLoading={setLoadingTable}
+                    productToEdit={productToEdit}
+                    setProductToEdit={setProductToEdit}
+                />
+
+                <Button variant="contained" color="info" onClick={handleExportProductList}>
+                    Exportar
+                </Button>
+            </Box>
+
+            <ProductDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                productList={productList}
+                selectedRows={selectedRows}
+                setProductList={setProductList}
+                setSelectedRows={setSelectedRows}
+                setProductToEdit={setProductToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
+            />
+        </>
+    );
 };
 
 export const RouteProduct = ({ title }: Readonly<PropsTitle>) => {

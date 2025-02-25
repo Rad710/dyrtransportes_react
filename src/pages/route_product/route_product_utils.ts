@@ -105,7 +105,6 @@ export const ProductApi = {
                 return errorResponse ?? null;
             }),
 
-    // TODO CREATE ENDPOINT
     deleteProductList: async (codeList: number[]) =>
         api
             .delete(`/products`, {
@@ -118,7 +117,6 @@ export const ProductApi = {
                 return errorResponse ?? null;
             }),
 
-    // TODO CREATE ENDPOINT
     exportProductList: async () =>
         api
             .get(`/export-products`, {

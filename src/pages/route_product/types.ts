@@ -19,9 +19,6 @@ export type Product = {
     deleted?: boolean;
     modification_user?: string;
     modification_timestamp?: string;
-
-    success?: string;
-    error?: string;
 };
 
 export type ProductApiResponse = Product & ApiResponse;

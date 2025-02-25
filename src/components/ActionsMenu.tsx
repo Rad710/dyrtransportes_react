@@ -1,15 +1,14 @@
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
-import { Route } from "@/pages/route_product/types";
 
-interface ActionsMenuProps {
-    row: Route;
-    handleEditRoute: (row: Route) => void;
-    handleDeleteRow: (row: Route) => void;
+interface ActionsMenuProps<T> {
+    row: T;
+    handleEditRow?: (row: T) => void;
+    handleDeleteRow: (row: T) => void;
 }
 
-export const ActionsMenu = ({ row, handleEditRoute, handleDeleteRow }: ActionsMenuProps) => {
+export const ActionsMenu = <T,>({ row, handleEditRow, handleDeleteRow }: ActionsMenuProps<T>) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     return (
@@ -18,14 +17,16 @@ export const ActionsMenu = ({ row, handleEditRoute, handleDeleteRow }: ActionsMe
                 <MoreVertIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-                <MenuItem
-                    onClick={() => {
-                        setAnchorEl(null);
-                        handleEditRoute(row);
-                    }}
-                >
-                    Edit
-                </MenuItem>
+                {handleEditRow && (
+                    <MenuItem
+                        onClick={() => {
+                            setAnchorEl(null);
+                            handleEditRow(row);
+                        }}
+                    >
+                        Edit
+                    </MenuItem>
+                )}
                 <MenuItem
                     onClick={() => {
                         setAnchorEl(null);
