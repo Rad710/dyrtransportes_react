@@ -66,6 +66,7 @@ export const SignUp = ({ title }: PropsTitle) => {
     const [nameErrorMessage, setNameErrorMessage] = React.useState("");
     const [formErrorMessage, setFormErrorMessage] = React.useState("");
 
+    // store
     const setAuth = useAuthStore((state) => state.setAuth);
 
     React.useEffect(() => {
@@ -118,13 +119,17 @@ export const SignUp = ({ title }: PropsTitle) => {
 
         const data = new FormData(event.currentTarget);
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Register post: ", data);
+        }
+
         const resp = await SignUpApi.signUpUser(data);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("Register response: ", { resp });
         }
 
-        if (!isAxiosError(resp)) {
+        if (!isAxiosError(resp) && resp) {
             setFormErrorMessage("");
             // Store in Zustand
             setAuth(resp.token, resp.user);

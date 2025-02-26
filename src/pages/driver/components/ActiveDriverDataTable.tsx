@@ -1,69 +1,69 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Product } from "../types";
+import { Driver } from "../types";
 import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect } from "react";
-import { ProductApi } from "../route_product_utils";
+import { DriverApi } from "../driver_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 
-type ProductDataTableProps = {
+type ActiveDriverDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    productList: Product[];
+    driverList: Driver[];
     selectedRows: GridRowSelectionModel;
-    setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
+    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
     setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
-    setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
+    setDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ProductDataTable = ({
+export const ActiveDriverDataTable = ({
     loading,
     setLoading,
-    productList,
+    driverList,
     selectedRows,
-    setProductList,
+    setDriverList,
     setSelectedRows,
-    setProductToEdit,
+    setDriverToEdit,
     setEditFormDialogOpen,
-}: ProductDataTableProps) => {
+}: ActiveDriverDataTableProps) => {
     // context
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
 
     useEffect(() => {
-        // on product list rerender empty selection
+        // on driver list rerender empty selection
         setSelectedRows([]);
-    }, [productList]);
+    }, [driverList]);
 
     const paginationModel = { page: 0, pageSize: 5 };
 
-    const handleEditProduct = (row: Product) => {
-        setProductToEdit(row);
+    const handleEditDriver = (row: Driver) => {
+        setDriverToEdit(row);
         setEditFormDialogOpen(true);
     };
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
             title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Products?`,
+            message: `Are you sure you want to delete all selected Drivers?`,
             confirmText: "Delete",
             confirmButtonProps: {
                 color: "error",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Products...", selectedRows);
+                    console.log("Deleting Drivers...", selectedRows);
                 }
 
                 setLoading(true);
-                const resp = await ProductApi.deleteProductList(selectedRows as number[]);
+                const resp = await DriverApi.deleteDriverList(selectedRows as number[]);
                 setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Products resp: ", { resp });
+                    console.log("Deleting Drivers resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -73,18 +73,24 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const productListResp = await ProductApi.getProductList();
-                setProductList(!isAxiosError(productListResp) ? productListResp : []);
+                const driverListResp = await DriverApi.getDriverList();
+                if (!isAxiosError(driverListResp)) {
+                    const filteredDrivers = driverListResp.filter((item) => !item.deleted);
+                    setDriverList(filteredDrivers);
+                } else {
+                    setDriverList([]);
+                }
             },
         });
     };
 
-    const handleDeleteProductItem = (row: Product) => {
+    const handleDeleteDriverItem = (row: Driver) => {
         openConfirmDialog({
             title: "Confirm Delete",
             message: (
                 <>
-                    Are you sure you want to delete Product: <strong>{row.product_name}</strong>?
+                    Are you sure you want to delete Driver: <strong>{row.driver_name}</strong>{" "}
+                    <strong>{row.driver_surname}</strong>?
                 </>
             ),
             confirmText: "Delete",
@@ -93,14 +99,14 @@ export const ProductDataTable = ({
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Product", row);
+                    console.log("Deleting Driver", row);
                 }
 
                 setLoading(true);
-                const resp = await ProductApi.deleteProduct(row.product_code ?? 0);
+                const resp = await DriverApi.deleteDriver(row.driver_code ?? 0);
                 setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Product resp: ", { resp });
+                    console.log("Deleting Driver resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -110,24 +116,53 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const productListResp = await ProductApi.getProductList();
-                setProductList(!isAxiosError(productListResp) ? productListResp : []);
+                const driverListResp = await DriverApi.getDriverList();
+                if (!isAxiosError(driverListResp)) {
+                    const filteredDrivers = driverListResp.filter((item) => !item.deleted);
+                    setDriverList(filteredDrivers);
+                } else {
+                    setDriverList([]);
+                }
             },
         });
     };
 
-    const columns: GridColDef<Product>[] = [
+    const columns: GridColDef<Driver>[] = [
         {
-            field: "product_code",
+            field: "driver_code",
             headerName: "Code",
             minWidth: 70,
-            flex: 0.5, // smallest flex value for the smallest column
+            flex: 0.5,
         },
         {
-            field: "product_name",
-            headerName: "Product Name",
-            minWidth: 200,
-            flex: 1.5,
+            field: "driver_id",
+            headerName: "ID",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "driver_name",
+            headerName: "Name",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "driver_surname",
+            headerName: "Surname",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "truck_plate",
+            headerName: "Truck Plate",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "trailer_plate",
+            headerName: "Trailer Plate",
+            minWidth: 130,
+            flex: 1,
         },
         {
             field: "modification_user",
@@ -146,11 +181,11 @@ export const ProductDataTable = ({
                     menuItems={[
                         {
                             text: "Edit",
-                            handleClick: () => handleEditProduct(params.row),
+                            handleClick: () => handleEditDriver(params.row),
                         },
                         {
                             text: "Delete",
-                            handleClick: () => handleDeleteProductItem(params.row),
+                            handleClick: () => handleDeleteDriverItem(params.row),
                         },
                     ]}
                 />
@@ -166,7 +201,7 @@ export const ProductDataTable = ({
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
-                    rows={productList}
+                    rows={driverList}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[5, 10, 25]}
@@ -176,7 +211,7 @@ export const ProductDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Product) => row.product_code ?? 0}
+                    getRowId={(row: Driver) => row.driver_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

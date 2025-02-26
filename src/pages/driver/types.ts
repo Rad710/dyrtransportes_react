@@ -1,3 +1,5 @@
+import { ApiResponse } from "@/types";
+
 export type Driver = {
     driver_code?: number | null;
     driver_id: string;
@@ -9,7 +11,6 @@ export type Driver = {
     company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
-
-    success?: string;
-    error?: string;
 };
+
+export type DriverApiResponse = Driver & ApiResponse;

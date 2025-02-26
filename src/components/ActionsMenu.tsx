@@ -2,39 +2,35 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
 
-interface ActionsMenuProps<T> {
-    row: T;
-    handleEditRow?: (row: T) => void;
-    handleDeleteRow: (row: T) => void;
+interface ActionsMenuItem {
+    handleClick: () => void;
+    text: string;
 }
 
-export const ActionsMenu = <T,>({ row, handleEditRow, handleDeleteRow }: ActionsMenuProps<T>) => {
+interface ActionsMenuProps {
+    menuItems: ActionsMenuItem[];
+}
+
+export const ActionsMenu = ({ menuItems }: ActionsMenuProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     return (
         <>
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} aria-label="actions menu">
                 <MoreVertIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-                {handleEditRow && (
+                {menuItems.map((item) => (
                     <MenuItem
+                        key={item.text}
                         onClick={() => {
                             setAnchorEl(null);
-                            handleEditRow(row);
+                            item.handleClick();
                         }}
                     >
-                        Edit
+                        {item.text}
                     </MenuItem>
-                )}
-                <MenuItem
-                    onClick={() => {
-                        setAnchorEl(null);
-                        handleDeleteRow(row);
-                    }}
-                >
-                    Delete
-                </MenuItem>
+                ))}
             </Menu>
         </>
     );

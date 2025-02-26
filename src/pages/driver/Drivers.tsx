@@ -1,150 +1,180 @@
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { Box, Button, Tab, Tabs } from "@mui/material";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
+
+import { isAxiosError } from "axios";
+import { saveAs } from "file-saver";
+
+import { useToast } from "@/context/ToastContext";
+import { useConfirmation } from "@/context/ConfirmationContext";
+import { CustomTabPanel } from "@/components/CustomTabPanel";
+
+import { ActiveDriverDataTable } from "./components/ActiveDriverDataTable";
+import { DeactivatedDriverDataTable } from "./components/DeactivatedDriverDataTable";
+import { DriverFormDialog } from "./components/DriverFormDialog";
 
 import { PropsTitle } from "@/types";
 import { Driver } from "./types";
 import { DriverApi } from "./driver_utils";
-import { DataTable } from "@/components/ui/data-table";
-import {
-    activeDriverDataTableColumns,
-    activeDriverFilterColumnList,
-} from "./components/ActiveDriverDataTableColumns";
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { Table2Icon } from "lucide-react";
-import { DriverDialogForm } from "./components/DriverDialogForm";
-import { ActiveDriverDialogDelete } from "./components/ActiveDriverDialogDelete";
-import {
-    deactivatedDriverDataTableColumns,
-    deactivatedDriverFilterColumnList,
-} from "./components/DeactivatedDriverDataTableColumns";
 
 const ActiveDriverTabContent = () => {
-    //STATE
-    const [loading, setLoading] = useState<boolean>(true);
+    // STATE
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
-    //Drivers State
+    // Drivers State
     const [activeDriverList, setActiveDriverList] = useState<Driver[]>([]);
-    const [selectedActiveDriverRows, setSelectedActiveDriverRows] = useState<number[]>([]);
-    const [activeDriverToEdit, setActiveDriverToEdit] = useState<Driver | null>(null);
-    const [activeDriverToDelete, setActiveDriverToDelete] = useState<Driver | null>(null);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [driverToEdit, setDriverToEdit] = useState<Driver | null>(null);
 
-    // DATATABLE
-    const activeDriverColumns = activeDriverDataTableColumns(
-        selectedActiveDriverRows,
-        setSelectedActiveDriverRows,
-        setActiveDriverToEdit,
-        setActiveDriverToDelete,
-    );
+    // context
+    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
     useEffect(() => {
-        const loadActiveDrivers = async () => {
-            const drivers = await DriverApi.getDriverList();
-            const filteredDrivers = drivers.filter((item) => !item.deleted);
-
-            setActiveDriverList(filteredDrivers);
-            setLoading(false);
+        const loadDrivers = async () => {
+            setLoadingTable(true);
+            const resp = await DriverApi.getDriverList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                const filteredDrivers = resp.filter((item) => !item.deleted);
+                setActiveDriverList(filteredDrivers);
+            } else {
+                showToastAxiosError(resp);
+            }
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded filteredDrivers: ", { filteredDrivers });
+                console.log("Loaded active drivers: ", { resp });
             }
         };
 
-        loadActiveDrivers();
+        loadDrivers();
     }, []);
 
-    const pageSize = 20;
+    const handleExportDriverList = () => {
+        openConfirmDialog({
+            title: "Confirm Export",
+            message: "All active drivers will be exported.",
+            confirmText: "Export",
+            confirmButtonProps: {
+                color: "info",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting drivers...");
+                }
+                const resp = await DriverApi.exportDriverList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting drivers resp: ", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "nomina_de_choferes.xlsx");
+
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
+    };
 
     return (
         <>
-            <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-                <DriverDialogForm
-                    setActiveDriverList={setActiveDriverList}
-                    activeDriverToEdit={activeDriverToEdit}
-                    setActiveDriverToEdit={setActiveDriverToEdit}
-                    setSelectedActiveDriverRows={setSelectedActiveDriverRows}
-                />
-
-                <AlertDialogConfirm
-                    buttonContent={
-                        <>
-                            <Table2Icon className="w-6 h-6" />
-                            Exportar
-                        </>
-                    }
-                    variant="green"
-                    size="md-lg"
-                    onClickFunctionPromise={DriverApi.exportDriverList}
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem",
+                }}
+            >
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => setAddFormDialogOpen(true)}
                 >
-                    <span className="md:text-lg">Se exportará la Nómina de Choferes</span>
-                </AlertDialogConfirm>
-
-                <ActiveDriverDialogDelete
-                    setActiveDriverList={setActiveDriverList}
-                    selectedActiveDriverRows={selectedActiveDriverRows}
-                    setSelectedActiveDriverRows={setSelectedActiveDriverRows}
-                    activeDriverToDelete={activeDriverToDelete}
-                    setActiveDriverToDelete={setActiveDriverToDelete}
+                    Add
+                </Button>
+                <DriverFormDialog
+                    setDriverList={setActiveDriverList}
+                    open={addFormDialogOpen}
+                    setOpen={setAddFormDialogOpen}
+                    setLoading={setLoadingTable}
                 />
-            </div>
 
-            {!loading && (
-                <DataTable
-                    data={activeDriverList}
-                    columns={activeDriverColumns}
-                    pageSize={pageSize}
-                    filterColumnList={activeDriverFilterColumnList}
+                <DriverFormDialog
+                    setDriverList={setActiveDriverList}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    setLoading={setLoadingTable}
+                    driverToEdit={driverToEdit}
+                    setDriverToEdit={setDriverToEdit}
                 />
-            )}
+
+                <Button variant="contained" color="info" onClick={handleExportDriverList}>
+                    Exportar
+                </Button>
+            </Box>
+
+            <ActiveDriverDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                driverList={activeDriverList}
+                selectedRows={selectedRows}
+                setDriverList={setActiveDriverList}
+                setSelectedRows={setSelectedRows}
+                setDriverToEdit={setDriverToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
+            />
         </>
     );
 };
 
 const DeactivatedDriverTabContent = () => {
-    //STATE
-    const [loading, setLoading] = useState<boolean>(true);
+    // STATE
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
 
-    //Drivers State
+    // Drivers State
     const [deactivatedDriverList, setDeactivatedDriverList] = useState<Driver[]>([]);
-    const [selectedDeactivatedDriverRows, setSelectedDeactivatedDriverRows] = useState<number[]>(
-        [],
-    );
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
-    // DATATABLE
-    const deactivatedDriverColumns = deactivatedDriverDataTableColumns(
-        selectedDeactivatedDriverRows,
-        setSelectedDeactivatedDriverRows,
-    );
+    // context
+    const { showToastAxiosError } = useToast();
 
     // USE EFFECTS
     useEffect(() => {
-        const loadDeactivatedDrivers = async () => {
-            const drivers = await DriverApi.getDriverList();
-            const filteredDrivers = drivers.filter((item) => item.deleted);
-
-            setDeactivatedDriverList(filteredDrivers);
-            setLoading(false);
+        const loadDrivers = async () => {
+            setLoadingTable(true);
+            const resp = await DriverApi.getDriverList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                const filteredDrivers = resp.filter((item) => item.deleted);
+                setDeactivatedDriverList(filteredDrivers);
+            } else {
+                showToastAxiosError(resp);
+            }
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded filteredDrivers: ", { filteredDrivers });
+                console.log("Loaded deactivated drivers: ", { resp });
             }
         };
 
-        loadDeactivatedDrivers();
+        loadDrivers();
     }, []);
-
-    const pageSize = 20;
 
     return (
         <>
-            {!loading && (
-                <DataTable
-                    data={deactivatedDriverList}
-                    columns={deactivatedDriverColumns}
-                    pageSize={pageSize}
-                    filterColumnList={deactivatedDriverFilterColumnList}
-                />
-            )}
+            <DeactivatedDriverDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                driverList={deactivatedDriverList}
+                selectedRows={selectedRows}
+                setDriverList={setDeactivatedDriverList}
+                setSelectedRows={setSelectedRows}
+            />
         </>
     );
 };
@@ -154,32 +184,30 @@ export const Drivers = ({ title }: Readonly<PropsTitle>) => {
         document.title = title;
     }, []);
 
+    const [value, setValue] = useState(0);
+
+    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+        setValue(newValue);
+    };
+
     return (
-        <div className="px-4">
-            <div className="md:flex justify-between items-center">
-                <Tabs defaultValue="drivers" className="w-full">
-                    <TabsList>
-                        <TabsTrigger
-                            value="drivers"
-                            className="text-xl md:text-2xl text-left mb-2 md:mb-0"
-                        >
-                            Nómina
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="deactivated"
-                            className="text-xl md:text-2xl text-left mb-2 md:mb-0"
-                        >
-                            Deshabilitados
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="drivers" className="md-lg:-mt-8">
-                        <ActiveDriverTabContent />
-                    </TabsContent>
-                    <TabsContent value="deactivated" className="md:mt-4">
-                        <DeactivatedDriverTabContent />
-                    </TabsContent>
+        <>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                    <Tab label="Nómina" id="simple-tab-0" aria-controls="simple-tabpanel-0" />
+                    <Tab
+                        label="Deshabilitados"
+                        id="simple-tab-1"
+                        aria-controls="simple-tabpanel-1"
+                    />
                 </Tabs>
-            </div>
-        </div>
+            </Box>
+            <CustomTabPanel value={value} index={0}>
+                <ActiveDriverTabContent />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={1}>
+                <DeactivatedDriverTabContent />
+            </CustomTabPanel>
+        </>
     );
 };

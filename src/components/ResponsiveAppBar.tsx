@@ -19,26 +19,18 @@ import { useAuthStore } from "@/stores/authStore";
 
 const pages = [
     {
-        name: "Products",
-        url: "/product",
-    },
-    {
         name: "Routes",
         url: "/routes",
     },
     {
-        name: "Blog",
-        url: "/product",
+        name: "Drivers",
+        url: "/drivers",
     },
 ] as const;
 
 const settings = [
     {
         name: "Profile",
-        url: "/product",
-    },
-    {
-        name: "Account",
         url: "/product",
     },
     {

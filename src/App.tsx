@@ -12,6 +12,7 @@ import { ErrorPage } from "./components/ErrorPage";
 import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { Drivers } from "@/pages/driver/Drivers";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -86,10 +87,10 @@ const router = createBrowserRouter([
                 path: "/routes",
                 element: <RouteProduct title="Price List" />,
             },
-            // {
-            //     path: "/drivers",
-            //     element: <Drivers title="Nomina de Choferes" />,
-            // },
+            {
+                path: "/drivers",
+                element: <Drivers title="Nomina de Choferes" />,
+            },
             // {
             //     path: "/dinatran",
             //     element: <Dinatran title="DINATRAN" />,

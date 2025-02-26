@@ -8,9 +8,8 @@ export const SignUpApi = {
             .post(`/auth/sign-up`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             })
-            .then((response: AxiosResponse<AuthResponse>) => response.data)
-            .catch((errorResponse: AxiosError<ApiResponse>) => {
-                console.log({ errorResponse });
-                return errorResponse;
+            .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 };

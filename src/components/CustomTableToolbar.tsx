@@ -4,10 +4,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 interface CustomTableToolbar {
     numSelected: number;
-    handleDelete: () => void;
+    handleDelete?: () => void;
+    showDeleteButton?: boolean;
 }
 
-export const CustomTableToolbar = ({ numSelected, handleDelete }: Readonly<CustomTableToolbar>) => {
+export const CustomTableToolbar = ({
+    numSelected,
+    handleDelete,
+    showDeleteButton,
+}: Readonly<CustomTableToolbar>) => {
     return (
         <Toolbar
             sx={[
@@ -35,7 +40,7 @@ export const CustomTableToolbar = ({ numSelected, handleDelete }: Readonly<Custo
                     Prices List
                 </Typography>
             )}
-            {numSelected > 0 && (
+            {showDeleteButton && numSelected > 0 && (
                 <Tooltip title="Delete">
                     <IconButton onClick={handleDelete}>
                         <DeleteIcon />

@@ -112,13 +112,17 @@ export const LogIn = ({ title }: PropsTitle) => {
 
         const data = new FormData(event.currentTarget);
 
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Login post: ", data);
+        }
+
         const resp = await LogInApi.loginUser(data);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("LogIn response: ", { resp });
         }
 
-        if (!isAxiosError(resp)) {
+        if (!isAxiosError(resp) && resp) {
             setFormErrorMessage("");
             // Store in Zustand
             setAuth(resp.token, resp.user);

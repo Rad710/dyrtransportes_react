@@ -162,9 +162,16 @@ export const RouteDataTable = ({
             flex: 0.5,
             renderCell: (params) => (
                 <ActionsMenu
-                    row={params.row}
-                    handleEditRow={handleEditRoute}
-                    handleDeleteRow={handleDeleteRouteItem}
+                    menuItems={[
+                        {
+                            text: "Edit",
+                            handleClick: () => handleEditRoute(params.row),
+                        },
+                        {
+                            text: "Delete",
+                            handleClick: () => handleDeleteRouteItem(params.row),
+                        },
+                    ]}
                 />
             ),
         },
