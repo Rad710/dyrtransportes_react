@@ -10,13 +10,12 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { CustomTabPanel } from "@/components/CustomTabPanel";
 
-import { ActiveDriverDataTable } from "./components/ActiveDriverDataTable";
-import { DeactivatedDriverDataTable } from "./components/DeactivatedDriverDataTable";
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
 import { PropsTitle } from "@/types";
 import { Driver } from "./types";
 import { DriverApi } from "./driver_utils";
+import { DriverDataTable } from "./components/DriverDataTable";
 
 const ActiveDriverTabContent = () => {
     // STATE
@@ -119,7 +118,7 @@ const ActiveDriverTabContent = () => {
                 </Button>
             </Box>
 
-            <ActiveDriverDataTable
+            <DriverDataTable
                 loading={loadingTable}
                 setLoading={setLoadingTable}
                 driverList={activeDriverList}
@@ -128,6 +127,7 @@ const ActiveDriverTabContent = () => {
                 setSelectedRows={setSelectedRows}
                 setDriverToEdit={setDriverToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
+                mode="active"
             />
         </>
     );
@@ -166,16 +166,15 @@ const DeactivatedDriverTabContent = () => {
     }, []);
 
     return (
-        <>
-            <DeactivatedDriverDataTable
-                loading={loadingTable}
-                setLoading={setLoadingTable}
-                driverList={deactivatedDriverList}
-                selectedRows={selectedRows}
-                setDriverList={setDeactivatedDriverList}
-                setSelectedRows={setSelectedRows}
-            />
-        </>
+        <DriverDataTable
+            loading={loadingTable}
+            setLoading={setLoadingTable}
+            driverList={deactivatedDriverList}
+            selectedRows={selectedRows}
+            setDriverList={setDeactivatedDriverList}
+            setSelectedRows={setSelectedRows}
+            mode="deactivated"
+        />
     );
 };
 

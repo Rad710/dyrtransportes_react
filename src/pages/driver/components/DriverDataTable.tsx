@@ -9,18 +9,22 @@ import { DriverApi } from "../driver_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 
-type ActiveDriverDataTableProps = {
+type DriverTableMode = "active" | "deactivated";
+
+type DriverDataTableProps = {
+    mode: DriverTableMode;
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     driverList: Driver[];
     selectedRows: GridRowSelectionModel;
     setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
     setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
-    setDriverToEdit: React.Dispatch<React.SetStateAction<Driver | null>>;
-    setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
+    setEditFormDialogOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ActiveDriverDataTable = ({
+export const DriverDataTable = ({
+    mode,
     loading,
     setLoading,
     driverList,
@@ -29,7 +33,7 @@ export const ActiveDriverDataTable = ({
     setSelectedRows,
     setDriverToEdit,
     setEditFormDialogOpen,
-}: ActiveDriverDataTableProps) => {
+}: DriverDataTableProps) => {
     // context
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -42,8 +46,10 @@ export const ActiveDriverDataTable = ({
     const paginationModel = { page: 0, pageSize: 5 };
 
     const handleEditDriver = (row: Driver) => {
-        setDriverToEdit(row);
-        setEditFormDialogOpen(true);
+        if (setDriverToEdit && setEditFormDialogOpen) {
+            setDriverToEdit(row);
+            setEditFormDialogOpen(true);
+        }
     };
 
     const handleDeleteSelected = () => {
@@ -73,15 +79,21 @@ export const ActiveDriverDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const driverListResp = await DriverApi.getDriverList();
-                if (!isAxiosError(driverListResp)) {
-                    const filteredDrivers = driverListResp.filter((item) => !item.deleted);
-                    setDriverList(filteredDrivers);
-                } else {
-                    setDriverList([]);
-                }
+                refreshDriverList();
             },
         });
+    };
+
+    const refreshDriverList = async () => {
+        const driverListResp = await DriverApi.getDriverList();
+        if (!isAxiosError(driverListResp)) {
+            const filteredDrivers = driverListResp.filter((item) =>
+                mode === "active" ? !item.deleted : item.deleted,
+            );
+            setDriverList(filteredDrivers);
+        } else {
+            setDriverList([]);
+        }
     };
 
     const handleDeleteDriverItem = (row: Driver) => {
@@ -116,15 +128,68 @@ export const ActiveDriverDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const driverListResp = await DriverApi.getDriverList();
-                if (!isAxiosError(driverListResp)) {
-                    const filteredDrivers = driverListResp.filter((item) => !item.deleted);
-                    setDriverList(filteredDrivers);
-                } else {
-                    setDriverList([]);
-                }
+                refreshDriverList();
             },
         });
+    };
+
+    const handleRestoreDriverItem = (row: Driver) => {
+        openConfirmDialog({
+            title: "Confirm Restore",
+            message: (
+                <>
+                    Are you sure you want to restore Driver: <strong>{row.driver_name}</strong>{" "}
+                    <strong>{row.driver_surname}</strong>?
+                </>
+            ),
+            confirmText: "Restore",
+            confirmButtonProps: {
+                color: "success",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Restoring Driver", row);
+                }
+
+                setLoading(true);
+                const resp = await DriverApi.restoreDriver(row.driver_code ?? 0);
+                setLoading(false);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Restoring Driver resp: ", { resp });
+                }
+
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+
+                showToastSuccess(resp.message);
+
+                refreshDriverList();
+            },
+        });
+    };
+
+    const getActionMenuItems = (row: Driver) => {
+        if (mode === "active") {
+            return [
+                {
+                    text: "Edit",
+                    handleClick: () => handleEditDriver(row),
+                },
+                {
+                    text: "Delete",
+                    handleClick: () => handleDeleteDriverItem(row),
+                },
+            ];
+        } else {
+            return [
+                {
+                    text: "Restore",
+                    handleClick: () => handleRestoreDriverItem(row),
+                },
+            ];
+        }
     };
 
     const columns: GridColDef<Driver>[] = [
@@ -176,20 +241,7 @@ export const ActiveDriverDataTable = ({
             sortable: false,
             minWidth: 100,
             flex: 0.5,
-            renderCell: (params) => (
-                <ActionsMenu
-                    menuItems={[
-                        {
-                            text: "Edit",
-                            handleClick: () => handleEditDriver(params.row),
-                        },
-                        {
-                            text: "Delete",
-                            handleClick: () => handleDeleteDriverItem(params.row),
-                        },
-                    ]}
-                />
-            ),
+            renderCell: (params) => <ActionsMenu menuItems={getActionMenuItems(params.row)} />,
         },
     ];
 
@@ -197,7 +249,8 @@ export const ActiveDriverDataTable = ({
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <CustomTableToolbar
                 numSelected={selectedRows.length}
-                handleDelete={handleDeleteSelected}
+                handleDelete={mode === "active" ? handleDeleteSelected : undefined}
+                showDeleteButton={mode === "active"}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
