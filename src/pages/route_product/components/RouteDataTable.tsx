@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { RouteApi } from "../route_product_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 
 type RouteDataTableProps = {
     loading: boolean;
@@ -19,6 +20,8 @@ type RouteDataTableProps = {
     setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+const formatter = getGlobalizeNumberFormatter(2, 2);
 
 export const RouteDataTable = ({
     loading,
@@ -139,12 +142,14 @@ export const RouteDataTable = ({
         {
             field: "price",
             headerName: "Price",
+            renderCell: ({ row }) => formatter(parseFloat(row.price)),
             minWidth: 100,
             flex: 0.8,
         },
         {
             field: "payroll_price",
             headerName: "Payroll Price",
+            renderCell: ({ row }) => formatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
         },

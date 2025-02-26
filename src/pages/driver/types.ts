@@ -8,7 +8,6 @@ export type Driver = {
     truck_plate: string;
     trailer_plate: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
 };

@@ -1,164 +1,293 @@
 import { useState, useEffect } from "react";
 import { Link, useMatch } from "react-router";
-import { Table2Icon } from "lucide-react";
 import { DateTime } from "luxon";
+import { TableChart as TableChartIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
+import { isAxiosError } from "axios";
+import { saveAs } from "file-saver";
 
 import { PropsTitle } from "@/types";
 import { ShipmentPayroll } from "./types";
 
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { Checkbox } from "@/components/ui/checkbox";
-
+import { useToast } from "@/context/ToastContext";
+import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./shipment_payroll_utils";
 import { ShipmentPayrollDialogForm } from "./components/ShipmentPayrollDialogForm";
-import { ShipmentPayrollDialogDelete } from "./components/ShipmentPayrollDialogDelete";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/:year");
     const year = parseInt(match?.params?.year ?? "") || 0;
-    //State
-    const [loading, setLoading] = useState(true);
 
+    // STATE
+    const [loading, setLoading] = useState<boolean>(true);
     const [payrollList, setPayrollList] = useState<ShipmentPayroll[]>([]);
     const [selectedPayrollList, setSelectedPayrollList] = useState<number[]>([]);
 
-    const [payrollToDelete, setPayrollToDelete] = useState<ShipmentPayroll | null>(null);
+    // CONTEXT
+    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
-    const loadShipmentPayrollListList = async () => {
-        const shipmentPayrolls = await ShipmentPayrollApi.getShipmentPayrollList(year);
-
-        setPayrollList(shipmentPayrolls);
+    const loadShipmentPayrollList = async () => {
+        setLoading(true);
+        const resp = await ShipmentPayrollApi.getShipmentPayrollList(year);
         setLoading(false);
 
+        if (!isAxiosError(resp) && resp) {
+            setPayrollList(resp);
+        } else {
+            showToastAxiosError(resp);
+        }
+
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded shipment payrolls ", { shipmentPayrolls });
+            console.log("Loaded shipment payrolls ", { resp });
         }
     };
 
     // USE EFFECTS
     useEffect(() => {
         document.title = title;
-
-        loadShipmentPayrollListList();
+        loadShipmentPayrollList();
     }, []);
 
-    const handleExportShipmentPayrollList = async () => {
-        console.log("Testing...");
+    const handleExport = () => {
+        openConfirmDialog({
+            title: "Confirmar Exportación",
+            message: `Se exportarán todas las Cobranzas ${
+                selectedPayrollList.length > 0 ? "seleccionadas" : ""
+            }.`,
+            confirmText: "Exportar",
+            confirmButtonProps: {
+                color: "success",
+            },
+            onConfirm: async () => {
+                // Get start and end dates from the selected payrolls or all payrolls
+                const payrollsToExport =
+                    selectedPayrollList.length > 0
+                        ? payrollList.filter((p) =>
+                              selectedPayrollList.includes(p.payroll_code || 0),
+                          )
+                        : payrollList;
+
+                if (payrollsToExport.length === 0) {
+                    return;
+                }
+
+                // Sort by timestamp to get first and last
+                const sortedPayrolls = [...payrollsToExport].sort((a, b) =>
+                    a.payroll_timestamp.localeCompare(b.payroll_timestamp),
+                );
+
+                const startDate = DateTime.fromHTTP(sortedPayrolls[0].payroll_timestamp, {
+                    zone: "local",
+                });
+                const endDate = DateTime.fromHTTP(
+                    sortedPayrolls[sortedPayrolls.length - 1].payroll_timestamp,
+                    { zone: "local" },
+                );
+
+                if (!startDate.isValid || !endDate.isValid) {
+                    return;
+                }
+
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting shipment payrolls...");
+                }
+
+                const resp = await ShipmentPayrollApi.exportShipmentPayrollList(startDate, endDate);
+
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Export result...", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
+    };
+
+    const handleDelete = () => {
+        if (selectedPayrollList.length === 0) {
+            return;
+        }
+
+        openConfirmDialog({
+            title: "Confirmar Eliminación",
+            message: `Se eliminarán ${selectedPayrollList.length} planilla(s) seleccionada(s).`,
+            confirmText: "Eliminar",
+            confirmButtonProps: {
+                color: "error",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting payrolls...", selectedPayrollList);
+                }
+
+                const resp =
+                    await ShipmentPayrollApi.deleteShipmentPayrollList(selectedPayrollList);
+
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Delete result...", { resp });
+                }
+
+                if (!isAxiosError(resp) && resp) {
+                    showToastSuccess(resp.message);
+                    setSelectedPayrollList([]);
+                    await loadShipmentPayrollList();
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
+    };
+
+    const handleTogglePayroll = (payrollCode: number | null, checked: boolean) => {
+        if (payrollCode === null) return;
+
+        let newSelectedPayrollList: number[] = [];
+
+        if (checked) {
+            newSelectedPayrollList = [...selectedPayrollList, payrollCode];
+        } else {
+            newSelectedPayrollList = selectedPayrollList.filter((item) => item !== payrollCode);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Select item code: ", payrollCode);
+            console.log("Current selectedPayrollList: ", selectedPayrollList);
+            console.log("New selectedPayrollList: ", newSelectedPayrollList);
+        }
+
+        setSelectedPayrollList(newSelectedPayrollList);
     };
 
     return (
-        <div className="px-4">
-            <div className="flex flex-wrap gap-2">
-                <h2 className="section-header text-xl md:text-2xl text-left md:mb-0 justify-start">
+        <Box sx={{ padding: 3 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    alignItems: { xs: "flex-start", md: "center" },
+                    justifyContent: "space-between",
+                    mb: 4,
+                }}
+            >
+                <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
                     Lista de Planillas de {year}
-                </h2>
+                </Typography>
 
-                <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 2,
+                        flexWrap: "wrap",
+                    }}
+                >
                     <ShipmentPayrollDialogForm
                         year={year}
                         setPayrollList={setPayrollList}
                         setSelectedPayrollList={setSelectedPayrollList}
                     />
 
-                    <AlertDialogConfirm
-                        buttonContent={
-                            <>
-                                <Table2Icon className="w-6 h-6" />
-                                Exportar
-                            </>
-                        }
-                        variant="green"
-                        size="md-lg"
-                        onClickFunctionPromise={handleExportShipmentPayrollList}
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<TableChartIcon />}
+                        onClick={handleExport}
                     >
-                        <span className="md:text-lg">
-                            {`Se exportarán todas las Cobranzas ${
-                                selectedPayrollList.length > 0 ? "seleccionadas" : ""
-                            }.`}
-                        </span>
-                    </AlertDialogConfirm>
+                        Exportar
+                    </Button>
 
-                    <ShipmentPayrollDialogDelete
-                        year={year}
-                        setPayrollList={setPayrollList}
-                        selectedPayrollList={selectedPayrollList}
-                        setSelectedPayrollList={setSelectedPayrollList}
-                        payrollToDelete={payrollToDelete}
-                        setPayrollToDelete={setPayrollToDelete}
-                    />
-                </div>
-            </div>
+                    <Tooltip
+                        title={
+                            selectedPayrollList.length === 0
+                                ? "Seleccione planillas para eliminar"
+                                : ""
+                        }
+                    >
+                        <span>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                onClick={handleDelete}
+                                disabled={selectedPayrollList.length === 0}
+                            >
+                                Eliminar
+                            </Button>
+                        </span>
+                    </Tooltip>
+                </Box>
+            </Box>
 
             {!loading && (
-                <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
+                <List sx={{ width: "100%" }}>
                     {payrollList.map((payroll) => {
-                        const isChecked = selectedPayrollList.some(
-                            (item) => item === payroll.payroll_code
-                        );
+                        const isChecked = selectedPayrollList.includes(payroll.payroll_code || 0);
+                        const payrollDate = DateTime.fromHTTP(payroll.payroll_timestamp, {
+                            zone: "local",
+                        }).setLocale("es");
 
                         return (
-                            <li
-                                className={`flex ${isChecked ? "bg-gray-200" : ""}`}
+                            <ListItem
                                 key={payroll.payroll_code}
+                                sx={{
+                                    bgcolor: isChecked ? "action.selected" : "background.paper",
+                                    borderRadius: 1,
+                                    mb: 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
                             >
-                                <div className="flex flex-row gap-6 justify-center items-center px-4 py-3">
-                                    <Checkbox
-                                        checked={isChecked}
-                                        onCheckedChange={(value) => {
-                                            let newSelectedPayrollList: number[] = [];
+                                <Checkbox
+                                    checked={isChecked}
+                                    onChange={(e) =>
+                                        handleTogglePayroll(
+                                            payroll.payroll_code ?? null,
+                                            e.target.checked,
+                                        )
+                                    }
+                                    inputProps={{ "aria-label": "Seleccionar planilla" }}
+                                    sx={{ mr: 2 }}
+                                />
 
-                                            if (value) {
-                                                newSelectedPayrollList = [
-                                                    ...selectedPayrollList,
-                                                    payroll.payroll_code ?? 0,
-                                                ];
-                                            } else {
-                                                newSelectedPayrollList = selectedPayrollList.filter(
-                                                    (item) => item !== payroll.payroll_code
-                                                );
-                                            }
-
-                                            if (import.meta.env.VITE_DEBUG) {
-                                                console.log("Select item value: ", { payroll });
-                                                console.log(
-                                                    "current selectedPayrollList: ",
-                                                    selectedPayrollList
-                                                );
-                                                console.log(
-                                                    "new selectedPayrollList: ",
-                                                    newSelectedPayrollList
-                                                );
-                                            }
-
-                                            setSelectedPayrollList(newSelectedPayrollList);
+                                <Button
+                                    component={Link}
+                                    to={`/shipment-payroll-list/payroll/${payroll.payroll_code ?? 0}`}
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{
+                                        px: 4,
+                                        py: 1,
+                                        fontWeight: "bold",
+                                        fontSize: "1.1rem",
+                                    }}
+                                >
+                                    {payrollDate.toLocaleString({
+                                        month: "long",
+                                        day: "numeric",
+                                    })}
+                                    <Typography
+                                        component="span"
+                                        sx={{
+                                            ml: 1,
+                                            color: "text.secondary",
+                                            opacity: 0.7,
+                                            fontWeight: "normal",
                                         }}
-                                        aria-label="Seleccionar año"
-                                    />
-
-                                    <Link
-                                        className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                        to={`/shipment-payroll-list/payroll/${
-                                            payroll.payroll_code ?? 0
-                                        }`}
                                     >
-                                        {DateTime.fromHTTP(payroll.payroll_timestamp, {
-                                            zone: "local",
-                                        })
-                                            .setLocale("es")
-                                            .toLocaleString({
-                                                month: "long",
-                                                day: "numeric",
-                                            })}{" "}
-                                        <span className=" text-gray-400">
-                                            [#{payroll.payroll_code ?? 0}]
-                                        </span>
-                                    </Link>
-                                </div>
-                            </li>
+                                        [#{payroll.payroll_code ?? 0}]
+                                    </Typography>
+                                </Button>
+                            </ListItem>
                         );
                     })}
-                </ul>
+                </List>
             )}
-        </div>
+        </Box>
     );
 };

@@ -1,196 +1,248 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { DateTime } from "luxon";
-import { PlusIcon, Table2Icon } from "lucide-react";
+import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
+import { Box, Button, List, ListItem, Checkbox, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
+import { saveAs } from "file-saver";
 
 import { PropsTitle } from "@/types";
 import { ShipmentPayroll } from "./types";
 
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toastSuccess } from "@/utils/notification";
-
+import { useToast } from "@/context/ToastContext";
+import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./shipment_payroll_utils";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
-    //State
-    const [loading, setLoading] = useState(true);
-
+    // STATE
+    const [loading, setLoading] = useState<boolean>(true);
     const [yearList, setYearList] = useState<number[]>([]);
     const [selectedYearList, setSelectedYearList] = useState<number[]>([]);
 
+    // CONTEXT
+    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
+
     const loadShipmentPayrollYearList = async () => {
-        const shipmentPayrolls = await ShipmentPayrollApi.getShipmentPayrollList();
-
-        const shipmentPayrollYearSet: Set<number> = new Set(
-            shipmentPayrolls
-                ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "local" }))
-                ?.filter((item) => item?.isValid)
-                ?.map((item) => item.year) ?? []
-        );
-
-        const shipmentPayrollYearList = Array.from(shipmentPayrollYearSet).sort((a, b) => b - a);
-
-        setYearList(shipmentPayrollYearList);
+        setLoading(true);
+        const resp = await ShipmentPayrollApi.getShipmentPayrollList();
         setLoading(false);
 
+        if (!isAxiosError(resp) && resp) {
+            const shipmentPayrollYearSet: Set<number> = new Set(
+                resp
+                    ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "local" }))
+                    ?.filter((item) => item?.isValid)
+                    ?.map((item) => item.year) ?? [],
+            );
+
+            const shipmentPayrollYearList = Array.from(shipmentPayrollYearSet).sort(
+                (a, b) => b - a,
+            );
+            setYearList(shipmentPayrollYearList);
+        } else {
+            showToastAxiosError(resp);
+        }
+
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded shipment payrolls ", { shipmentPayrolls });
-            console.log("Shipment payroll years", { shipmentPayrollYearList });
+            console.log("Loaded shipment payrolls ", { resp });
+            console.log("Shipment payroll years", { yearList });
         }
     };
 
     // USE EFFECTS
     useEffect(() => {
         document.title = title;
-
         loadShipmentPayrollYearList();
     }, []);
 
-    const handlePostShipmentPayroll = async () => {
-        const latestYear = yearList.at(0) || 2023;
-        const newYear = DateTime.fromObject({ year: latestYear + 1 }, { zone: "local" });
+    const handleAddYear = () => {
+        openConfirmDialog({
+            title: "Confirmar Creación",
+            message: "Se creará una nueva planilla.",
+            confirmText: "Crear",
+            confirmButtonProps: {
+                color: "success",
+            },
+            onConfirm: async () => {
+                const latestYear = yearList.at(0) || 2023;
+                const newYear = DateTime.fromObject({ year: latestYear + 1 }, { zone: "local" });
 
-        if (!newYear.isValid) {
-            return;
-        }
+                if (!newYear.isValid) {
+                    return;
+                }
 
-        const payload: ShipmentPayroll = {
-            payroll_timestamp: newYear.toHTTP(),
-            collected: false,
-            deleted: false,
-        };
+                const payload: ShipmentPayroll = {
+                    payroll_timestamp: newYear.toHTTP(),
+                    collected: false,
+                    deleted: false,
+                };
 
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Posting SHipmentPayroll...", { payload });
-        }
-        const result = await ShipmentPayrollApi.postShipmentPayroll(payload);
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Post result...", { result });
-        }
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Posting ShipmentPayroll...", { payload });
+                }
 
-        setSelectedYearList([]);
+                const resp = await ShipmentPayrollApi.postShipmentPayroll(payload);
 
-        if (result?.success) {
-            toastSuccess(result.success);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Post result...", { resp });
+                }
 
-            await loadShipmentPayrollYearList();
-        }
+                setSelectedYearList([]);
+
+                if (!isAxiosError(resp) && resp) {
+                    showToastSuccess(resp.success || "Año agregado exitosamente");
+                    await loadShipmentPayrollYearList();
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
     };
 
-    const handleExportShipmentPayrollYearList = async () => {
-        const checkedYears = yearList;
-
-        const startDate = DateTime.fromObject(
-            {
-                year: checkedYears?.at(0) ?? undefined,
+    const handleExportList = () => {
+        openConfirmDialog({
+            title: "Confirmar Exportación",
+            message: "Se exportarán todas las Cobranzas del año.",
+            confirmText: "Exportar",
+            confirmButtonProps: {
+                color: "info",
             },
-            { zone: "local" }
-        );
-        const endDate = DateTime.fromObject(
-            {
-                year: checkedYears?.at(-1) ?? undefined,
-            },
-            { zone: "local" }
-        );
+            onConfirm: async () => {
+                const checkedYears = yearList;
 
-        if (!startDate.isValid || !endDate.isValid) {
-            return;
+                const startDate = DateTime.fromObject(
+                    { year: checkedYears?.at(0) ?? undefined },
+                    { zone: "local" },
+                );
+
+                const endDate = DateTime.fromObject(
+                    { year: checkedYears?.at(-1) ?? undefined },
+                    { zone: "local" },
+                );
+
+                if (!startDate.isValid || !endDate.isValid) {
+                    return;
+                }
+
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting shipment payrolls...");
+                }
+
+                const resp = await ShipmentPayrollApi.exportShipmentPayrollList(startDate, endDate);
+
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Export result...", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
+                }
+            },
+        });
+    };
+
+    const handleToggleYear = (year: number, checked: boolean) => {
+        let newSelectedYearList: number[] = [];
+
+        if (checked) {
+            newSelectedYearList = [...selectedYearList, year];
+        } else {
+            newSelectedYearList = selectedYearList.filter((item) => item !== year);
         }
 
-        await ShipmentPayrollApi.exportShipmentPayrollList(startDate, endDate);
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Select item value: ", year);
+            console.log("current selectedYearList: ", selectedYearList);
+            console.log("new selectedYearList: ", newSelectedYearList);
+        }
+
+        setSelectedYearList(newSelectedYearList);
     };
 
     return (
-        <div className="px-4">
-            <div className="flex flex-wrap gap-2">
-                <h2 className="section-header text-xl md:text-2xl text-left md:mb-0 justify-start">
+        <Box sx={{ padding: 3 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    alignItems: { xs: "flex-start", md: "center" },
+                    justifyContent: "space-between",
+                    mb: 4,
+                }}
+            >
+                <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
                     Lista de Planillas
-                </h2>
+                </Typography>
 
-                <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
-                    <AlertDialogConfirm
-                        buttonContent={
-                            <>
-                                <PlusIcon className="w-6 h-6" />
-                                Agregar Año
-                            </>
-                        }
-                        variant="outline"
-                        size="md-lg"
-                        onClickFunctionPromise={handlePostShipmentPayroll}
-                    >
-                        <span className="md:text-lg">Se creará una nueva planilla.</span>
-                    </AlertDialogConfirm>
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 2,
+                        flexWrap: "wrap",
+                    }}
+                >
+                    <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddYear}>
+                        Agregar Año
+                    </Button>
 
-                    <AlertDialogConfirm
-                        buttonContent={
-                            <>
-                                <Table2Icon className="w-6 h-6" />
-                                Exportar
-                            </>
-                        }
-                        variant="green"
-                        size="md-lg"
-                        onClickFunctionPromise={handleExportShipmentPayrollYearList}
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<TableChartIcon />}
+                        onClick={handleExportList}
                     >
-                        <span className="md:text-lg">
-                            Se exportarán todas las Cobranzas del año.
-                        </span>
-                    </AlertDialogConfirm>
-                </div>
-            </div>
+                        Exportar
+                    </Button>
+                </Box>
+            </Box>
 
             {!loading && (
-                <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
+                <List sx={{ width: "100%" }}>
                     {yearList.map((year) => {
                         const isChecked = selectedYearList.includes(year);
 
                         return (
-                            <li className={`flex ${isChecked ? "bg-gray-200" : ""}`} key={year}>
-                                <div className="flex flex-row gap-6 justify-center items-center px-4 py-3">
-                                    <Checkbox
-                                        checked={isChecked}
-                                        onCheckedChange={(value) => {
-                                            let newSelectedYearList: number[] = [];
+                            <ListItem
+                                key={year}
+                                sx={{
+                                    bgcolor: isChecked ? "action.selected" : "background.paper",
+                                    borderRadius: 1,
+                                    mb: 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <Checkbox
+                                    checked={isChecked}
+                                    onChange={(e) => handleToggleYear(year, e.target.checked)}
+                                    inputProps={{ "aria-label": "Seleccionar año" }}
+                                    sx={{ mr: 2 }}
+                                />
 
-                                            if (value) {
-                                                newSelectedYearList = [...selectedYearList, year];
-                                            } else {
-                                                newSelectedYearList = selectedYearList.filter(
-                                                    (item) => item !== year
-                                                );
-                                            }
-
-                                            if (import.meta.env.VITE_DEBUG) {
-                                                console.log("Select item value: ", year);
-                                                console.log(
-                                                    "current selectedYearList: ",
-                                                    selectedYearList
-                                                );
-                                                console.log(
-                                                    "new selectedYearList: ",
-                                                    newSelectedYearList
-                                                );
-                                            }
-
-                                            setSelectedYearList(newSelectedYearList);
-                                        }}
-                                        aria-label="Seleccionar año"
-                                    />
-
-                                    <Link
-                                        className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                        to={`/shipment-payroll-list/${year}`}
-                                    >
-                                        {year}
-                                    </Link>
-                                </div>
-                            </li>
+                                <Button
+                                    component={Link}
+                                    to={`/shipment-payroll-list/${year}`}
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{
+                                        px: 4,
+                                        py: 1,
+                                        fontWeight: "bold",
+                                        fontSize: "1.25rem",
+                                    }}
+                                >
+                                    {year}
+                                </Button>
+                            </ListItem>
                         );
                     })}
-                </ul>
+                </List>
             )}
-        </div>
+        </Box>
     );
 };

@@ -19,6 +19,10 @@ import { useAuthStore } from "@/stores/authStore";
 
 const pages = [
     {
+        name: "Shipment Payrolls",
+        url: "/shipment-payroll-list",
+    },
+    {
         name: "Routes",
         url: "/routes",
     },

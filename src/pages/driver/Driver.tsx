@@ -13,7 +13,7 @@ import { CustomTabPanel } from "@/components/CustomTabPanel";
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
 import { PropsTitle } from "@/types";
-import { Driver } from "./types";
+import { Driver as DriverType } from "./types";
 import { DriverApi } from "./driver_utils";
 import { DriverDataTable } from "./components/DriverDataTable";
 
@@ -24,9 +24,9 @@ const ActiveDriverTabContent = () => {
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
     // Drivers State
-    const [activeDriverList, setActiveDriverList] = useState<Driver[]>([]);
+    const [activeDriverList, setActiveDriverList] = useState<DriverType[]>([]);
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
-    const [driverToEdit, setDriverToEdit] = useState<Driver | null>(null);
+    const [driverToEdit, setDriverToEdit] = useState<DriverType | null>(null);
 
     // context
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -138,7 +138,7 @@ const DeactivatedDriverTabContent = () => {
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
 
     // Drivers State
-    const [deactivatedDriverList, setDeactivatedDriverList] = useState<Driver[]>([]);
+    const [deactivatedDriverList, setDeactivatedDriverList] = useState<DriverType[]>([]);
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
     // context
@@ -166,19 +166,25 @@ const DeactivatedDriverTabContent = () => {
     }, []);
 
     return (
-        <DriverDataTable
-            loading={loadingTable}
-            setLoading={setLoadingTable}
-            driverList={deactivatedDriverList}
-            selectedRows={selectedRows}
-            setDriverList={setDeactivatedDriverList}
-            setSelectedRows={setSelectedRows}
-            mode="deactivated"
-        />
+        <Box
+            sx={{
+                marginTop: "2.5rem",
+            }}
+        >
+            <DriverDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                driverList={deactivatedDriverList}
+                selectedRows={selectedRows}
+                setDriverList={setDeactivatedDriverList}
+                setSelectedRows={setSelectedRows}
+                mode="deactivated"
+            />
+        </Box>
     );
 };
 
-export const Drivers = ({ title }: Readonly<PropsTitle>) => {
+export const Driver = ({ title }: Readonly<PropsTitle>) => {
     useEffect(() => {
         document.title = title;
     }, []);

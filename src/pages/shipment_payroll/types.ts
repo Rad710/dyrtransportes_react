@@ -1,10 +1,11 @@
+import { ApiResponse } from "@/types";
+
 export type ShipmentPayroll = {
     payroll_code?: number | null;
     payroll_timestamp: string;
     collected: boolean;
     collection_timestamp?: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
 
@@ -28,13 +29,11 @@ export type Shipment = {
     shipment_payroll_code: number;
     driver_payroll_code?: number | null;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
     modification_timestamp?: string;
-
-    success?: string;
-    error?: string;
 };
+
+export type ShipmentApiResponse = Shipment & ApiResponse;
 
 export type ShipmentAggregated = {
     product: string;

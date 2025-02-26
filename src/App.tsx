@@ -12,7 +12,9 @@ import { ErrorPage } from "./components/ErrorPage";
 import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { ToastProvider } from "@/context/ToastContext";
-import { Drivers } from "@/pages/driver/Drivers";
+import { Driver } from "@/pages/driver/Driver";
+import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrollYearList";
+import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -84,12 +86,29 @@ const router = createBrowserRouter([
                 element: <Home title="D y R Transportes" />,
             },
             {
+                path: "/shipment-payroll-list",
+                children: [
+                    {
+                        index: true,
+                        element: <ShipmentPayrollYearList title="Shipment Payrolls" />,
+                    },
+                    {
+                        path: "/shipment-payroll-list/:year/",
+                        element: <ShipmentPayrollList title="Shipment Payrolls" />,
+                    },
+                    // {
+                    //     path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
+                    //     element: <ShipmentList title="Cobranzas" />,
+                    // },
+                ],
+            },
+            {
                 path: "/routes",
-                element: <RouteProduct title="Price List" />,
+                element: <RouteProduct title="Prices" />,
             },
             {
                 path: "/drivers",
-                element: <Drivers title="Nomina de Choferes" />,
+                element: <Driver title="Drivers" />,
             },
             // {
             //     path: "/dinatran",
