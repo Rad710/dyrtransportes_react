@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
+import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
@@ -92,11 +93,12 @@ const ActiveDriverTabContent = () => {
             >
                 <Button
                     variant="contained"
-                    color="success"
+                    startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
                     Add
                 </Button>
+
                 <DriverFormDialog
                     setDriverList={setActiveDriverList}
                     open={addFormDialogOpen}
@@ -113,8 +115,13 @@ const ActiveDriverTabContent = () => {
                     setDriverToEdit={setDriverToEdit}
                 />
 
-                <Button variant="contained" color="info" onClick={handleExportDriverList}>
-                    Exportar
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<TableChartIcon />}
+                    onClick={handleExportDriverList}
+                >
+                    Export
                 </Button>
             </Box>
 

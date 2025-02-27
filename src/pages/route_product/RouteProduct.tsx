@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
-
+import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
 
@@ -93,11 +93,12 @@ const RouteTabContent = () => {
             >
                 <Button
                     variant="contained"
-                    color="success"
+                    startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
                     Add
                 </Button>
+
                 <RouteFormDialog
                     setRouteList={setRouteList}
                     open={addFormDialogOpen}
@@ -114,8 +115,13 @@ const RouteTabContent = () => {
                     setRouteToEdit={setRouteToEdit}
                 />
 
-                <Button variant="contained" color="info" onClick={handleExportRouteList}>
-                    Exportar
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<TableChartIcon />}
+                    onClick={handleExportRouteList}
+                >
+                    Export
                 </Button>
             </Box>
 
@@ -207,11 +213,12 @@ const ProductTabContent = () => {
             >
                 <Button
                     variant="contained"
-                    color="success"
+                    startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
                     Add
                 </Button>
+
                 <ProductFormDialog
                     setProductList={setProductList}
                     open={addFormDialogOpen}
@@ -228,8 +235,13 @@ const ProductTabContent = () => {
                     setProductToEdit={setProductToEdit}
                 />
 
-                <Button variant="contained" color="info" onClick={handleExportProductList}>
-                    Exportar
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<TableChartIcon />}
+                    onClick={handleExportProductList}
+                >
+                    Export
                 </Button>
             </Box>
 

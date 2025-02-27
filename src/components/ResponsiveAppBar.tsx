@@ -12,7 +12,7 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useLocation } from "react-router";
 
 import { DyRTransportesIcon } from "./CustomIcons";
 import { useAuthStore } from "@/stores/authStore";
@@ -46,6 +46,8 @@ const settings = [
 export const ResponsiveAppBar = () => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const location = useLocation();
+    const currentPath = location.pathname;
 
     const logout = useAuthStore((state) => state.logout);
 
@@ -66,6 +68,11 @@ export const ResponsiveAppBar = () => {
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
+    };
+
+    // Function to check if a path is active
+    const isActive = (path: string) => {
+        return currentPath.includes(path);
     };
 
     return (
@@ -171,6 +178,14 @@ export const ResponsiveAppBar = () => {
                                     color: "white",
                                     display: "block",
                                     textDecoration: "none",
+                                    fontWeight: isActive(page.url) ? "bold" : "normal",
+                                    borderBottom: isActive(page.url) ? "2px solid" : "none",
+                                    borderColor: isActive(page.url)
+                                        ? "secondary.info"
+                                        : "transparent",
+                                    backgroundColor: isActive(page.url)
+                                        ? "primary.dark"
+                                        : "transparent",
                                     "&:visited": { color: "inherit" },
                                     "&:hover": { color: "inherit" },
                                 }}

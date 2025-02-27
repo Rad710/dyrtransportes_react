@@ -17,7 +17,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [yearList, setYearList] = useState<number[]>([]);
-    const [selectedYearList, setSelectedYearList] = useState<number[]>([]);
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
     // CONTEXT
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -88,7 +88,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                     console.log("Post result...", { resp });
                 }
 
-                setSelectedYearList([]);
+                setSelectedYear(null);
 
                 if (!isAxiosError(resp) && resp) {
                     showToastSuccess(resp.success || "Año agregado exitosamente");
@@ -109,24 +109,23 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                 color: "info",
             },
             onConfirm: async () => {
-                const checkedYears = yearList;
+                if (!selectedYear) {
+                    return;
+                }
 
-                const startDate = DateTime.fromObject(
-                    { year: checkedYears?.at(0) ?? undefined },
-                    { zone: "local" },
-                );
+                const startDate = DateTime.fromObject({ year: selectedYear }, { zone: "local" });
 
                 const endDate = DateTime.fromObject(
-                    { year: checkedYears?.at(-1) ?? undefined },
+                    { year: selectedYear + 1 },
                     { zone: "local" },
-                );
+                ).minus({ days: 1 });
 
                 if (!startDate.isValid || !endDate.isValid) {
                     return;
                 }
 
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting shipment payrolls...");
+                    console.log("Exporting shipment payrolls...", { startDate, endDate });
                 }
 
                 const resp = await ShipmentPayrollApi.exportShipmentPayrollList(startDate, endDate);
@@ -146,21 +145,18 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     };
 
     const handleToggleYear = (year: number, checked: boolean) => {
-        let newSelectedYearList: number[] = [];
-
+        // If checked, set this year as the selected one
+        // If unchecked and this was the selected year, set to null
         if (checked) {
-            newSelectedYearList = [...selectedYearList, year];
-        } else {
-            newSelectedYearList = selectedYearList.filter((item) => item !== year);
+            setSelectedYear(year);
+        } else if (selectedYear === year) {
+            setSelectedYear(null);
         }
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("Select item value: ", year);
-            console.log("current selectedYearList: ", selectedYearList);
-            console.log("new selectedYearList: ", newSelectedYearList);
+            console.log("current selectedYear: ", selectedYear);
         }
-
-        setSelectedYearList(newSelectedYearList);
     };
 
     return (
@@ -185,8 +181,8 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                         flexWrap: "wrap",
                     }}
                 >
-                    <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddYear}>
-                        Agregar Año
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddYear}>
+                        Add
                     </Button>
 
                     <Button
@@ -194,8 +190,9 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                         color="success"
                         startIcon={<TableChartIcon />}
                         onClick={handleExportList}
+                        disabled={!selectedYear}
                     >
-                        Exportar
+                        Export
                     </Button>
                 </Box>
             </Box>
@@ -203,7 +200,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
             {!loading && (
                 <List sx={{ width: "100%" }}>
                     {yearList.map((year) => {
-                        const isChecked = selectedYearList.includes(year);
+                        const isChecked = selectedYear === year;
 
                         return (
                             <ListItem
