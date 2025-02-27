@@ -8,9 +8,6 @@ export type ShipmentPayroll = {
     deleted?: boolean;
     modification_user?: string;
     modification_timestamp?: string;
-
-    success?: string;
-    error?: string;
 };
 
 export type Shipment = {

@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useMatch } from "react-router";
 import { DateTime } from "luxon";
-import { TableChart as TableChartIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+    Add as AddIcon,
+    TableChart as TableChartIcon,
+    Delete as DeleteIcon,
+} from "@mui/icons-material";
 import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
@@ -12,7 +16,7 @@ import { ShipmentPayroll } from "./types";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./shipment_payroll_utils";
-import { ShipmentPayrollDialogForm } from "./components/ShipmentPayrollDialogForm";
+import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialog";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/:year");
@@ -22,6 +26,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [payrollList, setPayrollList] = useState<ShipmentPayroll[]>([]);
     const [selectedPayrollList, setSelectedPayrollList] = useState<number[]>([]);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
 
     // CONTEXT
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -186,7 +191,16 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                         flexWrap: "wrap",
                     }}
                 >
-                    <ShipmentPayrollDialogForm
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setAddFormDialogOpen(true)}
+                    >
+                        Add
+                    </Button>
+                    <ShipmentPayrollFormDialog
+                        open={addFormDialogOpen}
+                        setOpen={setAddFormDialogOpen}
                         year={year}
                         setPayrollList={setPayrollList}
                         setSelectedPayrollList={setSelectedPayrollList}
