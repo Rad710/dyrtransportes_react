@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { DateTime } from "luxon";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
-import { Box, Button, List, ListItem, Checkbox, Typography } from "@mui/material";
+import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
 
@@ -91,7 +91,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                 setSelectedYear(null);
 
                 if (!isAxiosError(resp) && resp) {
-                    showToastSuccess(resp.success || "Año agregado exitosamente");
+                    showToastSuccess(resp.message);
                     await loadShipmentPayrollYearList();
                 } else {
                     showToastAxiosError(resp);
@@ -185,15 +185,19 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                         Add
                     </Button>
 
-                    <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<TableChartIcon />}
-                        onClick={handleExportList}
-                        disabled={!selectedYear}
-                    >
-                        Export
-                    </Button>
+                    <Tooltip title={!selectedYear ? "Seleccione planillas para exportar" : ""}>
+                        <Box component="span">
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<TableChartIcon />}
+                                onClick={handleExportList}
+                                disabled={!selectedYear}
+                            >
+                                Export
+                            </Button>
+                        </Box>
+                    </Tooltip>
                 </Box>
             </Box>
 
@@ -225,7 +229,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                                     component={Link}
                                     to={`/shipment-payroll-list/${year}`}
                                     variant="contained"
-                                    color="primary"
+                                    color="info"
                                     sx={{
                                         px: 4,
                                         py: 1,

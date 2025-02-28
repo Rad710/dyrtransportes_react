@@ -1,29 +1,45 @@
 import { useState, useEffect } from "react";
 import { useMatch } from "react-router";
-import { Table2Icon } from "lucide-react";
+import { Box, Typography, Button } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 
 import { PropsTitle } from "@/types";
 import { Shipment, ShipmentAggregated } from "./types";
-
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
+import { isAxiosError } from "axios";
 
 import { ShipmentApi } from "./shipment_payroll_utils";
 import { ShipmentDialogForm } from "./components/ShipmentDialogForm";
+import { ShipmentDataTable } from "./components/ShipmentDataTable";
+import { useConfirmation } from "@/context/ConfirmationContext";
+import { useToast } from "@/context/ToastContext";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
-    //State
-    const [loading, setLoading] = useState(true);
 
+    // State
+    const [loading, setLoading] = useState<boolean>(true);
     const [shipmentAggregatedList, setShipmentAggegatedList] = useState<ShipmentAggregated[]>([]);
-    const [selectedShipmentList, setSelectedShipmentList] = useState<number[]>([]);
-
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
     const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+
+    // Context
+    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
     const loadShipmentList = async () => {
+        setLoading(true);
         const shipments = await ShipmentApi.getShipmentAggregated(payrollCode);
-        setShipmentAggegatedList(shipments);
+
+        if (!isAxiosError(shipments) && shipments) {
+            setShipmentAggegatedList(shipments);
+        } else {
+            showToastAxiosError(shipments);
+        }
+
         setLoading(false);
 
         if (import.meta.env.VITE_DEBUG) {
@@ -34,125 +50,86 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     // USE EFFECTS
     useEffect(() => {
         document.title = title;
-
         loadShipmentList();
     }, []);
 
-    const handleExportShipmentList = async () => {
-        console.log("Testing...");
+    const handleExportShipmentList = () => {
+        openConfirmDialog({
+            title: "Confirm Export",
+            message: "The shipment data will be exported.",
+            confirmText: "Export",
+            confirmButtonProps: {
+                color: "success",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Shipments...");
+                }
+
+                // TODO: Implement the export functionality similar to RouteApi.exportRouteList()
+                console.log("Export functionality to be implemented");
+                showToastSuccess("Planilla exportada exitosamente.");
+            },
+        });
     };
 
     return (
-        <div className="px-4">
-            <div className="flex flex-wrap gap-2">
-                <h2 className="section-header text-xl md:text-2xl text-left md:mb-0 justify-start">
-                    Lista de Cargas del fecha
-                </h2>
+        <Box sx={{ px: 3 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 3,
+                }}
+            >
+                <Typography variant="h5" component="h2">
+                    Lista de Cargas de fecha
+                </Typography>
 
-                <div className="flex flex-wrap gap-6 md:justify-end ml-auto mb-6">
-                    <ShipmentDialogForm
-                        payrollCode={payrollCode}
-                        setShipmentAggegatedList={setShipmentAggegatedList}
-                        setSelectedShipmentList={setSelectedShipmentList}
-                    />
-
-                    <AlertDialogConfirm
-                        buttonContent={
-                            <>
-                                <Table2Icon className="w-6 h-6" />
-                                Exportar
-                            </>
-                        }
-                        variant="green"
-                        size="md-lg"
-                        onClickFunctionPromise={handleExportShipmentList}
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 2,
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setAddFormDialogOpen(true)}
                     >
-                        <span className="md:text-lg">Se exportará la Planilla</span>
-                    </AlertDialogConfirm>
-                    {/* 
-                    <ShipmentPayrollDialogDelete
-                        year={year}
-                        setPayrollList={setPayrollList}
-                        selectedPayrollList={selectedPayrollList}
-                        setSelectedPayrollList={setSelectedPayrollList}
-                        payrollToDelete={payrollToDelete}
-                        setPayrollToDelete={setPayrollToDelete}
-                    /> */}
-                </div>
-            </div>
+                        Agregar
+                    </Button>
 
-            {!loading && (
-                <ul className="text-2xl font-bold items-center flex flex-col space-y-3">
-                    {shipmentAggregatedList.map((shipment) => {
-                        const isChecked = selectedShipmentList.some(
-                            (item) => item === shipment.shipment_code
-                        );
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<TableChartIcon />}
+                        onClick={handleExportShipmentList}
+                    >
+                        Exportar
+                    </Button>
+                </Box>
+            </Box>
 
-                        return (
-                            <li
-                                className={`flex ${isChecked ? "bg-gray-200" : ""}`}
-                                key={shipment.shipment_code}
-                            >
-                                <div className="flex flex-row gap-6 justify-center items-center px-4 py-3">
-                                    {shipment.receipt_code}
+            {/* ShipmentDialogForm Component */}
+            {/* <ShipmentDialogForm
+                payrollCode={payrollCode}
+                setShipmentAggegatedList={setShipmentAggegatedList}
+                open={addFormDialogOpen}
+                setOpen={setAddFormDialogOpen}
+            /> */}
 
-                                    {/* <Checkbox
-                                        checked={isChecked}
-                                        onCheckedChange={(value) => {
-                                            let newSelectedPayrollList: number[] = [];
-
-                                            if (value) {
-                                                newSelectedPayrollList = [
-                                                    ...selectedPayrollList,
-                                                    payroll.payroll_code ?? 0,
-                                                ];
-                                            } else {
-                                                newSelectedPayrollList = selectedPayrollList.filter(
-                                                    (item) => item !== payroll.payroll_code,
-                                                );
-                                            }
-
-                                            if (import.meta.env.VITE_DEBUG) {
-                                                console.log("Select item value: ", { payroll });
-                                                console.log(
-                                                    "current selectedPayrollList: ",
-                                                    selectedPayrollList,
-                                                );
-                                                console.log(
-                                                    "new selectedPayrollList: ",
-                                                    newSelectedPayrollList,
-                                                );
-                                            }
-
-                                            setSelectedPayrollList(newSelectedPayrollList);
-                                        }}
-                                        aria-label="Seleccionar año"
-                                    />
-
-                                    <Link
-                                        className="bg-blue-700 hover:bg-blue-600 text-white text-center rounded-md shadow-md px-10 py-2"
-                                        to={`/shipment-payroll-list/payroll/${
-                                            payroll.payroll_code ?? 0
-                                        }`}
-                                    >
-                                        {DateTime.fromHTTP(payroll.payroll_timestamp, {
-                                            zone: "local",
-                                        })
-                                            .setLocale("es")
-                                            .toLocaleString({
-                                                month: "long",
-                                                day: "numeric",
-                                            })}{" "}
-                                        <span className=" text-gray-400">
-                                            [#{payroll.payroll_code ?? 0}]
-                                        </span>
-                                    </Link> */}
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </div>
+            {/* ShipmentDataTable Component */}
+            <ShipmentDataTable
+                loading={loading}
+                setLoading={setLoading}
+                shipmentAggregatedList={shipmentAggregatedList}
+                selectedRows={selectedRows}
+                setShipmentAggegatedList={setShipmentAggegatedList}
+                setSelectedRows={setSelectedRows}
+                setShipmentToDelete={setShipmentToDelete}
+            />
+        </Box>
     );
 };

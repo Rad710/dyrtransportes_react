@@ -13,12 +13,20 @@ export type ShipmentPayroll = {
 export type Shipment = {
     shipment_code?: number | null;
     shipment_date: string;
-    driver_code: number;
+    driver_name: string;
     truck_plate: string;
+    trailer_plate?: string;
+    driver_code: number;
+
     product_code: number;
+    product_name: string;
+
     route_code: number;
+    origin: string;
+    destination: string;
     price: string;
     payroll_price: string;
+
     dispatch_code: string;
     receipt_code: string;
     origin_weight: string;

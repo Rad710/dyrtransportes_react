@@ -1,6 +1,5 @@
 import { ApiResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
-import { saveAs } from "file-saver";
 import { DateTime } from "luxon";
 import { Shipment, ShipmentApiResponse, ShipmentAggregated, ShipmentPayroll } from "./types";
 import { api } from "@/utils/axios";
@@ -76,9 +75,6 @@ export const ShipmentPayrollApi = {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                if (response.data) {
-                    saveAs(new Blob([response.data]), "lista_de_cobranzas.xlsx");
-                }
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
@@ -87,9 +83,21 @@ export const ShipmentPayrollApi = {
 };
 
 export const ShipmentApi = {
-    getShipmentList: async (shipment_payroll_code: number | null) =>
+    getShipment: async (code: number) =>
         api
-            .get(`/shipments?shipment_payroll_code=${shipment_payroll_code ?? ""}`)
+            .get(`/shipment/${code}`)
+            .then((response: AxiosResponse<Shipment | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    getShipmentList: async (shipment_payroll_code?: number | null) =>
+        api
+            .get(
+                `/shipments${shipment_payroll_code ? `?shipment_payroll_code=${shipment_payroll_code}` : ""}`,
+            )
             .then((response: AxiosResponse<Shipment[] | null>) => {
                 return response.data ?? [];
             })
@@ -97,9 +105,11 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    getShipmentAggregated: async (shipment_payroll_code: number | null) =>
+    getShipmentAggregated: async (shipment_payroll_code?: number | null) =>
         api
-            .get(`/shipments-aggregated?shipment_payroll_code=${shipment_payroll_code ?? ""}`)
+            .get(
+                `/shipments-aggregated${shipment_payroll_code ? `?shipment_payroll_code=${shipment_payroll_code}` : ""}`,
+            )
             .then((response: AxiosResponse<ShipmentAggregated[] | null>) => {
                 return response.data ?? [];
             })
@@ -125,5 +135,52 @@ export const ShipmentApi = {
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
+            }),
+
+    deleteShipment: async (code: number) =>
+        api
+            .delete(`/shipment/${code}`)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    deleteShipmentList: async (codeList: number[]) =>
+        api
+            .delete(`/shipments`, {
+                data: codeList,
+            })
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    exportShipmentList: async () =>
+        api
+            .get(`/export-shipments`, {
+                responseType: "blob",
+            })
+            .then((response: AxiosResponse<BlobPart | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
+            }),
+
+    // Optional: If you need to export shipments within a date range, similar to shipment-payrolls
+    exportShipmentListByDateRange: async (startDate: DateTime, endDate: DateTime) =>
+        api
+            .get(`/export-shipments?startDate=${startDate}&endDate=${endDate}`, {
+                responseType: "blob",
+            })
+            .then((response: AxiosResponse<BlobPart | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
             }),
 };

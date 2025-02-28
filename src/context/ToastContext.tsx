@@ -94,7 +94,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 
             // Handle Axios specific errors
             if (error.response) {
-                errorMessage = `Error: ${error?.response?.data?.error} | ${error?.message}`;
+                errorMessage = `Error: ${error?.response?.data?.message} | ${error?.message}`;
             } else if (error.request) {
                 // The request was made but no response was received
                 errorMessage = "No response received from server";

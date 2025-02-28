@@ -222,7 +222,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                 : ""
                         }
                     >
-                        <span>
+                        <Box component="span">
                             <Button
                                 variant="contained"
                                 color="error"
@@ -232,7 +232,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                             >
                                 Eliminar
                             </Button>
-                        </span>
+                        </Box>
                     </Tooltip>
                 </Box>
             </Box>
@@ -273,7 +273,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                     component={Link}
                                     to={`/shipment-payroll-list/payroll/${payroll.payroll_code ?? 0}`}
                                     variant="contained"
-                                    color="primary"
+                                    color="info"
                                     sx={{
                                         px: 4,
                                         py: 1,

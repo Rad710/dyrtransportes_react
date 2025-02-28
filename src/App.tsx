@@ -15,6 +15,7 @@ import { ToastProvider } from "@/context/ToastContext";
 import { Driver } from "@/pages/driver/Driver";
 import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
+import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -96,10 +97,10 @@ const router = createBrowserRouter([
                         path: "/shipment-payroll-list/:year/",
                         element: <ShipmentPayrollList title="Shipment Payrolls" />,
                     },
-                    // {
-                    //     path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
-                    //     element: <ShipmentList title="Cobranzas" />,
-                    // },
+                    {
+                        path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
+                        element: <ShipmentList title="Shipments" />,
+                    },
                 ],
             },
             {
