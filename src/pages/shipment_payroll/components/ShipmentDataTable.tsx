@@ -1,202 +1,517 @@
-import { useState } from "react";
-import { Box, Paper, CircularProgress, Typography, IconButton, Collapse } from "@mui/material";
-import {
-    DataGrid,
-    GridColDef,
-    GridValueGetterParams,
-    GridRowSelectionModel,
-} from "@mui/x-data-grid";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import Box from "@mui/material/Box";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 
+import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
+
+import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { Shipment, ShipmentAggregated } from "../types";
-import { ShipmentApi } from "../shipment_payroll_utils";
-import { useToast } from "@/context/ToastContext";
+import { CircularProgress, TablePagination } from "@mui/material";
+import { getGlobalizeNumberFormatter } from "@/utils/globalize";
+import React, { useEffect, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
+import { useToast } from "@/context/ToastContext";
+import { ShipmentApi } from "../shipment_payroll_utils";
+import { isAxiosError } from "axios";
 
-interface ShipmentDataTableProps {
-    loading: boolean;
-    setLoading: (loading: boolean) => void;
-    shipmentAggregatedList: ShipmentAggregated[];
-    selectedRows: GridRowSelectionModel;
-    setShipmentAggegatedList: (shipments: ShipmentAggregated[]) => void;
-    setSelectedRows: (model: GridRowSelectionModel) => void;
-    setShipmentToDelete: (shipment: Shipment | null) => void;
+const formatter = getGlobalizeNumberFormatter(0, 2);
+
+type Column = {
+    id: keyof Shipment | "diff" | "total" | "checkbox";
+    label: string;
+    rowValue: (row: Shipment) => string;
+    aggregatedRowValue: (row: ShipmentAggregated) => string;
+    minWidth?: number;
+    align?: "right" | "left";
+};
+
+const columns: readonly Column[] = [
+    {
+        id: "checkbox",
+        label: "",
+        rowValue: () => "",
+        aggregatedRowValue: () => "",
+    },
+    {
+        id: "shipment_date",
+        label: "Date",
+        rowValue: (row) => row.shipment_date,
+        aggregatedRowValue: () => "Subtotal",
+        align: "left",
+    },
+    {
+        id: "driver_name",
+        label: "Driver",
+        rowValue: (row) => row.driver_name,
+        aggregatedRowValue: () => "",
+        align: "left",
+    },
+    {
+        id: "truck_plate",
+        label: "Truck Plate",
+        rowValue: (row) => row.truck_plate,
+        aggregatedRowValue: () => "",
+        align: "left",
+    },
+    {
+        id: "product_name",
+        label: "Product",
+        rowValue: (row) => row.product_name,
+        aggregatedRowValue: () => "",
+        align: "left",
+    },
+    {
+        id: "origin",
+        label: "Origin",
+        rowValue: (row) => row.origin,
+        aggregatedRowValue: () => "",
+        align: "left",
+    },
+    {
+        id: "destination",
+        label: "Destination",
+        rowValue: (row) => row.destination,
+        aggregatedRowValue: () => "",
+        align: "left",
+    },
+    {
+        id: "dispatch_code",
+        label: "Dispatch",
+        rowValue: (row) => row.dispatch_code,
+        aggregatedRowValue: () => "",
+        align: "right",
+    },
+    {
+        id: "receipt_code",
+        label: "Receipt",
+        rowValue: (row) => row.receipt_code,
+        aggregatedRowValue: () => "",
+        align: "right",
+    },
+    {
+        id: "origin_weight",
+        label: "Origin Weight",
+        rowValue: (row) => formatter(parseInt(row.origin_weight)),
+        aggregatedRowValue: (aggregatedShipment) =>
+            formatter(parseInt(aggregatedShipment.subtotalOrigin)),
+        align: "right",
+    },
+    {
+        id: "destination_weight",
+        label: "Destination Weight",
+        rowValue: (row) => formatter(parseInt(row.destination_weight)),
+        aggregatedRowValue: (aggregatedShipment) =>
+            formatter(parseInt(aggregatedShipment.subtotalDestination)),
+        align: "right",
+    },
+    {
+        id: "diff",
+        label: "Diff",
+        rowValue: (row) =>
+            formatter(parseInt(row.destination_weight) - parseInt(row.origin_weight)),
+        aggregatedRowValue: (aggregatedShipment) =>
+            formatter(parseInt(aggregatedShipment.subtotalDifference)),
+        align: "right",
+    },
+    {
+        id: "price",
+        label: "Price",
+        rowValue: (row) => formatter(parseFloat(row.price)),
+        aggregatedRowValue: () => "",
+        align: "right",
+    },
+    {
+        id: "total",
+        label: "Total",
+        rowValue: (row) => formatter(parseInt(row.destination_weight) * parseFloat(row.price)),
+        aggregatedRowValue: (aggregatedShipment) =>
+            formatter(parseFloat(aggregatedShipment.subtotalMoney)),
+        align: "right",
+    },
+];
+
+interface ShipmentTableHeadProps {
+    numSelected: number;
+    onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    rowCount: number;
 }
 
-export const ShipmentDataTable = ({
+const ShipmentTableHead = ({
+    numSelected,
+    onSelectAllClick,
+    rowCount,
+}: Readonly<ShipmentTableHeadProps>) => {
+    return (
+        <TableHead>
+            <TableRow>
+                {columns.map((column) =>
+                    column.id !== "checkbox" ? (
+                        <TableCell
+                            key={column.id}
+                            align={column.align}
+                            style={{ minWidth: column.minWidth }}
+                        >
+                            {column.label}
+                        </TableCell>
+                    ) : (
+                        <TableCell padding="checkbox" key={column.id}>
+                            <Checkbox
+                                color="primary"
+                                indeterminate={numSelected > 0 && numSelected < rowCount}
+                                checked={rowCount > 0 && numSelected === rowCount}
+                                onChange={(e, val) => {
+                                    onSelectAllClick(e);
+                                    console.log(val);
+                                }}
+                                inputProps={{
+                                    "aria-label": "select all desserts",
+                                }}
+                            />
+                        </TableCell>
+                    ),
+                )}
+            </TableRow>
+        </TableHead>
+    );
+};
+
+type ShipmentDataTableProps = {
+    loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    shipmentAggregatedList: ShipmentAggregated[];
+    setShipmentAggegatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
+    payrollCode: number;
+};
+
+export function ShipmentDataTable({
     loading,
     setLoading,
     shipmentAggregatedList,
-    selectedRows,
     setShipmentAggegatedList,
-    setSelectedRows,
-    setShipmentToDelete,
-}: ShipmentDataTableProps) => {
-    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-    const { showToastSuccess, showToastAxiosError } = useToast();
-    const { openConfirmDialog } = useConfirmation();
+    payrollCode,
+}: Readonly<ShipmentDataTableProps>) {
+    // state
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
-    const handleDeleteShipment = (shipment: Shipment) => {
+    // context
+    const { openConfirmDialog } = useConfirmation();
+    const { showToastSuccess, showToastAxiosError } = useToast();
+
+    // effect
+    useEffect(() => {
+        // on change list rerender empty selection
+        setSelectedRows([]);
+    }, [shipmentAggregatedList]);
+
+    // HANDLERS
+    const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirmar Eliminación",
-            message: `¿Está seguro que desea eliminar la carga con recibo #${shipment.receipt_code}?`,
-            confirmText: "Eliminar",
+            title: "Confirm Delete",
+            message: `Are you sure you want to delete all selected Shipments?`,
+            confirmText: "Delete",
             confirmButtonProps: {
                 color: "error",
             },
             onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Shipments...", selectedRows);
+                }
+
                 setLoading(true);
-                // TODO: Implement actual deletion via API
-                // const resp = await ShipmentApi.deleteShipment(shipment.shipment_code);
-
-                // Mock successful deletion for this example
-                const updatedList = shipmentAggregatedList
-                    .map((group) => {
-                        return {
-                            ...group,
-                            shipments: group.shipments.filter(
-                                (s) => s.shipment_code !== shipment.shipment_code,
-                            ),
-                        };
-                    })
-                    .filter((group) => group.shipments.length > 0);
-
-                setShipmentAggegatedList(updatedList);
+                const resp = await ShipmentApi.deleteShipmentList(selectedRows);
                 setLoading(false);
-                showToastSuccess("Carga eliminada exitosamente");
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Shipments resp: ", { resp });
+                }
+
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+
+                showToastSuccess(resp.message);
+
+                const shipmentAggregatedResp = await ShipmentApi.getShipmentAggregated(payrollCode);
+                setShipmentAggegatedList(
+                    !isAxiosError(shipmentAggregatedResp) ? shipmentAggregatedResp : [],
+                );
             },
         });
     };
 
-    const toggleGroupExpand = (groupKey: string) => {
-        setExpandedGroups((prev) => ({
-            ...prev,
-            [groupKey]: !prev[groupKey],
-        }));
+    const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.checked) {
+            const newSelected = shipmentAggregatedList
+                .map((shipmentList) =>
+                    shipmentList.shipments.map((n: Shipment): number => n.shipment_code ?? 0),
+                )
+                .flat();
+            setSelectedRows(newSelected);
+            return;
+        }
+        setSelectedRows([]);
     };
 
-    if (loading) {
+    const handleSelect = (row: Shipment) => {
+        if (!row.shipment_code) {
+            return;
+        }
+
+        const selectedIndex = selectedRows.indexOf(row.shipment_code);
+        let newSelected: number[] = [];
+
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selectedRows, row.shipment_code);
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selectedRows.slice(1));
+        } else if (selectedIndex === selectedRows.length - 1) {
+            newSelected = newSelected.concat(selectedRows.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(
+                selectedRows.slice(0, selectedIndex),
+                selectedRows.slice(selectedIndex + 1),
+            );
+        }
+        setSelectedRows(newSelected);
+    };
+
+    // rendering helper functions
+    const renderShipmentRow = (indexAggregated: number, indexShipment: number, row: Shipment) => {
+        const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
+        const labelId = `enhanced-table-checkbox-${indexAggregated}-${indexShipment}`;
+
+        // render rows
         return (
-            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (shipmentAggregatedList.length === 0) {
-        return (
-            <Box sx={{ p: 4, textAlign: "center" }}>
-                <Typography variant="h6">No hay cargas disponibles</Typography>
-            </Box>
-        );
-    }
-
-    return (
-        <Paper sx={{ width: "100%", mb: 2 }}>
-            {shipmentAggregatedList.map((group, index) => {
-                const groupKey = `${group.product}-${group.origin}-${group.destination}-${index}`;
-                const isExpanded = expandedGroups[groupKey] || false;
-
-                return (
-                    <Box key={groupKey} sx={{ mb: 2 }}>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                p: 2,
-                                bgcolor: "primary.light",
-                                color: "primary.contrastText",
-                                borderRadius: "4px 4px 0 0",
-                                alignItems: "center",
-                                cursor: "pointer",
-                            }}
-                            onClick={() => toggleGroupExpand(groupKey)}
-                        >
-                            <IconButton size="small" sx={{ color: "inherit", mr: 1 }}>
-                                {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                            </IconButton>
-
-                            <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-                                {group.product} | {group.origin} → {group.destination}
-                            </Typography>
-
-                            <Box sx={{ display: "flex", gap: 2 }}>
-                                <Typography variant="body2">
-                                    Origen: {group.subtotalOrigin} kg
-                                </Typography>
-                                <Typography variant="body2">
-                                    Destino: {group.subtotalDestination} kg
-                                </Typography>
-                                <Typography variant="body2">
-                                    Diferencia: {group.subtotalDifference} kg
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                                    Total: ${group.subtotalMoney}
-                                </Typography>
-                            </Box>
-                        </Box>
-
-                        <Collapse in={isExpanded}>
-                            <DataGrid
-                                rows={group.shipments.map((shipment) => ({
-                                    id: shipment.shipment_code,
-                                    ...shipment,
-                                }))}
-                                columns={[
-                                    { field: "receipt_code", headerName: "Recibo", flex: 1 },
-                                    { field: "shipment_date", headerName: "Fecha", flex: 1 },
-                                    { field: "truck_plate", headerName: "Placa", flex: 1 },
-                                    {
-                                        field: "origin_weight",
-                                        headerName: "Peso Origen",
-                                        flex: 1,
-                                        valueFormatter: (params) => `${params.value} kg`,
-                                    },
-                                    {
-                                        field: "destination_weight",
-                                        headerName: "Peso Destino",
-                                        flex: 1,
-                                        valueFormatter: (params) => `${params.value} kg`,
-                                    },
-                                    {
-                                        field: "actions",
-                                        headerName: "Acciones",
-                                        sortable: false,
-                                        width: 120,
-                                        renderCell: (params) => (
-                                            <Box sx={{ display: "flex" }}>
-                                                <IconButton size="small" color="primary">
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleDeleteShipment(params.row)}
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        ),
-                                    },
-                                ]}
-                                autoHeight
-                                hideFooter
-                                disableRowSelectionOnClick
-                                checkboxSelection
-                                onRowSelectionModelChange={setSelectedRows}
-                                rowSelectionModel={selectedRows}
-                                sx={{
-                                    "& .MuiDataGrid-columnHeaders": {
-                                        backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                    },
+            <TableRow
+                hover
+                aria-checked={isItemSelected}
+                tabIndex={-1}
+                key={row.shipment_code ?? 0}
+                selected={isItemSelected}
+                sx={{ cursor: "pointer" }}
+                onClick={() => console.log(row)}
+            >
+                {columns.map((column) =>
+                    // render columns
+                    column.id !== "checkbox" ? (
+                        <TableCell key={column.id} align={column.align}>
+                            {column.rowValue(row)}
+                        </TableCell>
+                    ) : (
+                        <TableCell padding="checkbox" key={column.id}>
+                            <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                onClick={() => handleSelect(row)}
+                                inputProps={{
+                                    "aria-labelledby": labelId,
                                 }}
                             />
-                        </Collapse>
-                    </Box>
-                );
-            })}
-        </Paper>
+                        </TableCell>
+                    ),
+                )}
+            </TableRow>
+        );
+    };
+    const renderShipmentAggregatedRow = (row: ShipmentAggregated) => {
+        return (
+            <TableRow
+                sx={{
+                    fontStyle: "italic",
+                    fontWeight: "bold",
+                    color: "text.secondary",
+                    backgroundColor: "grey.200",
+                }}
+            >
+                {columns.map((column) => {
+                    // render columns
+                    return (
+                        <TableCell
+                            key={column.id}
+                            align={column.align}
+                            sx={{
+                                fontStyle: "italic",
+                                fontWeight: "bold",
+                                color: "text.secondary",
+                            }}
+                        >
+                            {column.aggregatedRowValue(row)}
+                        </TableCell>
+                    );
+                })}
+            </TableRow>
+        );
+    };
+
+    const renderTotalShipmentAggregatedTableRow = () => {
+        const totalOrigin = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalOrigin),
+            0,
+        );
+        const totalDestination = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalDestination),
+            0,
+        );
+        const totalDifference = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalDifference),
+            0,
+        );
+        const totalMoney = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalMoney),
+            0,
+        );
+
+        return (
+            <TableRow
+                sx={{
+                    backgroundColor: "grey.400",
+                }}
+            >
+                <TableCell></TableCell>
+                <TableCell
+                    sx={{
+                        fontStyle: "italic",
+                        fontWeight: "bold",
+                    }}
+                >
+                    TOTAL
+                </TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+
+                <TableCell
+                    sx={{
+                        fontStyle: "italic",
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totalOrigin)}
+                </TableCell>
+                <TableCell
+                    sx={{
+                        fontStyle: "italic",
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totalDestination)}
+                </TableCell>
+                <TableCell
+                    sx={{
+                        fontStyle: "italic",
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totalDifference)}
+                </TableCell>
+                <TableCell></TableCell>
+                <TableCell
+                    sx={{
+                        fontStyle: "italic",
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totalMoney)}
+                </TableCell>
+            </TableRow>
+        );
+    };
+
+    // values
+    const rowCount = shipmentAggregatedList
+        .map((item) => item.shipments.length)
+        .reduce((sum, num) => sum + num, 0);
+
+    return (
+        <Box sx={{ width: "100%" }}>
+            <Paper sx={{ mb: 2 }}>
+                <CustomTableToolbar
+                    numSelected={selectedRows.length}
+                    tableTitle="Shipments"
+                    handleDelete={handleDeleteSelected}
+                />
+                <TableContainer>
+                    <Table
+                        stickyHeader
+                        sx={{ minWidth: "100%" }}
+                        aria-labelledby="Shipments"
+                        size={"medium"}
+                    >
+                        <ShipmentTableHead
+                            numSelected={selectedRows.length}
+                            onSelectAllClick={handleSelectAllClick}
+                            rowCount={rowCount}
+                        />
+                        <TableBody>
+                            {loading && (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        align="center"
+                                        sx={{
+                                            py: 6,
+                                        }}
+                                    >
+                                        <CircularProgress />
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            {!loading &&
+                                shipmentAggregatedList.map(
+                                    (aggregatedShipment, indexAggregated) => (
+                                        <React.Fragment
+                                            key={`${aggregatedShipment.product}|${aggregatedShipment.origin}|${aggregatedShipment.destination}`}
+                                        >
+                                            {aggregatedShipment.shipments.map(
+                                                (row, indexShipment) =>
+                                                    renderShipmentRow(
+                                                        indexAggregated,
+                                                        indexShipment,
+                                                        row,
+                                                    ),
+                                            )}
+                                            {renderShipmentAggregatedRow(aggregatedShipment)}
+                                        </React.Fragment>
+                                    ),
+                                )}
+
+                            {!loading && shipmentAggregatedList.length ? (
+                                renderTotalShipmentAggregatedTableRow()
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        align="center"
+                                        sx={{
+                                            py: 6,
+                                        }}
+                                    >
+                                        No data found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[]}
+                    component="div"
+                    count={rowCount}
+                    rowsPerPage={rowCount}
+                    page={0}
+                    onPageChange={() => {}}
+                />
+            </Paper>
+        </Box>
     );
-};
+}

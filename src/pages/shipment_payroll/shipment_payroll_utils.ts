@@ -105,11 +105,9 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    getShipmentAggregated: async (shipment_payroll_code?: number | null) =>
+    getShipmentAggregated: async (shipment_payroll_code: number) =>
         api
-            .get(
-                `/shipments-aggregated${shipment_payroll_code ? `?shipment_payroll_code=${shipment_payroll_code}` : ""}`,
-            )
+            .get(`/shipments-aggregated?shipment_payroll_code=${shipment_payroll_code}`)
             .then((response: AxiosResponse<ShipmentAggregated[] | null>) => {
                 return response.data ?? [];
             })

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 
 import { isAxiosError } from "axios";
@@ -26,7 +25,6 @@ const ActiveDriverTabContent = () => {
 
     // Drivers State
     const [activeDriverList, setActiveDriverList] = useState<DriverType[]>([]);
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
     const [driverToEdit, setDriverToEdit] = useState<DriverType | null>(null);
 
     // context
@@ -129,9 +127,7 @@ const ActiveDriverTabContent = () => {
                 loading={loadingTable}
                 setLoading={setLoadingTable}
                 driverList={activeDriverList}
-                selectedRows={selectedRows}
                 setDriverList={setActiveDriverList}
-                setSelectedRows={setSelectedRows}
                 setDriverToEdit={setDriverToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
                 mode="active"
@@ -146,7 +142,6 @@ const DeactivatedDriverTabContent = () => {
 
     // Drivers State
     const [deactivatedDriverList, setDeactivatedDriverList] = useState<DriverType[]>([]);
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
     // context
     const { showToastAxiosError } = useToast();
@@ -182,9 +177,7 @@ const DeactivatedDriverTabContent = () => {
                 loading={loadingTable}
                 setLoading={setLoadingTable}
                 driverList={deactivatedDriverList}
-                selectedRows={selectedRows}
                 setDriverList={setDeactivatedDriverList}
-                setSelectedRows={setSelectedRows}
                 mode="deactivated"
             />
         </Box>

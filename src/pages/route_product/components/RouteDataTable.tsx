@@ -4,7 +4,7 @@ import { Route } from "../types";
 import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { RouteApi } from "../route_product_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
@@ -14,25 +14,24 @@ type RouteDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     routeList: Route[];
-    selectedRows: GridRowSelectionModel;
     setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
-    setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const formatter = getGlobalizeNumberFormatter(2, 2);
+const formatter = getGlobalizeNumberFormatter(0, 2);
 
 export const RouteDataTable = ({
     loading,
     setLoading,
     routeList,
-    selectedRows,
     setRouteList,
-    setSelectedRows,
     setRouteToEdit,
     setEditFormDialogOpen,
 }: RouteDataTableProps) => {
+    // state
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+
     // context
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -185,6 +184,7 @@ export const RouteDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <CustomTableToolbar
+                tableTitle="Routes"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />

@@ -212,7 +212,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                         startIcon={<TableChartIcon />}
                         onClick={handleExport}
                     >
-                        Exportar
+                        Export
                     </Button>
 
                     <Tooltip
@@ -230,7 +230,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                 onClick={handleDelete}
                                 disabled={selectedPayrollList.length === 0}
                             >
-                                Eliminar
+                                Delete
                             </Button>
                         </Box>
                     </Tooltip>

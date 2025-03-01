@@ -10,7 +10,7 @@ export const Layout = () => {
                     <ResponsiveAppBar />
                 </Box>
             </Box>
-            <Container>
+            <Container maxWidth={false}>
                 <Outlet />
             </Container>
         </>

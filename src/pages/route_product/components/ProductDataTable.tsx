@@ -4,7 +4,7 @@ import { Product } from "../types";
 import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ProductApi } from "../route_product_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
@@ -13,9 +13,7 @@ type ProductDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     productList: Product[];
-    selectedRows: GridRowSelectionModel;
     setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
-    setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -24,12 +22,13 @@ export const ProductDataTable = ({
     loading,
     setLoading,
     productList,
-    selectedRows,
     setProductList,
-    setSelectedRows,
     setProductToEdit,
     setEditFormDialogOpen,
 }: ProductDataTableProps) => {
+    // state
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+
     // context
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -161,6 +160,7 @@ export const ProductDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <CustomTableToolbar
+                tableTitle="Products"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />

@@ -3,7 +3,6 @@ import { useMatch } from "react-router";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
 
 import { PropsTitle } from "@/types";
 import { Shipment, ShipmentAggregated } from "./types";
@@ -22,8 +21,6 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     // State
     const [loading, setLoading] = useState<boolean>(true);
     const [shipmentAggregatedList, setShipmentAggegatedList] = useState<ShipmentAggregated[]>([]);
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
-    const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
 
     // Context
@@ -74,7 +71,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     };
 
     return (
-        <Box sx={{ px: 3 }}>
+        <Box sx={{ paddingTop: 3 }}>
             <Box
                 sx={{
                     display: "flex",
@@ -91,6 +88,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                     sx={{
                         display: "flex",
                         gap: 2,
+                        paddingRight: 3,
                     }}
                 >
                     <Button
@@ -98,7 +96,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         startIcon={<AddIcon />}
                         onClick={() => setAddFormDialogOpen(true)}
                     >
-                        Agregar
+                        Add
                     </Button>
 
                     <Button
@@ -107,7 +105,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         startIcon={<TableChartIcon />}
                         onClick={handleExportShipmentList}
                     >
-                        Exportar
+                        Export
                     </Button>
                 </Box>
             </Box>
@@ -120,15 +118,12 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 setOpen={setAddFormDialogOpen}
             /> */}
 
-            {/* ShipmentDataTable Component */}
             <ShipmentDataTable
                 loading={loading}
                 setLoading={setLoading}
                 shipmentAggregatedList={shipmentAggregatedList}
-                selectedRows={selectedRows}
                 setShipmentAggegatedList={setShipmentAggegatedList}
-                setSelectedRows={setSelectedRows}
-                setShipmentToDelete={setShipmentToDelete}
+                payrollCode={payrollCode}
             />
         </Box>
     );

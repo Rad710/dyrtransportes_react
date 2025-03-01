@@ -4,7 +4,7 @@ import { Driver } from "../types";
 import { CustomTableToolbar } from "@/components/CustomTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DriverApi } from "../driver_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
@@ -16,9 +16,7 @@ type DriverDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     driverList: Driver[];
-    selectedRows: GridRowSelectionModel;
     setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
-    setSelectedRows: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
     setEditFormDialogOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -28,12 +26,13 @@ export const DriverDataTable = ({
     loading,
     setLoading,
     driverList,
-    selectedRows,
     setDriverList,
-    setSelectedRows,
     setDriverToEdit,
     setEditFormDialogOpen,
 }: DriverDataTableProps) => {
+    //state
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+
     // context
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -248,9 +247,9 @@ export const DriverDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <CustomTableToolbar
+                tableTitle="Drivers"
                 numSelected={selectedRows.length}
                 handleDelete={mode === "active" ? handleDeleteSelected : undefined}
-                showDeleteButton={mode === "active"}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid

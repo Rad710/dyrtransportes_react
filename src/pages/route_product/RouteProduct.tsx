@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
@@ -27,7 +26,6 @@ const RouteTabContent = () => {
 
     //Routes State
     const [routeList, setRouteList] = useState<Route[]>([]);
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
     const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
     // context
@@ -129,9 +127,7 @@ const RouteTabContent = () => {
                 loading={loadingTable}
                 setLoading={setLoadingTable}
                 routeList={routeList}
-                selectedRows={selectedRows}
                 setRouteList={setRouteList}
-                setSelectedRows={setSelectedRows}
                 setRouteToEdit={setRouteToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
             />
@@ -147,7 +143,6 @@ const ProductTabContent = () => {
 
     //Product State
     const [productList, setProductList] = useState<Product[]>([]);
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
     // context
@@ -249,9 +244,7 @@ const ProductTabContent = () => {
                 loading={loadingTable}
                 setLoading={setLoadingTable}
                 productList={productList}
-                selectedRows={selectedRows}
                 setProductList={setProductList}
-                setSelectedRows={setSelectedRows}
                 setProductToEdit={setProductToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
             />

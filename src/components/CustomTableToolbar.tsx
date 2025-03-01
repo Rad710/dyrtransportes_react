@@ -3,15 +3,15 @@ import { alpha, Toolbar, Tooltip, Typography, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 interface CustomTableToolbar {
+    tableTitle: string;
     numSelected: number;
     handleDelete?: () => void;
-    showDeleteButton?: boolean;
 }
 
 export const CustomTableToolbar = ({
+    tableTitle,
     numSelected,
     handleDelete,
-    showDeleteButton,
 }: Readonly<CustomTableToolbar>) => {
     return (
         <Toolbar
@@ -37,10 +37,10 @@ export const CustomTableToolbar = ({
                 </Typography>
             ) : (
                 <Typography sx={{ flex: "1 1 100%" }} variant="h6" id="tableTitle" component="div">
-                    Prices List
+                    {tableTitle}
                 </Typography>
             )}
-            {showDeleteButton && numSelected > 0 && (
+            {handleDelete && numSelected > 0 && (
                 <Tooltip title="Delete">
                     <IconButton onClick={handleDelete}>
                         <DeleteIcon />
