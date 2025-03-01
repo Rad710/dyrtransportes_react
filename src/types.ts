@@ -25,3 +25,8 @@ export interface FormDialogProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export interface AutocompleteOption {
+    label: string;
+    id: string;
+}

@@ -1,4 +1,4 @@
-import { ApiResponse } from "@/types";
+import { ApiResponse, AutocompleteOption } from "@/types";
 
 export type ShipmentPayroll = {
     payroll_code?: number | null;
@@ -13,9 +13,10 @@ export type ShipmentPayroll = {
 export type Shipment = {
     shipment_code?: number | null;
     shipment_date: string;
+
     driver_name: string;
     truck_plate: string;
-    trailer_plate?: string;
+    trailer_plate?: string | null;
     driver_code: number;
 
     product_code: number;
@@ -50,3 +51,8 @@ export type ShipmentAggregated = {
     subtotalMoney: string;
     subtotalOrigin: string;
 };
+
+export interface AutocompleteOptionDriver extends AutocompleteOption {
+    truck_plate: string;
+    trailer_plate: string;
+}

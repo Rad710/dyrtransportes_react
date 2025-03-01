@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -82,6 +82,7 @@ export const ShipmentPayrollFormDialog = ({
 
     // Form setup
     const {
+        control,
         formState: { errors },
         reset,
         handleSubmit,
@@ -165,6 +166,11 @@ export const ShipmentPayrollFormDialog = ({
             ...payload,
             payroll_timestamp: DateTime.fromJSDate(payload.payroll_timestamp).toHTTP() || "",
         };
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Submitting shipment payroll transformedPayload...", {
+                transformedPayload,
+            });
+        }
 
         const resp = !payload.payroll_code
             ? await postForm(transformedPayload)
@@ -204,11 +210,11 @@ export const ShipmentPayrollFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>
+                <Box component="span">
                     {!getValues("payroll_code")
                         ? "Seleccione una fecha para la nueva Planilla"
                         : "Seleccione una fecha para la Planilla a editar"}
-                </span>
+                </Box>
             );
         }
 
@@ -251,37 +257,42 @@ export const ShipmentPayrollFormDialog = ({
                         justifyContent: "center",
                     }}
                 >
-                    <TextField
-                        label="Fecha de Planilla"
-                        type="date"
-                        fullWidth
-                        value={DateTime.fromJSDate(getValues("payroll_timestamp")).toFormat(
-                            "yyyy-MM-dd",
+                    <Controller
+                        name="payroll_timestamp"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                label="Fecha de Planilla"
+                                type="date"
+                                fullWidth
+                                value={
+                                    field.value
+                                        ? DateTime.fromJSDate(field.value).toFormat("yyyy-MM-dd")
+                                        : ""
+                                }
+                                onChange={(e) => {
+                                    const dateValue = e.target.value;
+                                    if (dateValue) {
+                                        field.onChange(DateTime.fromISO(dateValue).toJSDate());
+                                    }
+                                }}
+                                error={!!errors.payroll_timestamp}
+                                helperText={errors.payroll_timestamp?.message}
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                    htmlInput: {
+                                        min: startDate.toFormat("yyyy-MM-dd"),
+                                        max: DateTime.fromObject({
+                                            year: year,
+                                            month: 12,
+                                            day: 31,
+                                        }).toFormat("yyyy-MM-dd"),
+                                    },
+                                }}
+                            />
                         )}
-                        onChange={(e) => {
-                            const dateValue = e.target.value;
-                            if (dateValue) {
-                                reset({
-                                    ...getValues(),
-                                    payroll_timestamp: DateTime.fromISO(dateValue).toJSDate(),
-                                });
-                            }
-                        }}
-                        error={!!errors.payroll_timestamp}
-                        helperText={errors.payroll_timestamp?.message}
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            },
-                            htmlInput: {
-                                min: startDate.toFormat("yyyy-MM-dd"),
-                                max: DateTime.fromObject({
-                                    year: year,
-                                    month: 12,
-                                    day: 31,
-                                }).toFormat("yyyy-MM-dd"),
-                            },
-                        }}
                     />
                 </Box>
             </StyledDialogContent>

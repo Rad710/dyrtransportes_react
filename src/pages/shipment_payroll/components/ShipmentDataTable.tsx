@@ -18,6 +18,8 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
 import { ShipmentApi } from "../shipment_payroll_utils";
 import { isAxiosError } from "axios";
+import { DateTime } from "luxon";
+import { ActionsMenu } from "@/components/ActionsMenu";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
@@ -40,7 +42,8 @@ const columns: readonly Column[] = [
     {
         id: "shipment_date",
         label: "Date",
-        rowValue: (row) => row.shipment_date,
+        rowValue: (row) =>
+            DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
         aggregatedRowValue: () => "Subtotal",
         align: "left",
     },
@@ -175,6 +178,7 @@ const ShipmentTableHead = ({
                         </TableCell>
                     ),
                 )}
+                <TableCell>Actions</TableCell>
             </TableRow>
         </TableHead>
     );
@@ -184,16 +188,20 @@ type ShipmentDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     shipmentAggregatedList: ShipmentAggregated[];
-    setShipmentAggegatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
+    setShipmentAggregatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
     payrollCode: number;
+    setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function ShipmentDataTable({
     loading,
     setLoading,
     shipmentAggregatedList,
-    setShipmentAggegatedList,
+    setShipmentAggregatedList,
     payrollCode,
+    setShipmentToEdit,
+    setEditFormDialogOpen,
 }: Readonly<ShipmentDataTableProps>) {
     // state
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -202,7 +210,7 @@ export function ShipmentDataTable({
     const { openConfirmDialog } = useConfirmation();
     const { showToastSuccess, showToastAxiosError } = useToast();
 
-    // effect
+    // USE EFFECT
     useEffect(() => {
         // on change list rerender empty selection
         setSelectedRows([]);
@@ -237,7 +245,7 @@ export function ShipmentDataTable({
                 showToastSuccess(resp.message);
 
                 const shipmentAggregatedResp = await ShipmentApi.getShipmentAggregated(payrollCode);
-                setShipmentAggegatedList(
+                setShipmentAggregatedList(
                     !isAxiosError(shipmentAggregatedResp) ? shipmentAggregatedResp : [],
                 );
             },
@@ -280,6 +288,49 @@ export function ShipmentDataTable({
         setSelectedRows(newSelected);
     };
 
+    const handleEditShipment = (row: Shipment) => {
+        setShipmentToEdit(row);
+        setEditFormDialogOpen(true);
+    };
+
+    const handleDeleteShipmentItem = (row: Shipment) => {
+        openConfirmDialog({
+            title: "Confirm Delete",
+            message: (
+                <>
+                    Are you sure you want to delete Shipment: <strong>{row.dispatch_code}</strong> -{" "}
+                    <strong>{row.receipt_code}</strong>?
+                </>
+            ),
+            confirmText: "Delete",
+            confirmButtonProps: {
+                color: "error",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Shipment", row);
+                }
+
+                setLoading(true);
+                const resp = await ShipmentApi.deleteShipment(row.shipment_code ?? 0);
+                setLoading(false);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Deleting Shipment resp: ", { resp });
+                }
+
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+
+                showToastSuccess(resp.message);
+
+                const shipmentListResp = await ShipmentApi.getShipmentAggregated(payrollCode);
+                setShipmentAggregatedList(!isAxiosError(shipmentListResp) ? shipmentListResp : []);
+            },
+        });
+    };
+
     // rendering helper functions
     const renderShipmentRow = (indexAggregated: number, indexShipment: number, row: Shipment) => {
         const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
@@ -294,7 +345,6 @@ export function ShipmentDataTable({
                 key={row.shipment_code ?? 0}
                 selected={isItemSelected}
                 sx={{ cursor: "pointer" }}
-                onClick={() => console.log(row)}
             >
                 {columns.map((column) =>
                     // render columns
@@ -315,6 +365,20 @@ export function ShipmentDataTable({
                         </TableCell>
                     ),
                 )}
+                <TableCell>
+                    <ActionsMenu
+                        menuItems={[
+                            {
+                                text: "Edit",
+                                handleClick: () => handleEditShipment(row),
+                            },
+                            {
+                                text: "Delete",
+                                handleClick: () => handleDeleteShipmentItem(row),
+                            },
+                        ]}
+                    />
+                </TableCell>
             </TableRow>
         );
     };
@@ -344,6 +408,7 @@ export function ShipmentDataTable({
                         </TableCell>
                     );
                 })}
+                <TableCell></TableCell>
             </TableRow>
         );
     };
@@ -388,8 +453,8 @@ export function ShipmentDataTable({
                 <TableCell></TableCell>
                 <TableCell></TableCell>
                 <TableCell></TableCell>
-
                 <TableCell
+                    align="right"
                     sx={{
                         fontStyle: "italic",
                         fontWeight: "bold",
@@ -398,6 +463,7 @@ export function ShipmentDataTable({
                     {formatter(totalOrigin)}
                 </TableCell>
                 <TableCell
+                    align="right"
                     sx={{
                         fontStyle: "italic",
                         fontWeight: "bold",
@@ -406,6 +472,7 @@ export function ShipmentDataTable({
                     {formatter(totalDestination)}
                 </TableCell>
                 <TableCell
+                    align="right"
                     sx={{
                         fontStyle: "italic",
                         fontWeight: "bold",
@@ -415,6 +482,7 @@ export function ShipmentDataTable({
                 </TableCell>
                 <TableCell></TableCell>
                 <TableCell
+                    align="right"
                     sx={{
                         fontStyle: "italic",
                         fontWeight: "bold",
@@ -422,6 +490,7 @@ export function ShipmentDataTable({
                 >
                     {formatter(totalMoney)}
                 </TableCell>
+                <TableCell></TableCell>
             </TableRow>
         );
     };

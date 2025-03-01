@@ -9,45 +9,80 @@ import { Shipment, ShipmentAggregated } from "./types";
 import { isAxiosError } from "axios";
 
 import { ShipmentApi } from "./shipment_payroll_utils";
-import { ShipmentDialogForm } from "./components/ShipmentDialogForm";
+import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
 import { ShipmentDataTable } from "./components/ShipmentDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
+import { ProductApi, RouteApi } from "../route_product/route_product_utils";
+import { DriverApi } from "../driver/driver_utils";
+import { Product, Route } from "../route_product/types";
+import { Driver } from "../driver/types";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
 
     // State
-    const [loading, setLoading] = useState<boolean>(true);
-    const [shipmentAggregatedList, setShipmentAggegatedList] = useState<ShipmentAggregated[]>([]);
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [shipmentAggregatedList, setShipmentAggregatedList] = useState<ShipmentAggregated[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
+    const [shipmentToEdit, setShipmentToEdit] = useState<Shipment | null>(null);
+    // used for autocomplete options for dialog form
+    const [productList, setProductList] = useState<Product[]>([]);
+    const [driverList, setDriverList] = useState<Driver[]>([]);
+    const [routeList, setRouteList] = useState<Route[]>([]);
 
     // Context
     const { showToastSuccess, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
-    const loadShipmentList = async () => {
-        setLoading(true);
-        const shipments = await ShipmentApi.getShipmentAggregated(payrollCode);
+    const loadShipmentListAndAutocompleteOptions = async () => {
+        setLoadingTable(true);
+        const [shipmentsResp, routesResp, productsResp, driversResp] = await Promise.all([
+            ShipmentApi.getShipmentAggregated(payrollCode),
+            RouteApi.getRouteList(),
+            ProductApi.getProductList(),
+            DriverApi.getDriverList(),
+        ]);
+        setLoadingTable(false);
 
-        if (!isAxiosError(shipments) && shipments) {
-            setShipmentAggegatedList(shipments);
+        if (!isAxiosError(shipmentsResp) && shipmentsResp) {
+            setShipmentAggregatedList(shipmentsResp);
         } else {
-            showToastAxiosError(shipments);
+            showToastAxiosError(shipmentsResp);
         }
 
-        setLoading(false);
+        if (!isAxiosError(routesResp) && routesResp) {
+            setRouteList(routesResp);
+        } else {
+            showToastAxiosError(routesResp);
+        }
+
+        if (!isAxiosError(productsResp) && productsResp) {
+            setProductList(productsResp);
+        } else {
+            showToastAxiosError(productsResp);
+        }
+
+        if (!isAxiosError(driversResp) && driversResp) {
+            setDriverList(driversResp);
+        } else {
+            showToastAxiosError(driversResp);
+        }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded shipments ", { shipments });
+            console.log("Loaded shipments ", { shipmentsResp });
+            console.log("Loaded routeList ", { routesResp });
+            console.log("Loaded productList ", { productsResp });
+            console.log("Loaded driverList ", { driversResp });
         }
     };
 
     // USE EFFECTS
     useEffect(() => {
         document.title = title;
-        loadShipmentList();
+        loadShipmentListAndAutocompleteOptions();
     }, []);
 
     const handleExportShipmentList = () => {
@@ -99,6 +134,30 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         Add
                     </Button>
 
+                    <ShipmentFormDialog
+                        payrollCode={payrollCode}
+                        setShipmentAggregatedList={setShipmentAggregatedList}
+                        open={addFormDialogOpen}
+                        setOpen={setAddFormDialogOpen}
+                        setLoading={setLoadingTable}
+                        productList={productList}
+                        driverList={driverList}
+                        routeList={routeList}
+                    />
+
+                    <ShipmentFormDialog
+                        payrollCode={payrollCode}
+                        setShipmentAggregatedList={setShipmentAggregatedList}
+                        open={editFormDialogOpen}
+                        setOpen={setEditFormDialogOpen}
+                        setLoading={setLoadingTable}
+                        productList={productList}
+                        driverList={driverList}
+                        routeList={routeList}
+                        shipmentToEdit={shipmentToEdit}
+                        setShipmentToEdit={setShipmentToEdit}
+                    />
+
                     <Button
                         variant="contained"
                         color="success"
@@ -110,20 +169,14 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 </Box>
             </Box>
 
-            {/* ShipmentDialogForm Component */}
-            {/* <ShipmentDialogForm
-                payrollCode={payrollCode}
-                setShipmentAggegatedList={setShipmentAggegatedList}
-                open={addFormDialogOpen}
-                setOpen={setAddFormDialogOpen}
-            /> */}
-
             <ShipmentDataTable
-                loading={loading}
-                setLoading={setLoading}
+                loading={loadingTable}
+                setLoading={setLoadingTable}
                 shipmentAggregatedList={shipmentAggregatedList}
-                setShipmentAggegatedList={setShipmentAggegatedList}
+                setShipmentAggregatedList={setShipmentAggregatedList}
                 payrollCode={payrollCode}
+                setShipmentToEdit={setShipmentToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
             />
         </Box>
     );
