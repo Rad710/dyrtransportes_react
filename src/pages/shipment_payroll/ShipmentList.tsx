@@ -77,7 +77,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         }
 
         if (!isAxiosError(driversResp) && driversResp) {
-            setDriverList(driversResp);
+            setDriverList(driversResp.filter((item) => !item.deleted));
         } else {
             showToastAxiosError(driversResp);
         }
