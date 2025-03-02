@@ -523,6 +523,8 @@ const ShipmentFormDialogFields = ({
                                 field.onChange(newValue?.id ?? "");
                                 form.setValue("destination", "");
                                 form.setValue("route_code", 0);
+                                form.setValue("price", "");
+                                form.setValue("payroll_price", "");
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -556,16 +558,27 @@ const ShipmentFormDialogFields = ({
                                 ) || null
                             }
                             onChange={(_, newValue) => {
-                                field.onChange(newValue?.id ?? "");
+                                const selectedDestination = newValue?.id ?? "";
+                                field.onChange(selectedDestination);
 
-                                const routeCode =
+                                const selectedRoute =
                                     routeList.find(
                                         (item) =>
-                                            (item.origin === watchedOrigin &&
-                                                item.destination === newValue?.id) ??
-                                            "",
-                                    )?.route_code ?? 0;
-                                form.setValue("route_code", routeCode);
+                                            item.origin === watchedOrigin &&
+                                            item.destination === selectedDestination,
+                                    ) ?? null;
+
+                                form.setValue("route_code", selectedRoute?.route_code ?? 0);
+                                form.setValue(
+                                    "price",
+                                    floatFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
+                                );
+                                form.setValue(
+                                    "payroll_price",
+                                    floatFormatter(
+                                        parseFloat(selectedRoute?.payroll_price ?? "") || 0,
+                                    ),
+                                );
                             }}
                             disabled={!watchedOrigin}
                             renderInput={(params) => (
@@ -591,57 +604,93 @@ const ShipmentFormDialogFields = ({
 
             {/* Row 3: Dispatch, Receipt, Price */}
             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                <TextField
-                    {...form.register("dispatch_code")}
-                    label="Remisión"
-                    fullWidth
-                    error={!!form.formState.errors.dispatch_code}
-                    helperText={form.formState.errors.dispatch_code?.message}
+                <Controller
+                    name="dispatch_code"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Remisión"
+                            fullWidth
+                            error={!!form.formState.errors.dispatch_code}
+                            helperText={form.formState.errors.dispatch_code?.message}
+                        />
+                    )}
                 />
 
-                <TextField
-                    {...form.register("receipt_code")}
-                    label="Recepción"
-                    fullWidth
-                    error={!!form.formState.errors.receipt_code}
-                    helperText={form.formState.errors.receipt_code?.message}
+                <Controller
+                    name="receipt_code"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Recepción"
+                            fullWidth
+                            error={!!form.formState.errors.receipt_code}
+                            helperText={form.formState.errors.receipt_code?.message}
+                        />
+                    )}
                 />
 
-                <TextField
-                    {...form.register("price")}
-                    label="Precio"
-                    fullWidth
-                    error={!!form.formState.errors.price}
-                    helperText={form.formState.errors.price?.message}
+                <Controller
+                    name="price"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Precio"
+                            fullWidth
+                            error={!!form.formState.errors.price}
+                            helperText={form.formState.errors.price?.message}
+                        />
+                    )}
                 />
             </Stack>
 
             {/* Row 4: Payroll Price, Origin Weight, Destination Weight */}
             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                <TextField
-                    {...form.register("payroll_price")}
-                    label="Precio Liquidación"
-                    fullWidth
-                    error={!!form.formState.errors.payroll_price}
-                    helperText={form.formState.errors.payroll_price?.message}
+                <Controller
+                    name="payroll_price"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Precio Liquidación"
+                            fullWidth
+                            error={!!form.formState.errors.payroll_price}
+                            helperText={form.formState.errors.payroll_price?.message}
+                        />
+                    )}
                 />
 
-                <TextField
-                    {...form.register("origin_weight")}
-                    label="Kg. Origen"
-                    type="number"
-                    fullWidth
-                    error={!!form.formState.errors.origin_weight}
-                    helperText={form.formState.errors.origin_weight?.message}
+                <Controller
+                    name="origin_weight"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Kg. Origen"
+                            type="number"
+                            fullWidth
+                            error={!!form.formState.errors.origin_weight}
+                            helperText={form.formState.errors.origin_weight?.message}
+                        />
+                    )}
                 />
 
-                <TextField
-                    {...form.register("destination_weight")}
-                    label="Kg. Destino"
-                    type="number"
-                    fullWidth
-                    error={!!form.formState.errors.destination_weight}
-                    helperText={form.formState.errors.destination_weight?.message}
+                <Controller
+                    name="destination_weight"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Kg. Destino"
+                            type="number"
+                            fullWidth
+                            error={!!form.formState.errors.destination_weight}
+                            helperText={form.formState.errors.destination_weight?.message}
+                        />
+                    )}
                 />
             </Stack>
         </Stack>
