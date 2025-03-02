@@ -47,6 +47,16 @@ export const ShipmentPayrollApi = {
                 return errorResponse ?? null;
             }),
 
+    updateCollectionStatus: async (payroll: ShipmentPayroll) =>
+        api
+            .patch(`/shipment-payroll/${payroll.payroll_code ?? 0}/collection-status`, payroll)
+            .then((response: AxiosResponse<ShipmentPayrollApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
     deleteShipmentPayroll: async (code: number) =>
         api
             .delete(`/shipment-payroll/${code}`)

@@ -6,7 +6,7 @@ import {
     TableChart as TableChartIcon,
     Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
+import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip, Switch } from "@mui/material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
 
@@ -169,6 +169,37 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
         setSelectedPayrollList(newSelectedPayrollList);
     };
 
+    const handleCollectionToggle = async (payroll: ShipmentPayroll, collected: boolean) => {
+        const newPayroll: ShipmentPayroll = {
+            ...payroll,
+            collected: collected,
+        };
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log(`Updating collection status for payroll, `, { payroll, newPayroll });
+        }
+
+        const resp = await ShipmentPayrollApi.updateCollectionStatus(newPayroll);
+        if (isAxiosError(resp) || !resp) {
+            showToastAxiosError(resp);
+            return;
+        }
+
+        const payrollResp = await ShipmentPayrollApi.getShipmentPayroll(payroll.payroll_code ?? 0);
+        if (!isAxiosError(payrollResp) && payrollResp) {
+            setPayrollList(
+                payrollList.map((item) =>
+                    item.payroll_code !== payroll.payroll_code ? item : payrollResp,
+                ),
+            );
+        } else {
+            showToastAxiosError(payrollResp);
+        }
+        showToastSuccess(
+            `Planilla #${payroll.payroll_code ?? 0} marcada como ${collected ? "cobrada" : "no cobrada"}`,
+        );
+    };
+
     return (
         <Box sx={{ padding: 3 }}>
             <Box
@@ -244,6 +275,11 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                         const payrollDate = DateTime.fromHTTP(payroll.payroll_timestamp, {
                             zone: "local",
                         }).setLocale("es");
+                        const collectionDate = payroll.collection_timestamp
+                            ? DateTime.fromHTTP(payroll.collection_timestamp, {
+                                  zone: "local",
+                              }).setLocale("es")
+                            : null;
 
                         return (
                             <ListItem
@@ -253,50 +289,141 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                     borderRadius: 1,
                                     mb: 1,
                                     display: "flex",
+                                    flexDirection: { xs: "column", sm: "row" },
                                     alignItems: "center",
-                                    justifyContent: "center",
+                                    justifyContent: { xs: "flex-start", sm: "center" },
+                                    padding: { xs: 2, sm: 1 },
+                                    gap: { xs: 2, sm: 0 },
                                 }}
                             >
-                                <Checkbox
-                                    checked={isChecked}
-                                    onChange={(e) =>
-                                        handleTogglePayroll(
-                                            payroll.payroll_code ?? null,
-                                            e.target.checked,
-                                        )
-                                    }
-                                    inputProps={{ "aria-label": "Seleccionar planilla" }}
-                                    sx={{ mr: 2 }}
-                                />
-
-                                <Button
-                                    component={Link}
-                                    to={`/shipment-payroll-list/payroll/${payroll.payroll_code ?? 0}`}
-                                    variant="contained"
-                                    color="info"
+                                {/* Responsive container */}
+                                <Box
                                     sx={{
-                                        px: 4,
-                                        py: 1,
-                                        fontWeight: "bold",
-                                        fontSize: "1.1rem",
+                                        display: "flex",
+                                        flexDirection: { xs: "column", sm: "row" },
+                                        alignItems: { xs: "stretch", sm: "center" },
+                                        width: "100%",
+                                        justifyContent: { xs: "center", sm: "center" },
+                                        gap: { xs: 2, sm: 0 },
                                     }}
                                 >
-                                    {payrollDate.toLocaleString({
-                                        month: "long",
-                                        day: "numeric",
-                                    })}
-                                    <Typography
-                                        component="span"
+                                    {/* Checkbox - on mobile, as a separate row with label */}
+                                    <Box
                                         sx={{
-                                            ml: 1,
-                                            color: "text.secondary",
-                                            opacity: 0.7,
-                                            fontWeight: "normal",
+                                            display: "flex",
+                                            justifyContent: { xs: "flex-start", sm: "center" },
+                                            alignItems: "center",
+                                            width: { xs: "100%", sm: "auto" },
+                                            mr: { xs: 0, sm: 1 },
                                         }}
                                     >
-                                        [#{payroll.payroll_code ?? 0}]
-                                    </Typography>
-                                </Button>
+                                        <Checkbox
+                                            checked={isChecked}
+                                            onChange={(e) =>
+                                                handleTogglePayroll(
+                                                    payroll.payroll_code ?? null,
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            inputProps={{ "aria-label": "Seleccionar planilla" }}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                display: { xs: "inline", sm: "none" },
+                                            }}
+                                        >
+                                            Seleccionar
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Button - full width on mobile */}
+                                    <Button
+                                        component={Link}
+                                        to={`/shipment-payroll-list/payroll/${payroll.payroll_code ?? 0}`}
+                                        variant="contained"
+                                        color="info"
+                                        sx={{
+                                            width: { xs: "100%", sm: "260px" },
+                                            py: 1,
+                                            fontWeight: "bold",
+                                            fontSize: "1.1rem",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        {payrollDate.toLocaleString({
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                        <Typography
+                                            component="span"
+                                            sx={{
+                                                ml: 1,
+                                                color: "text.secondary",
+                                                opacity: 0.7,
+                                                fontWeight: "normal",
+                                            }}
+                                        >
+                                            [#{payroll.payroll_code ?? 0}]
+                                        </Typography>
+                                    </Button>
+
+                                    {/* Collection Switch - on mobile, as a row with more space */}
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: { xs: "row", sm: "row" },
+                                            alignItems: "center",
+                                            justifyContent: { xs: "flex-start", sm: "flex-start" },
+                                            width: { xs: "100%", sm: "auto" },
+                                            ml: { xs: 0, sm: 2 },
+                                            mt: { xs: 0, sm: 0 },
+                                        }}
+                                    >
+                                        <Switch
+                                            checked={payroll.collected || false}
+                                            onChange={(e) =>
+                                                handleCollectionToggle(payroll, e.target.checked)
+                                            }
+                                            sx={{
+                                                "& .MuiSwitch-switchBase.Mui-checked": {
+                                                    color: "green",
+                                                    "& + .MuiSwitch-track": {
+                                                        backgroundColor: "green",
+                                                    },
+                                                },
+                                                "& .MuiSwitch-switchBase": {
+                                                    color: "red",
+                                                    "&:not(.Mui-checked) + .MuiSwitch-track": {
+                                                        backgroundColor: "red",
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                        <Box ml={1}>
+                                            <Typography
+                                                variant="body2"
+                                                color={
+                                                    payroll.collected
+                                                        ? "success.main"
+                                                        : "error.main"
+                                                }
+                                                fontWeight="bold"
+                                            >
+                                                {payroll.collected ? "Cobrado" : "No cobrado"}
+                                            </Typography>
+                                            {collectionDate && (
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    display="block"
+                                                >
+                                                    {collectionDate.toFormat("dd/MM/yyyy")}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Box>
                             </ListItem>
                         );
                     })}
