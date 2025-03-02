@@ -114,15 +114,6 @@ const columns: readonly Column[] = [
         align: "right",
     },
     {
-        id: "diff",
-        label: "Diff",
-        rowValue: (row) =>
-            formatter(parseInt(row.destination_weight) - parseInt(row.origin_weight)),
-        aggregatedRowValue: (aggregatedShipment) =>
-            formatter(parseInt(aggregatedShipment.subtotalDifference)),
-        align: "right",
-    },
-    {
         id: "price",
         label: "Price",
         rowValue: (row) => formatter(parseFloat(row.price)),
@@ -490,10 +481,7 @@ export function ShipmentDataTable({
             (sum, item) => sum + parseFloat(item.subtotalDestination),
             0,
         );
-        const totalDifference = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalDifference),
-            0,
-        );
+
         const totalMoney = shipmentAggregatedList.reduce(
             (sum, item) => sum + parseFloat(item.subtotalMoney),
             0,
@@ -538,15 +526,6 @@ export function ShipmentDataTable({
                     }}
                 >
                     {formatter(totalDestination)}
-                </TableCell>
-                <TableCell
-                    align="right"
-                    sx={{
-                        fontStyle: "italic",
-                        fontWeight: "bold",
-                    }}
-                >
-                    {formatter(totalDifference)}
                 </TableCell>
                 <TableCell></TableCell>
                 <TableCell

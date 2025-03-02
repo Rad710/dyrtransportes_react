@@ -20,7 +20,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
     // CONTEXT
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     const loadShipmentPayrollYearList = async () => {
@@ -138,7 +138,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                     saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla.");
                 }
             },
         });

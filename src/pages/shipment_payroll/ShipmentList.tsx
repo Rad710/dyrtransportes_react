@@ -37,7 +37,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const [routeList, setRouteList] = useState<Route[]>([]);
 
     // Context
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     const loadShipmentListAndAutocompleteOptions = async () => {
@@ -118,7 +118,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla.");
                 }
             },
         });

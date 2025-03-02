@@ -28,7 +28,7 @@ const ActiveDriverTabContent = () => {
     const [driverToEdit, setDriverToEdit] = useState<DriverType | null>(null);
 
     // context
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
@@ -74,7 +74,7 @@ const ActiveDriverTabContent = () => {
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla.");
                 }
             },
         });

@@ -29,7 +29,7 @@ const RouteTabContent = () => {
     const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
     // context
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
@@ -74,7 +74,7 @@ const RouteTabContent = () => {
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla");
                 }
             },
         });
@@ -146,7 +146,7 @@ const ProductTabContent = () => {
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
     // context
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
@@ -191,7 +191,7 @@ const ProductTabContent = () => {
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla.");
                 }
             },
         });

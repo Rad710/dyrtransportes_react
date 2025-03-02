@@ -29,7 +29,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
 
     // CONTEXT
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
     const loadShipmentPayrollList = async () => {
@@ -108,7 +108,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                     saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
-                    showToastAxiosError(resp);
+                    showToastError("Error al exportar planilla.");
                 }
             },
         });
