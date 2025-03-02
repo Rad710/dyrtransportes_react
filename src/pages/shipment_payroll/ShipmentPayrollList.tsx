@@ -6,7 +6,7 @@ import {
     TableChart as TableChartIcon,
     Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip, Switch } from "@mui/material";
+import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
 import { saveAs } from "file-saver";
 
@@ -17,6 +17,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./shipment_payroll_utils";
 import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialog";
+import { CustomSwitch } from "@/components/CustomSwitch";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/:year");
@@ -369,60 +370,17 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                     </Button>
 
                                     {/* Collection Switch - on mobile, as a row with more space */}
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: { xs: "row", sm: "row" },
-                                            alignItems: "center",
-                                            justifyContent: { xs: "flex-start", sm: "flex-start" },
-                                            width: { xs: "100%", sm: "auto" },
-                                            ml: { xs: 0, sm: 2 },
-                                            mt: { xs: 0, sm: 0 },
-                                        }}
-                                    >
-                                        <Switch
-                                            checked={payroll.collected || false}
-                                            onChange={(e) =>
-                                                handleCollectionToggle(payroll, e.target.checked)
-                                            }
-                                            sx={{
-                                                "& .MuiSwitch-switchBase.Mui-checked": {
-                                                    color: "green",
-                                                    "& + .MuiSwitch-track": {
-                                                        backgroundColor: "green",
-                                                    },
-                                                },
-                                                "& .MuiSwitch-switchBase": {
-                                                    color: "red",
-                                                    "&:not(.Mui-checked) + .MuiSwitch-track": {
-                                                        backgroundColor: "red",
-                                                    },
-                                                },
-                                            }}
-                                        />
-                                        <Box ml={1}>
-                                            <Typography
-                                                variant="body2"
-                                                color={
-                                                    payroll.collected
-                                                        ? "success.main"
-                                                        : "error.main"
-                                                }
-                                                fontWeight="bold"
-                                            >
-                                                {payroll.collected ? "Cobrado" : "No cobrado"}
-                                            </Typography>
-                                            {collectionDate && (
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    display="block"
-                                                >
-                                                    {collectionDate.toFormat("dd/MM/yyyy")}
-                                                </Typography>
-                                            )}
-                                        </Box>
-                                    </Box>
+                                    <CustomSwitch
+                                        checked={payroll.collected}
+                                        onChange={(e) =>
+                                            handleCollectionToggle(payroll, e.target.checked)
+                                        }
+                                        textChecked="Cobrado"
+                                        checkedDescription={
+                                            collectionDate?.toFormat("dd/MM/yyyy") ?? ""
+                                        }
+                                        textUnchecked="No cobrado"
+                                    />
                                 </Box>
                             </ListItem>
                         );

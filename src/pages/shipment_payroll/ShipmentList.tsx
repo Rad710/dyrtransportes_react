@@ -19,6 +19,7 @@ import { Product, Route } from "../route_product/types";
 import { Driver } from "../driver/types";
 import { DateTime } from "luxon";
 import { saveAs } from "file-saver";
+import { CustomSwitch } from "@/components/CustomSwitch";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
@@ -124,9 +125,42 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         });
     };
 
+    const handleCollectionToggle = async (payroll: ShipmentPayroll, collected: boolean) => {
+        const newPayroll: ShipmentPayroll = {
+            ...payroll,
+            collected: collected,
+        };
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log(`Updating collection status for payroll, `, { payroll, newPayroll });
+        }
+
+        const resp = await ShipmentPayrollApi.updateCollectionStatus(newPayroll);
+        if (isAxiosError(resp) || !resp) {
+            showToastAxiosError(resp);
+            return;
+        }
+
+        const payrollResp = await ShipmentPayrollApi.getShipmentPayroll(payroll.payroll_code ?? 0);
+        if (!isAxiosError(payrollResp) && payrollResp) {
+            setShipmentPayrollList(
+                shipmentPayrollList.map((item) =>
+                    item.payroll_code !== payroll.payroll_code ? item : payrollResp,
+                ),
+            );
+        } else {
+            showToastAxiosError(payrollResp);
+        }
+        showToastSuccess(
+            `Planilla #${payroll.payroll_code ?? 0} marcada como ${collected ? "cobrada" : "no cobrada"}`,
+        );
+    };
+
+    const currentShipmentPayroll =
+        shipmentPayrollList.find((item) => item.payroll_code === payrollCode) ?? null;
+
     const shipmentPayrollDateString = DateTime.fromHTTP(
-        shipmentPayrollList.find((item) => item.payroll_code === payrollCode)?.payroll_timestamp ??
-            "",
+        currentShipmentPayroll?.payroll_timestamp ?? "",
     );
 
     return (
@@ -153,6 +187,27 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         paddingRight: 3,
                     }}
                 >
+                    {currentShipmentPayroll && (
+                        <CustomSwitch
+                            checked={currentShipmentPayroll.collected}
+                            onChange={(e) =>
+                                handleCollectionToggle(currentShipmentPayroll, e.target.checked)
+                            }
+                            textChecked="Cobrado"
+                            checkedDescription={
+                                currentShipmentPayroll.collection_timestamp
+                                    ? DateTime.fromHTTP(
+                                          currentShipmentPayroll.collection_timestamp,
+                                      ).toFormat("dd/MM/yyyy")
+                                    : ""
+                            }
+                            textUnchecked="No cobrado"
+                            sx={{
+                                mr: 2,
+                            }}
+                        />
+                    )}
+
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
