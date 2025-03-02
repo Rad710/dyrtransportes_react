@@ -1,7 +1,7 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Route } from "../types";
-import { CustomTableToolbar } from "@/components/CustomTableToolbar";
+import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useState } from "react";
@@ -183,7 +183,7 @@ export const RouteDataTable = ({
 
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
-            <CustomTableToolbar
+            <DataTableToolbar
                 tableTitle="Routes"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}

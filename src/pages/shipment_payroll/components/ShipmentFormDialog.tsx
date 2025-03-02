@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -25,18 +25,6 @@ import { Driver } from "@/pages/driver/types";
 
 const parser = getGlobalizeParser();
 const floatFormatter = getGlobalizeNumberFormatter(2, 2);
-
-interface ShipmentFormDialogProps extends FormDialogProps {
-    payrollCode: number;
-    setShipmentAggregatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    productList: Product[];
-    driverList: Driver[];
-    routeList: Route[];
-    shipmentToEdit?: Shipment | null;
-    setShipmentToEdit?: React.Dispatch<React.SetStateAction<Shipment | null>>;
-    shipmentPayrollList?: ShipmentPayroll[];
-}
 
 const shipmentFormSchema = z.object({
     shipment_code: z.number().nullish(),
@@ -200,9 +188,9 @@ const shipmentFormSchema = z.object({
         }),
     driver_payroll_code: z.number().nullish(),
 });
-
 type ShipmentFormSchema = z.infer<typeof shipmentFormSchema>;
-const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number) => ({
+
+const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentFormSchema => ({
     shipment_code: null,
     shipment_date: DateTime.now().toJSDate(),
     driver_name: "",
@@ -226,41 +214,75 @@ const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number) => ({
     shipment_payroll_code: payrollCode,
     driver_payroll_code: null,
 });
+const shipmentToFormSchema = (shipment: Shipment, payrollCode: number): ShipmentFormSchema => ({
+    shipment_code: shipment?.shipment_code ?? null,
+    shipment_date: DateTime.fromHTTP(shipment.shipment_date).toJSDate(),
+    driver_name: shipment.driver_name ?? "",
+    driver_code: shipment?.driver_code ?? 0,
+    truck_plate: shipment?.truck_plate ?? "",
+    trailer_plate: shipment.trailer_plate ?? null,
 
-export const ShipmentFormDialog = ({
-    payrollCode,
-    setShipmentAggregatedList,
-    open,
-    setOpen,
-    setLoading,
+    product_code: shipment?.product_code ?? 0,
+    product_name: shipment?.product_name ?? "",
+
+    route_code: shipment?.route_code ?? 0,
+    origin: shipment?.origin ?? "",
+    destination: shipment?.destination ?? "",
+    price: floatFormatter(parseFloat(shipment?.price ?? "0") || 0),
+    payroll_price: floatFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
+
+    dispatch_code: shipment?.dispatch_code ?? "",
+    receipt_code: shipment?.receipt_code ?? "",
+    origin_weight: parseInt(shipment?.origin_weight ?? "0") || 0,
+    destination_weight: parseInt(shipment?.destination_weight ?? "0") || 0,
+    shipment_payroll_code: shipment?.shipment_payroll_code ?? payrollCode,
+    driver_payroll_code: shipment?.driver_payroll_code ?? null,
+});
+const formSchemaToShipment = (formSchema: ShipmentFormSchema): Shipment => ({
+    shipment_code: formSchema.shipment_code,
+    shipment_date: DateTime.fromJSDate(formSchema.shipment_date).toHTTP() ?? "",
+
+    driver_name: formSchema.driver_name,
+    truck_plate: formSchema.truck_plate,
+    trailer_plate: formSchema.trailer_plate,
+    driver_code: formSchema.driver_code,
+
+    product_code: formSchema.product_code,
+    product_name: formSchema.product_name,
+
+    route_code: formSchema.route_code,
+    origin: formSchema.origin,
+    destination: formSchema.destination,
+    price: formSchema.price,
+    payroll_price: formSchema.payroll_price,
+
+    dispatch_code: formSchema.dispatch_code,
+    receipt_code: formSchema.receipt_code,
+    origin_weight: formSchema.origin_weight.toString(),
+    destination_weight: formSchema.destination_weight.toString(),
+    shipment_payroll_code: formSchema.shipment_payroll_code,
+    driver_payroll_code: formSchema.driver_payroll_code,
+    deleted: false,
+});
+
+interface ShipmentFormDialogFields {
+    form: UseFormReturn<ShipmentFormSchema>;
+    productList: Product[];
+    driverList: Driver[];
+    routeList: Route[];
+    shipmentToEdit?: Shipment | null;
+    shipmentPayrollList?: ShipmentPayroll[];
+}
+const ShipmentFormDialogFields = ({
+    form,
     productList,
     driverList,
     routeList,
     shipmentToEdit,
-    setShipmentToEdit,
     shipmentPayrollList,
-}: ShipmentFormDialogProps) => {
-    // React form hook setup
-    const {
-        control,
-        register,
-        formState: { errors },
-        reset,
-        handleSubmit,
-        setValue,
-        watch,
-    } = useForm<ShipmentFormSchema>({
-        resolver: zodResolver(shipmentFormSchema),
-        defaultValues: SHIPMENT_FORM_DEFAULT_VALUE(payrollCode),
-    });
-
-    // Form state management
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
-
+}: Readonly<ShipmentFormDialogFields>) => {
     // Watch origin field for dependent fields
-    const watchedOrigin = watch("origin");
-
+    const watchedOrigin = form.watch("origin");
     // Memoized option lists for better performance
     const shipmentPayrollOptionList: AutocompleteOption[] = useMemo(
         () =>
@@ -270,7 +292,6 @@ export const ShipmentFormDialog = ({
             })) ?? [],
         [shipmentPayrollList],
     );
-
     const truckPlateOptionList: AutocompleteOption[] = useMemo(
         () =>
             Array.from(new Set(driverList.map((item) => item.truck_plate ?? "")))
@@ -321,51 +342,368 @@ export const ShipmentFormDialog = ({
         [driverList],
     );
 
+    return (
+        <Stack spacing={2}>
+            {/* Row 1: Date, Driver, Truck Plate */}
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <Controller
+                    name="shipment_date"
+                    control={form.control}
+                    render={({ field }) => (
+                        <TextField
+                            fullWidth
+                            label="Fecha"
+                            type="date"
+                            error={!!form.formState.errors.shipment_date}
+                            helperText={form.formState.errors.shipment_date?.message}
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: true,
+                                },
+                            }}
+                            value={DateTime.fromJSDate(
+                                field.value ?? DateTime.now().toJSDate(),
+                            ).toFormat("yyyy-MM-dd")}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value
+                                        ? DateTime.fromISO(e.target.value).toJSDate()
+                                        : DateTime.now().toJSDate(),
+                                );
+                            }}
+                        />
+                    )}
+                />
+
+                <Controller
+                    name="driver_code"
+                    control={form.control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            options={driverOptionList}
+                            value={
+                                driverOptionList.find(
+                                    (option) => option.id === field.value?.toString(),
+                                ) || null
+                            }
+                            onChange={(_, newValue) => {
+                                field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                form.setValue("driver_name", newValue?.label ?? "");
+                                form.setValue("truck_plate", newValue?.truck_plate ?? "");
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Chofer"
+                                    error={
+                                        !!form.formState.errors.driver_code ||
+                                        !!form.formState.errors.driver_name
+                                    }
+                                    helperText={
+                                        form.formState.errors.driver_code?.message ||
+                                        form.formState.errors.driver_name?.message
+                                    }
+                                    fullWidth
+                                />
+                            )}
+                            fullWidth
+                        />
+                    )}
+                />
+
+                <Controller
+                    name="truck_plate"
+                    control={form.control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            options={truckPlateOptionList}
+                            value={
+                                truckPlateOptionList.find((option) => option.id === field.value) ||
+                                null
+                            }
+                            onChange={(_, newValue) => {
+                                field.onChange(newValue?.id ?? "");
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Chapa"
+                                    error={!!form.formState.errors.truck_plate}
+                                    helperText={form.formState.errors.truck_plate?.message}
+                                    fullWidth
+                                />
+                            )}
+                            fullWidth
+                        />
+                    )}
+                />
+
+                {shipmentToEdit && (
+                    <Controller
+                        name="shipment_payroll_code"
+                        control={form.control}
+                        render={({ field }) => (
+                            <Autocomplete
+                                options={shipmentPayrollOptionList}
+                                value={
+                                    shipmentPayrollOptionList.find(
+                                        (option) => String(option.id) === String(field.value),
+                                    ) || null
+                                }
+                                onChange={(_, newValue) => {
+                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Planilla"
+                                        error={!!form.formState.errors.shipment_payroll_code}
+                                        helperText={
+                                            form.formState.errors.shipment_payroll_code?.message
+                                        }
+                                        fullWidth
+                                    />
+                                )}
+                                fullWidth
+                            />
+                        )}
+                    />
+                )}
+            </Stack>
+
+            {/* Row 2: Product, Origin, Destination */}
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <Controller
+                    name="product_code"
+                    control={form.control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            options={productOptionList}
+                            value={
+                                productOptionList.find(
+                                    (option) => String(option.id) === String(field.value),
+                                ) || null
+                            }
+                            onChange={(_, newValue) => {
+                                field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                form.setValue("product_name", newValue?.label ?? "");
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Producto"
+                                    error={
+                                        !!form.formState.errors.product_code ||
+                                        !!form.formState.errors.product_name
+                                    }
+                                    helperText={
+                                        form.formState.errors.product_code?.message ||
+                                        form.formState.errors.product_name?.message
+                                    }
+                                    fullWidth
+                                />
+                            )}
+                            fullWidth
+                        />
+                    )}
+                />
+
+                <Controller
+                    name="origin"
+                    control={form.control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            options={originOptionList}
+                            value={
+                                originOptionList.find(
+                                    (option) => String(option.id) === String(field.value),
+                                ) || null
+                            }
+                            onChange={(_, newValue) => {
+                                field.onChange(newValue?.id ?? "");
+                                form.setValue("destination", "");
+                                form.setValue("route_code", 0);
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Origen"
+                                    error={
+                                        !!form.formState.errors.origin ||
+                                        !!form.formState.errors.route_code
+                                    }
+                                    helperText={
+                                        form.formState.errors.origin?.message ||
+                                        form.formState.errors.route_code?.message
+                                    }
+                                    fullWidth
+                                />
+                            )}
+                            fullWidth
+                        />
+                    )}
+                />
+
+                <Controller
+                    name="destination"
+                    control={form.control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            options={destinationOptionList}
+                            value={
+                                destinationOptionList.find(
+                                    (option) => String(option.id) === String(field.value),
+                                ) || null
+                            }
+                            onChange={(_, newValue) => {
+                                field.onChange(newValue?.id ?? "");
+
+                                const routeCode =
+                                    routeList.find(
+                                        (item) =>
+                                            (item.origin === watchedOrigin &&
+                                                item.destination === newValue?.id) ??
+                                            "",
+                                    )?.route_code ?? 0;
+                                form.setValue("route_code", routeCode);
+                            }}
+                            disabled={!watchedOrigin}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Destino"
+                                    error={
+                                        !!form.formState.errors.destination ||
+                                        !!form.formState.errors.route_code
+                                    }
+                                    helperText={
+                                        form.formState.errors.destination?.message ||
+                                        form.formState.errors.route_code?.message
+                                    }
+                                    fullWidth
+                                />
+                            )}
+                            fullWidth
+                        />
+                    )}
+                />
+            </Stack>
+
+            {/* Row 3: Dispatch, Receipt, Price */}
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                    {...form.register("dispatch_code")}
+                    label="Remisión"
+                    fullWidth
+                    error={!!form.formState.errors.dispatch_code}
+                    helperText={form.formState.errors.dispatch_code?.message}
+                />
+
+                <TextField
+                    {...form.register("receipt_code")}
+                    label="Recepción"
+                    fullWidth
+                    error={!!form.formState.errors.receipt_code}
+                    helperText={form.formState.errors.receipt_code?.message}
+                />
+
+                <TextField
+                    {...form.register("price")}
+                    label="Precio"
+                    fullWidth
+                    error={!!form.formState.errors.price}
+                    helperText={form.formState.errors.price?.message}
+                />
+            </Stack>
+
+            {/* Row 4: Payroll Price, Origin Weight, Destination Weight */}
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                    {...form.register("payroll_price")}
+                    label="Precio Liquidación"
+                    fullWidth
+                    error={!!form.formState.errors.payroll_price}
+                    helperText={form.formState.errors.payroll_price?.message}
+                />
+
+                <TextField
+                    {...form.register("origin_weight")}
+                    label="Kg. Origen"
+                    type="number"
+                    fullWidth
+                    error={!!form.formState.errors.origin_weight}
+                    helperText={form.formState.errors.origin_weight?.message}
+                />
+
+                <TextField
+                    {...form.register("destination_weight")}
+                    label="Kg. Destino"
+                    type="number"
+                    fullWidth
+                    error={!!form.formState.errors.destination_weight}
+                    helperText={form.formState.errors.destination_weight?.message}
+                />
+            </Stack>
+        </Stack>
+    );
+};
+
+interface ShipmentFormDialogProps extends FormDialogProps {
+    payrollCode: number;
+    setShipmentAggregatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    productList: Product[];
+    driverList: Driver[];
+    routeList: Route[];
+    shipmentToEdit?: Shipment | null;
+    setShipmentToEdit?: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    shipmentPayrollList?: ShipmentPayroll[];
+}
+export const ShipmentFormDialog = ({
+    payrollCode,
+    setShipmentAggregatedList,
+    open,
+    setOpen,
+    setLoading,
+    productList,
+    driverList,
+    routeList,
+    shipmentToEdit,
+    setShipmentToEdit,
+    shipmentPayrollList,
+}: Readonly<ShipmentFormDialogProps>) => {
+    // STATE
+    // React form hook setup
+    const form = useForm<ShipmentFormSchema>({
+        resolver: zodResolver(shipmentFormSchema),
+        defaultValues: SHIPMENT_FORM_DEFAULT_VALUE(payrollCode),
+    });
+
+    // Form state management
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
+
+    //CONTEXT
     // Access toast notifications from context
     const { showToastSuccess, showToastAxiosError } = useToast();
 
+    // USE EFFECT
     // Set form values when editing a shipment
     useEffect(() => {
-        if (shipmentToEdit) {
-            reset({
-                shipment_code: shipmentToEdit?.shipment_code ?? null,
-                shipment_date: DateTime.fromHTTP(shipmentToEdit.shipment_date).toJSDate(),
-                driver_name: shipmentToEdit.driver_name ?? "",
-                driver_code: shipmentToEdit?.driver_code ?? 0,
-                truck_plate: shipmentToEdit?.truck_plate ?? "",
-                trailer_plate: shipmentToEdit.trailer_plate ?? null,
-
-                product_code: shipmentToEdit?.product_code ?? 0,
-                product_name: shipmentToEdit?.product_name ?? "",
-
-                route_code: shipmentToEdit?.route_code ?? 0,
-                origin: shipmentToEdit?.origin ?? "",
-                destination: shipmentToEdit?.destination ?? "",
-                price: floatFormatter(parseFloat(shipmentToEdit?.price ?? "0") || 0),
-                payroll_price: floatFormatter(
-                    parseFloat(shipmentToEdit?.payroll_price ?? "0") || 0,
-                ),
-
-                dispatch_code: shipmentToEdit?.dispatch_code ?? "",
-                receipt_code: shipmentToEdit?.receipt_code ?? "",
-                origin_weight: parseInt(shipmentToEdit?.origin_weight ?? "0") || 0,
-                destination_weight: parseInt(shipmentToEdit?.destination_weight ?? "0") || 0,
-                shipment_payroll_code: shipmentToEdit?.shipment_payroll_code ?? payrollCode,
-                driver_payroll_code: shipmentToEdit?.driver_payroll_code ?? null,
-            });
+        if (!shipmentToEdit) {
+            form.reset(SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
         } else {
-            reset(SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+            form.reset(shipmentToFormSchema(shipmentToEdit, payrollCode));
         }
-    }, [shipmentToEdit, reset, payrollCode]);
+    }, [shipmentToEdit, form.reset, payrollCode]);
 
-    // event handlers
+    // EVENT HANDLERS
     const handleClose = () => {
         setOpen(false);
     };
-
     // after exited reset form to empty and clean Shipment being edited
     const handleExited = () => {
-        reset(SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+        form.reset(SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
         if (setShipmentToEdit) {
             setShipmentToEdit(null);
         }
@@ -382,7 +720,6 @@ export const ShipmentFormDialog = ({
         }
         return resp;
     };
-
     const putShipment = async (formData: Shipment) => {
         if (!formData.shipment_code) {
             setSubmitResult({ error: "Carga no puede editarse" });
@@ -398,40 +735,13 @@ export const ShipmentFormDialog = ({
         }
         return resp;
     };
-
-    // submit form as post or put
     const onSubmit = async (payload: ShipmentFormSchema) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting shipment formData...", { payload });
         }
 
         // Transform form data to API format
-        const transformedPayload: Shipment = {
-            shipment_code: payload.shipment_code,
-            shipment_date: DateTime.fromJSDate(payload.shipment_date).toHTTP() ?? "",
-
-            driver_name: payload.driver_name,
-            truck_plate: payload.truck_plate,
-            trailer_plate: payload.trailer_plate,
-            driver_code: payload.driver_code,
-
-            product_code: payload.product_code,
-            product_name: payload.product_name,
-
-            route_code: payload.route_code,
-            origin: payload.origin,
-            destination: payload.destination,
-            price: payload.price,
-            payroll_price: payload.payroll_price,
-
-            dispatch_code: payload.dispatch_code,
-            receipt_code: payload.receipt_code,
-            origin_weight: payload.origin_weight.toString(),
-            destination_weight: payload.destination_weight.toString(),
-            shipment_payroll_code: payload.shipment_payroll_code,
-            driver_payroll_code: payload.driver_payroll_code,
-            deleted: false,
-        };
+        const transformedPayload: Shipment = formSchemaToShipment(payload);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting shipment transformedPayload...", { transformedPayload });
@@ -466,7 +776,7 @@ export const ShipmentFormDialog = ({
     };
 
     const getDialogDescription = () => {
-        if (!Object.keys(errors).length) {
+        if (!Object.keys(form.formState.errors).length) {
             return submitResult ? (
                 <Box
                     component="span"
@@ -497,299 +807,6 @@ export const ShipmentFormDialog = ({
         );
     };
 
-    const getShipmentFormDialogFields = () => {
-        return (
-            <Stack spacing={2}>
-                {/* Row 1: Date, Driver, Truck Plate */}
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <Controller
-                        name="shipment_date"
-                        control={control}
-                        render={({ field }) => (
-                            <TextField
-                                fullWidth
-                                label="Fecha"
-                                type="date"
-                                error={!!errors.shipment_date}
-                                helperText={errors.shipment_date?.message}
-                                slotProps={{
-                                    inputLabel: {
-                                        shrink: true,
-                                    },
-                                }}
-                                value={DateTime.fromJSDate(
-                                    field.value ?? DateTime.now().toJSDate(),
-                                ).toFormat("yyyy-MM-dd")}
-                                onChange={(e) => {
-                                    field.onChange(
-                                        e.target.value
-                                            ? DateTime.fromISO(e.target.value).toJSDate()
-                                            : DateTime.now().toJSDate(),
-                                    );
-                                }}
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="driver_code"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                options={driverOptionList}
-                                value={
-                                    driverOptionList.find(
-                                        (option) => option.id === field.value?.toString(),
-                                    ) || null
-                                }
-                                onChange={(_, newValue) => {
-                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
-                                    setValue("driver_name", newValue?.label ?? "");
-                                    setValue("truck_plate", newValue?.truck_plate ?? "");
-                                }}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Chofer"
-                                        error={!!errors.driver_code || !!errors.driver_name}
-                                        helperText={
-                                            errors.driver_code?.message ||
-                                            errors.driver_name?.message
-                                        }
-                                        fullWidth
-                                    />
-                                )}
-                                fullWidth
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="truck_plate"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                options={truckPlateOptionList}
-                                value={
-                                    truckPlateOptionList.find(
-                                        (option) => option.id === field.value,
-                                    ) || null
-                                }
-                                onChange={(_, newValue) => {
-                                    field.onChange(newValue?.id ?? "");
-                                }}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Chapa"
-                                        error={!!errors.truck_plate}
-                                        helperText={errors.truck_plate?.message}
-                                        fullWidth
-                                    />
-                                )}
-                                fullWidth
-                            />
-                        )}
-                    />
-
-                    {shipmentToEdit && (
-                        <Controller
-                            name="shipment_payroll_code"
-                            control={control}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    options={shipmentPayrollOptionList}
-                                    value={
-                                        shipmentPayrollOptionList.find(
-                                            (option) => String(option.id) === String(field.value),
-                                        ) || null
-                                    }
-                                    onChange={(_, newValue) => {
-                                        field.onChange(parseInt(newValue?.id ?? "") || 0);
-                                    }}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Planilla"
-                                            error={!!errors.shipment_payroll_code}
-                                            helperText={errors.shipment_payroll_code?.message}
-                                            fullWidth
-                                        />
-                                    )}
-                                    fullWidth
-                                />
-                            )}
-                        />
-                    )}
-                </Stack>
-
-                {/* Row 2: Product, Origin, Destination */}
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <Controller
-                        name="product_code"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                options={productOptionList}
-                                value={
-                                    productOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
-                                    ) || null
-                                }
-                                onChange={(_, newValue) => {
-                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
-                                    setValue("product_name", newValue?.label ?? "");
-                                }}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Producto"
-                                        error={!!errors.product_code || !!errors.product_name}
-                                        helperText={
-                                            errors.product_code?.message ||
-                                            errors.product_name?.message
-                                        }
-                                        fullWidth
-                                    />
-                                )}
-                                fullWidth
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="origin"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                options={originOptionList}
-                                value={
-                                    originOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
-                                    ) || null
-                                }
-                                onChange={(_, newValue) => {
-                                    field.onChange(newValue?.id ?? "");
-                                    setValue("destination", "");
-                                    setValue("route_code", 0);
-                                }}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Origen"
-                                        error={!!errors.origin || !!errors.route_code}
-                                        helperText={
-                                            errors.origin?.message || errors.route_code?.message
-                                        }
-                                        fullWidth
-                                    />
-                                )}
-                                fullWidth
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="destination"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                options={destinationOptionList}
-                                value={
-                                    destinationOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
-                                    ) || null
-                                }
-                                onChange={(_, newValue) => {
-                                    field.onChange(newValue?.id ?? "");
-
-                                    const routeCode =
-                                        routeList.find(
-                                            (item) =>
-                                                (item.origin === watch("origin") &&
-                                                    item.destination === newValue?.id) ??
-                                                "",
-                                        )?.route_code ?? 0;
-                                    setValue("route_code", routeCode);
-                                }}
-                                disabled={!watch("origin")}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Destino"
-                                        error={!!errors.destination || !!errors.route_code}
-                                        helperText={
-                                            errors.destination?.message ||
-                                            errors.route_code?.message
-                                        }
-                                        fullWidth
-                                    />
-                                )}
-                                fullWidth
-                            />
-                        )}
-                    />
-                </Stack>
-
-                {/* Row 3: Dispatch, Receipt, Price */}
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <TextField
-                        {...register("dispatch_code")}
-                        label="Remisión"
-                        fullWidth
-                        error={!!errors.dispatch_code}
-                        helperText={errors.dispatch_code?.message}
-                    />
-
-                    <TextField
-                        {...register("receipt_code")}
-                        label="Recepción"
-                        fullWidth
-                        error={!!errors.receipt_code}
-                        helperText={errors.receipt_code?.message}
-                    />
-
-                    <TextField
-                        {...register("price")}
-                        label="Precio"
-                        fullWidth
-                        error={!!errors.price}
-                        helperText={errors.price?.message}
-                    />
-                </Stack>
-
-                {/* Row 4: Payroll Price, Origin Weight, Destination Weight */}
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    <TextField
-                        {...register("payroll_price")}
-                        label="Precio Liquidación"
-                        fullWidth
-                        error={!!errors.payroll_price}
-                        helperText={errors.payroll_price?.message}
-                    />
-
-                    <TextField
-                        {...register("origin_weight")}
-                        label="Kg. Origen"
-                        type="number"
-                        fullWidth
-                        error={!!errors.origin_weight}
-                        helperText={errors.origin_weight?.message}
-                    />
-
-                    <TextField
-                        {...register("destination_weight")}
-                        label="Kg. Destino"
-                        type="number"
-                        fullWidth
-                        error={!!errors.destination_weight}
-                        helperText={errors.destination_weight?.message}
-                    />
-                </Stack>
-            </Stack>
-        );
-    };
-
     return (
         <Dialog
             open={open}
@@ -797,7 +814,7 @@ export const ShipmentFormDialog = ({
             maxWidth="lg"
             fullWidth
             component="form"
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit)}
             slotProps={{
                 transition: {
                     onExited: handleExited, // This is the key prop for after-close actions
@@ -807,7 +824,16 @@ export const ShipmentFormDialog = ({
             <DialogTitle>{!shipmentToEdit ? "Agregar Carga" : "Editar Carga"}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
-                <Box sx={{ mt: 2 }}>{getShipmentFormDialogFields()}</Box>
+                <Box sx={{ mt: 2 }}>
+                    <ShipmentFormDialogFields
+                        form={form}
+                        productList={productList}
+                        driverList={driverList}
+                        routeList={routeList}
+                        shipmentToEdit={shipmentToEdit}
+                        shipmentPayrollList={shipmentPayrollList}
+                    />
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>Cerrar</Button>

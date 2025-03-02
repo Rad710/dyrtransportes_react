@@ -6,7 +6,7 @@ export interface TabPanelProps {
     value: number;
 }
 
-export const CustomTabPanel = (props: TabPanelProps) => {
+export const TabPanel = (props: TabPanelProps) => {
     const { children, value, index, ...other } = props;
 
     return (

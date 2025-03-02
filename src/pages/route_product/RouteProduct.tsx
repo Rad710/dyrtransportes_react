@@ -7,7 +7,7 @@ import { saveAs } from "file-saver";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
-import { CustomTabPanel } from "@/components/CustomTabPanel";
+import { TabPanel } from "@/components/TabPanel";
 
 import { RouteDataTable } from "./components/RouteDataTable";
 import { RouteFormDialog } from "./components/RouteFormDialog";
@@ -271,12 +271,12 @@ export const RouteProduct = ({ title }: Readonly<PropsTitle>) => {
                     <Tab label="Products" id="simple-tab-1" aria-controls="simple-tabpanel-1" />
                 </Tabs>
             </Box>
-            <CustomTabPanel value={value} index={0}>
+            <TabPanel value={value} index={0}>
                 <RouteTabContent />
-            </CustomTabPanel>
-            <CustomTabPanel value={value} index={1}>
+            </TabPanel>
+            <TabPanel value={value} index={1}>
                 <ProductTabContent />
-            </CustomTabPanel>
+            </TabPanel>
         </>
     );
 };

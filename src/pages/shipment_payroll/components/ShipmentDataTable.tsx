@@ -9,6 +9,10 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 
+import { alpha, Toolbar, Tooltip, Typography, IconButton, Button } from "@mui/material";
+
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { Shipment, ShipmentAggregated, ShipmentPayroll } from "../types";
 import { Autocomplete, CircularProgress, Stack, TablePagination, TextField } from "@mui/material";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
@@ -19,7 +23,6 @@ import { ShipmentApi } from "../shipment_payroll_utils";
 import { isAxiosError } from "axios";
 import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { ShipmentTableToolBar } from "./ShipmentTableToolBar";
 import { AutocompleteOption } from "@/types";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
@@ -130,12 +133,76 @@ const columns: readonly Column[] = [
     },
 ];
 
+interface ShipmentTableToolBar {
+    tableTitle: string;
+    numSelected: number;
+    handleDelete: () => void;
+    handleMove: () => void;
+}
+const ShipmentTableToolBar = ({
+    tableTitle,
+    numSelected,
+    handleDelete,
+    handleMove,
+}: Readonly<ShipmentTableToolBar>) => {
+    return (
+        <Toolbar
+            sx={[
+                {
+                    pl: { sm: 2 },
+                    pr: { xs: 1, sm: 1 },
+                },
+                numSelected > 0 && {
+                    bgcolor: (theme) =>
+                        alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+                },
+            ]}
+        >
+            {numSelected > 0 ? (
+                <Typography
+                    sx={{ flex: "1 1 100%" }}
+                    color="inherit"
+                    variant="subtitle1"
+                    component="div"
+                >
+                    {numSelected} selected
+                </Typography>
+            ) : (
+                <Typography sx={{ flex: "1 1 100%" }} variant="h6" id="tableTitle" component="div">
+                    {tableTitle}
+                </Typography>
+            )}
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 2,
+                    paddingRight: 3,
+                }}
+            >
+                {numSelected > 0 && (
+                    <Tooltip title="Move">
+                        <Button variant="outlined" onClick={handleMove}>
+                            Mover
+                        </Button>
+                    </Tooltip>
+                )}
+                {numSelected > 0 && (
+                    <Tooltip title="Delete">
+                        <IconButton onClick={handleDelete}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </Box>
+        </Toolbar>
+    );
+};
+
 interface ShipmentTableHeadProps {
     numSelected: number;
     onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
     rowCount: number;
 }
-
 const ShipmentTableHead = ({
     numSelected,
     onSelectAllClick,
@@ -173,6 +240,181 @@ const ShipmentTableHead = ({
     );
 };
 
+interface TableShipmentRowProps {
+    selectedRows: number[];
+    handleSelect: (row: Shipment) => void;
+    handleEditShipment: (row: Shipment) => void;
+    handleDeleteShipmentItem: (row: Shipment) => void;
+    indexAggregated: number;
+    indexShipment: number;
+    row: Shipment;
+}
+const TableShipmentRow = ({
+    selectedRows,
+    handleSelect,
+    handleEditShipment,
+    handleDeleteShipmentItem,
+    indexAggregated,
+    indexShipment,
+    row,
+}: Readonly<TableShipmentRowProps>) => {
+    const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
+    const labelId = `enhanced-table-checkbox-${indexAggregated}-${indexShipment}`;
+
+    // render rows
+    return (
+        <TableRow
+            hover
+            aria-checked={isItemSelected}
+            tabIndex={-1}
+            key={row.shipment_code ?? 0}
+            selected={isItemSelected}
+            sx={{ cursor: "pointer" }}
+        >
+            {columns.map((column) =>
+                // render columns
+                column.id !== "checkbox" ? (
+                    <TableCell key={column.id} align={column.align}>
+                        {column.rowValue(row)}
+                    </TableCell>
+                ) : (
+                    <TableCell padding="checkbox" key={column.id}>
+                        <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            onClick={() => handleSelect(row)}
+                            inputProps={{
+                                "aria-labelledby": labelId,
+                            }}
+                        />
+                    </TableCell>
+                ),
+            )}
+            <TableCell>
+                <ActionsMenu
+                    menuItems={[
+                        {
+                            text: "Edit",
+                            handleClick: () => handleEditShipment(row),
+                        },
+                        {
+                            text: "Delete",
+                            handleClick: () => handleDeleteShipmentItem(row),
+                        },
+                    ]}
+                />
+            </TableCell>
+        </TableRow>
+    );
+};
+const TableShipmentAggregatedRow = ({ row }: { row: ShipmentAggregated }) => {
+    return (
+        <TableRow
+            sx={{
+                fontStyle: "italic",
+                fontWeight: "bold",
+                color: "text.secondary",
+                backgroundColor: "grey.200",
+            }}
+        >
+            {columns.map((column) => {
+                // render columns
+                return (
+                    <TableCell
+                        key={column.id}
+                        align={column.align}
+                        sx={{
+                            fontStyle: "italic",
+                            fontWeight: "bold",
+                            color: "text.secondary",
+                        }}
+                    >
+                        {column.aggregatedRowValue(row)}
+                    </TableCell>
+                );
+            })}
+            <TableCell></TableCell>
+        </TableRow>
+    );
+};
+
+const TableShipmentAggregatedTableTotalRow = ({
+    shipmentAggregatedList,
+}: {
+    shipmentAggregatedList: ShipmentAggregated[];
+}) => {
+    // Calculate totals with useMemo inside the component
+    const totals = useMemo(() => {
+        const totalOrigin = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalOrigin),
+            0,
+        );
+        const totalDestination = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalDestination),
+            0,
+        );
+        const totalMoney = shipmentAggregatedList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotalMoney),
+            0,
+        );
+        return { totalOrigin, totalDestination, totalMoney };
+    }, [shipmentAggregatedList]);
+
+    return (
+        <TableRow
+            sx={{
+                backgroundColor: "grey.400",
+            }}
+        >
+            <TableCell></TableCell>
+            <TableCell
+                sx={{
+                    fontStyle: "italic",
+                    fontWeight: "bold",
+                }}
+            >
+                TOTAL
+            </TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell
+                align="right"
+                sx={{
+                    fontStyle: "italic",
+                    fontWeight: "bold",
+                }}
+            >
+                {formatter(totals.totalOrigin)}
+            </TableCell>
+            <TableCell
+                align="right"
+                sx={{
+                    fontStyle: "italic",
+                    fontWeight: "bold",
+                }}
+            >
+                {formatter(totals.totalDestination)}
+            </TableCell>
+            <TableCell></TableCell>
+            <TableCell
+                align="right"
+                sx={{
+                    fontStyle: "italic",
+                    fontWeight: "bold",
+                }}
+            >
+                {formatter(totals.totalMoney)}
+            </TableCell>
+            <TableCell></TableCell>
+        </TableRow>
+    );
+};
+
 type ShipmentDataTableProps = {
     loading: boolean;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -183,7 +425,6 @@ type ShipmentDataTableProps = {
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     shipmentPayrollList: ShipmentPayroll[];
 };
-
 export function ShipmentDataTable({
     loading,
     setLoading,
@@ -391,156 +632,6 @@ export function ShipmentDataTable({
         });
     };
     // rendering helper functions
-    const renderShipmentRow = (indexAggregated: number, indexShipment: number, row: Shipment) => {
-        const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
-        const labelId = `enhanced-table-checkbox-${indexAggregated}-${indexShipment}`;
-
-        // render rows
-        return (
-            <TableRow
-                hover
-                aria-checked={isItemSelected}
-                tabIndex={-1}
-                key={row.shipment_code ?? 0}
-                selected={isItemSelected}
-                sx={{ cursor: "pointer" }}
-            >
-                {columns.map((column) =>
-                    // render columns
-                    column.id !== "checkbox" ? (
-                        <TableCell key={column.id} align={column.align}>
-                            {column.rowValue(row)}
-                        </TableCell>
-                    ) : (
-                        <TableCell padding="checkbox" key={column.id}>
-                            <Checkbox
-                                color="primary"
-                                checked={isItemSelected}
-                                onClick={() => handleSelect(row)}
-                                inputProps={{
-                                    "aria-labelledby": labelId,
-                                }}
-                            />
-                        </TableCell>
-                    ),
-                )}
-                <TableCell>
-                    <ActionsMenu
-                        menuItems={[
-                            {
-                                text: "Edit",
-                                handleClick: () => handleEditShipment(row),
-                            },
-                            {
-                                text: "Delete",
-                                handleClick: () => handleDeleteShipmentItem(row),
-                            },
-                        ]}
-                    />
-                </TableCell>
-            </TableRow>
-        );
-    };
-    const renderShipmentAggregatedRow = (row: ShipmentAggregated) => {
-        return (
-            <TableRow
-                sx={{
-                    fontStyle: "italic",
-                    fontWeight: "bold",
-                    color: "text.secondary",
-                    backgroundColor: "grey.200",
-                }}
-            >
-                {columns.map((column) => {
-                    // render columns
-                    return (
-                        <TableCell
-                            key={column.id}
-                            align={column.align}
-                            sx={{
-                                fontStyle: "italic",
-                                fontWeight: "bold",
-                                color: "text.secondary",
-                            }}
-                        >
-                            {column.aggregatedRowValue(row)}
-                        </TableCell>
-                    );
-                })}
-                <TableCell></TableCell>
-            </TableRow>
-        );
-    };
-
-    const renderTotalShipmentAggregatedTableRow = () => {
-        const totalOrigin = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalOrigin),
-            0,
-        );
-        const totalDestination = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalDestination),
-            0,
-        );
-
-        const totalMoney = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalMoney),
-            0,
-        );
-
-        return (
-            <TableRow
-                sx={{
-                    backgroundColor: "grey.400",
-                }}
-            >
-                <TableCell></TableCell>
-                <TableCell
-                    sx={{
-                        fontStyle: "italic",
-                        fontWeight: "bold",
-                    }}
-                >
-                    TOTAL
-                </TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell
-                    align="right"
-                    sx={{
-                        fontStyle: "italic",
-                        fontWeight: "bold",
-                    }}
-                >
-                    {formatter(totalOrigin)}
-                </TableCell>
-                <TableCell
-                    align="right"
-                    sx={{
-                        fontStyle: "italic",
-                        fontWeight: "bold",
-                    }}
-                >
-                    {formatter(totalDestination)}
-                </TableCell>
-                <TableCell></TableCell>
-                <TableCell
-                    align="right"
-                    sx={{
-                        fontStyle: "italic",
-                        fontWeight: "bold",
-                    }}
-                >
-                    {formatter(totalMoney)}
-                </TableCell>
-                <TableCell></TableCell>
-            </TableRow>
-        );
-    };
 
     // values
     const rowCount = shipmentAggregatedList
@@ -590,20 +681,33 @@ export function ShipmentDataTable({
                                             key={`${aggregatedShipment.product}|${aggregatedShipment.origin}|${aggregatedShipment.destination}`}
                                         >
                                             {aggregatedShipment.shipments.map(
-                                                (row, indexShipment) =>
-                                                    renderShipmentRow(
-                                                        indexAggregated,
-                                                        indexShipment,
-                                                        row,
-                                                    ),
+                                                (row, indexShipment) => (
+                                                    <TableShipmentRow
+                                                        selectedRows={selectedRows}
+                                                        handleSelect={handleSelect}
+                                                        handleEditShipment={handleEditShipment}
+                                                        handleDeleteShipmentItem={
+                                                            handleDeleteShipmentItem
+                                                        }
+                                                        indexAggregated={indexAggregated}
+                                                        indexShipment={indexShipment}
+                                                        row={row}
+                                                        key={row.shipment_code ?? 0}
+                                                    />
+                                                ),
                                             )}
-                                            {renderShipmentAggregatedRow(aggregatedShipment)}
+                                            <TableShipmentAggregatedRow
+                                                key={`${aggregatedShipment.product}|${aggregatedShipment.origin}|${aggregatedShipment.destination}`}
+                                                row={aggregatedShipment}
+                                            />
                                         </React.Fragment>
                                     ),
                                 )}
 
                             {!loading && shipmentAggregatedList.length ? (
-                                renderTotalShipmentAggregatedTableRow()
+                                <TableShipmentAggregatedTableTotalRow
+                                    shipmentAggregatedList={shipmentAggregatedList}
+                                />
                             ) : (
                                 <TableRow>
                                     <TableCell

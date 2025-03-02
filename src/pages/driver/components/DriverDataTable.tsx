@@ -1,7 +1,7 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Driver } from "../types";
-import { CustomTableToolbar } from "@/components/CustomTableToolbar";
+import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useState } from "react";
@@ -246,7 +246,7 @@ export const DriverDataTable = ({
 
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
-            <CustomTableToolbar
+            <DataTableToolbar
                 tableTitle="Drivers"
                 numSelected={selectedRows.length}
                 handleDelete={mode === "active" ? handleDeleteSelected : undefined}

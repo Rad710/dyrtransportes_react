@@ -8,7 +8,7 @@ import { saveAs } from "file-saver";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
-import { CustomTabPanel } from "@/components/CustomTabPanel";
+import { TabPanel } from "@/components/TabPanel";
 
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
@@ -207,12 +207,12 @@ export const Driver = ({ title }: Readonly<PropsTitle>) => {
                     />
                 </Tabs>
             </Box>
-            <CustomTabPanel value={value} index={0}>
+            <TabPanel value={value} index={0}>
                 <ActiveDriverTabContent />
-            </CustomTabPanel>
-            <CustomTabPanel value={value} index={1}>
+            </TabPanel>
+            <TabPanel value={value} index={1}>
                 <DeactivatedDriverTabContent />
-            </CustomTabPanel>
+            </TabPanel>
         </>
     );
 };

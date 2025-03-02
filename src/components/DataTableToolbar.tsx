@@ -2,17 +2,17 @@ import { alpha, Toolbar, Tooltip, Typography, IconButton } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface CustomTableToolbar {
+interface DataTableToolbar {
     tableTitle: string;
     numSelected: number;
     handleDelete?: () => void;
 }
 
-export const CustomTableToolbar = ({
+export const DataTableToolbar = ({
     tableTitle,
     numSelected,
     handleDelete,
-}: Readonly<CustomTableToolbar>) => {
+}: Readonly<DataTableToolbar>) => {
     return (
         <Toolbar
             sx={[

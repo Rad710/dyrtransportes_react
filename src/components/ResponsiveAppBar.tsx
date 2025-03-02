@@ -14,7 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 
 import { Link as RouterLink, useLocation } from "react-router";
 
-import { DyRTransportesIcon } from "./CustomIcons";
+import { DyRTransportesIcon } from "./DyRTransportesIcon";
 import { useAuthStore } from "@/stores/authStore";
 
 const pages = [

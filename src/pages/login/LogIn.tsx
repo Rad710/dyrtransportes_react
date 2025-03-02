@@ -13,7 +13,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
-import { DyRTransportesIcon } from "@/components/CustomIcons";
+import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
 import { LogInApi } from "./login_utils";
 import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
