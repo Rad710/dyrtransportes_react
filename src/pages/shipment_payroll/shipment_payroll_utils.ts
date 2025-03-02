@@ -173,22 +173,9 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    exportShipmentList: async () =>
+    exportShipmentList: async (shipmentPayrollCode: number) =>
         api
-            .get(`/export-shipments`, {
-                responseType: "blob",
-            })
-            .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
-            })
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse;
-            }),
-
-    // Optional: If you need to export shipments within a date range, similar to shipment-payrolls
-    exportShipmentListByDateRange: async (startDate: DateTime, endDate: DateTime) =>
-        api
-            .get(`/export-shipments?startDate=${startDate}&endDate=${endDate}`, {
+            .get(`/export-shipments?shipment_payroll_code=${shipmentPayrollCode}`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {

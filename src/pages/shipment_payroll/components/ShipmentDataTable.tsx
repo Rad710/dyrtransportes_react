@@ -168,10 +168,7 @@ const ShipmentTableHead = ({
                                 color="primary"
                                 indeterminate={numSelected > 0 && numSelected < rowCount}
                                 checked={rowCount > 0 && numSelected === rowCount}
-                                onChange={(e, val) => {
-                                    onSelectAllClick(e);
-                                    console.log(val);
-                                }}
+                                onChange={onSelectAllClick}
                                 inputProps={{
                                     "aria-label": "select all desserts",
                                 }}

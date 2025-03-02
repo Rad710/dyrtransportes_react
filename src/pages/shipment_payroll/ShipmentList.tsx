@@ -18,6 +18,7 @@ import { DriverApi } from "../driver/driver_utils";
 import { Product, Route } from "../route_product/types";
 import { Driver } from "../driver/types";
 import { DateTime } from "luxon";
+import { saveAs } from "file-saver";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
@@ -107,10 +108,18 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Exporting Shipments...");
                 }
+                const resp = await ShipmentApi.exportShipmentList(payrollCode);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Shipments resp: ", { resp });
+                }
 
-                // TODO: Implement the export functionality similar to RouteApi.exportRouteList()
-                console.log("Export functionality to be implemented");
-                showToastSuccess("Planilla exportada exitosamente.");
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastAxiosError(resp);
+                }
             },
         });
     };
