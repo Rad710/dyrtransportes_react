@@ -187,26 +187,30 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         paddingRight: 3,
                     }}
                 >
-                    {currentShipmentPayroll && (
-                        <CustomSwitch
-                            checked={currentShipmentPayroll.collected}
-                            onChange={(e) =>
-                                handleCollectionToggle(currentShipmentPayroll, e.target.checked)
-                            }
-                            textChecked="Cobrado"
-                            checkedDescription={
-                                currentShipmentPayroll.collection_timestamp
-                                    ? DateTime.fromHTTP(
-                                          currentShipmentPayroll.collection_timestamp,
-                                      ).toFormat("dd/MM/yyyy")
-                                    : ""
-                            }
-                            textUnchecked="No cobrado"
-                            sx={{
-                                mr: 2,
-                            }}
-                        />
-                    )}
+                    <CustomSwitch
+                        checked={currentShipmentPayroll?.collected}
+                        onChange={
+                            currentShipmentPayroll
+                                ? (e) =>
+                                      handleCollectionToggle(
+                                          currentShipmentPayroll,
+                                          e.target.checked,
+                                      )
+                                : undefined
+                        }
+                        textChecked="Cobrado"
+                        checkedDescription={
+                            currentShipmentPayroll?.collection_timestamp
+                                ? DateTime.fromHTTP(
+                                      currentShipmentPayroll.collection_timestamp,
+                                  ).toFormat("dd/MM/yyyy")
+                                : ""
+                        }
+                        textUnchecked="No cobrado"
+                        sx={{
+                            mr: 2,
+                        }}
+                    />
 
                     <Button
                         variant="contained"

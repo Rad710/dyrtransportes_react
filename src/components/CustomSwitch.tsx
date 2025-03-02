@@ -3,11 +3,11 @@ import { styled } from "@mui/material/styles";
 import React from "react";
 
 interface CustomSwitchProps {
-    checked: boolean;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    textChecked: string;
+    checked?: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    textChecked?: string;
     checkedDescription?: string;
-    textUnchecked: string;
+    textUnchecked?: string;
     uncheckedDescription?: string;
     sx?: SxProps<Theme>;
 }

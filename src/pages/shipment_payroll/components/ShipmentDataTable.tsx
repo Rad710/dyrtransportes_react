@@ -581,11 +581,14 @@ export function ShipmentDataTable({
         // Variable to store the selected value
         let selectedPayroll: number | null = null;
 
+        const currentShipmentPayrollOption =
+            shipmentPayrollOptionList.find((item) => item.id === payrollCode?.toString()) ?? null;
+
         openConfirmDialog({
             title: "Confirm Move Shipments",
             message: (
-                <>
-                    Move all shipments to:
+                <Box>
+                    <Box component="span">Move all shipments to:</Box>
                     <Stack>
                         <Autocomplete
                             options={shipmentPayrollOptionList}
@@ -596,10 +599,11 @@ export function ShipmentDataTable({
                                 // Update the captured value in the closure
                                 selectedPayroll = parseInt(newValue?.id ?? "") || 0;
                             }}
+                            defaultValue={currentShipmentPayrollOption}
                             fullWidth
                         />
                     </Stack>
-                </>
+                </Box>
             ),
             confirmText: "Move",
             confirmButtonProps: {
