@@ -5,10 +5,10 @@ import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PropsTitle } from "@/types";
-import { Shipment, ShipmentAggregated } from "./types";
+import { Shipment, ShipmentAggregated, ShipmentPayroll } from "./types";
 import { isAxiosError } from "axios";
 
-import { ShipmentApi } from "./shipment_payroll_utils";
+import { ShipmentApi, ShipmentPayrollApi } from "./shipment_payroll_utils";
 import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
 import { ShipmentDataTable } from "./components/ShipmentDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -17,6 +17,7 @@ import { ProductApi, RouteApi } from "../route_product/route_product_utils";
 import { DriverApi } from "../driver/driver_utils";
 import { Product, Route } from "../route_product/types";
 import { Driver } from "../driver/types";
+import { DateTime } from "luxon";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
@@ -24,6 +25,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
     // State
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [shipmentPayrollList, setShipmentPayrollList] = useState<ShipmentPayroll[]>([]);
     const [shipmentAggregatedList, setShipmentAggregatedList] = useState<ShipmentAggregated[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
@@ -39,13 +41,21 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
     const loadShipmentListAndAutocompleteOptions = async () => {
         setLoadingTable(true);
-        const [shipmentsResp, routesResp, productsResp, driversResp] = await Promise.all([
-            ShipmentApi.getShipmentAggregated(payrollCode),
-            RouteApi.getRouteList(),
-            ProductApi.getProductList(),
-            DriverApi.getDriverList(),
-        ]);
+        const [shipmentPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
+            await Promise.all([
+                ShipmentPayrollApi.getShipmentPayrollList(),
+                ShipmentApi.getShipmentAggregated(payrollCode),
+                RouteApi.getRouteList(),
+                ProductApi.getProductList(),
+                DriverApi.getDriverList(),
+            ]);
         setLoadingTable(false);
+
+        if (!isAxiosError(shipmentPayrollsResp) && shipmentPayrollsResp) {
+            setShipmentPayrollList(shipmentPayrollsResp);
+        } else {
+            showToastAxiosError(shipmentPayrollsResp);
+        }
 
         if (!isAxiosError(shipmentsResp) && shipmentsResp) {
             setShipmentAggregatedList(shipmentsResp);
@@ -105,6 +115,11 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         });
     };
 
+    const shipmentPayrollDateString = DateTime.fromHTTP(
+        shipmentPayrollList.find((item) => item.payroll_code === payrollCode)?.payroll_timestamp ??
+            "",
+    );
+
     return (
         <Box sx={{ paddingTop: 3 }}>
             <Box
@@ -116,7 +131,10 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 }}
             >
                 <Typography variant="h5" component="h2">
-                    Lista de Cargas de fecha
+                    Lista de Cargas
+                    {shipmentPayrollDateString.isValid
+                        ? " del " + shipmentPayrollDateString.toFormat("dd/MM/yy")
+                        : ""}
                 </Typography>
 
                 <Box
@@ -156,6 +174,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                         routeList={routeList}
                         shipmentToEdit={shipmentToEdit}
                         setShipmentToEdit={setShipmentToEdit}
+                        shipmentPayrollList={shipmentPayrollList}
                     />
 
                     <Button
@@ -177,6 +196,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 payrollCode={payrollCode}
                 setShipmentToEdit={setShipmentToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
+                shipmentPayrollList={shipmentPayrollList}
             />
         </Box>
     );

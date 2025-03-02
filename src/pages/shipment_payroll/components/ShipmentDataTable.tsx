@@ -9,17 +9,18 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 
-import { CustomTableToolbar } from "@/components/CustomTableToolbar";
-import { Shipment, ShipmentAggregated } from "../types";
-import { CircularProgress, TablePagination } from "@mui/material";
+import { Shipment, ShipmentAggregated, ShipmentPayroll } from "../types";
+import { Autocomplete, CircularProgress, Stack, TablePagination, TextField } from "@mui/material";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
 import { ShipmentApi } from "../shipment_payroll_utils";
 import { isAxiosError } from "axios";
 import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
+import { ShipmentTableToolBar } from "./ShipmentTableToolBar";
+import { AutocompleteOption } from "@/types";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
@@ -192,6 +193,7 @@ type ShipmentDataTableProps = {
     payrollCode: number;
     setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    shipmentPayrollList: ShipmentPayroll[];
 };
 
 export function ShipmentDataTable({
@@ -202,13 +204,25 @@ export function ShipmentDataTable({
     payrollCode,
     setShipmentToEdit,
     setEditFormDialogOpen,
+    shipmentPayrollList,
 }: Readonly<ShipmentDataTableProps>) {
     // state
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
     // context
     const { openConfirmDialog } = useConfirmation();
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
+
+    // autocomplete options
+    // Memoized option lists for better performance
+    const shipmentPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            shipmentPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [shipmentPayrollList],
+    );
 
     // USE EFFECT
     useEffect(() => {
@@ -244,7 +258,9 @@ export function ShipmentDataTable({
 
                 showToastSuccess(resp.message);
 
+                setLoading(true);
                 const shipmentAggregatedResp = await ShipmentApi.getShipmentAggregated(payrollCode);
+                setLoading(false);
                 setShipmentAggregatedList(
                     !isAxiosError(shipmentAggregatedResp) ? shipmentAggregatedResp : [],
                 );
@@ -322,15 +338,70 @@ export function ShipmentDataTable({
                     showToastAxiosError(resp);
                     return;
                 }
-
                 showToastSuccess(resp.message);
 
+                setLoading(true);
                 const shipmentListResp = await ShipmentApi.getShipmentAggregated(payrollCode);
+                setLoading(false);
                 setShipmentAggregatedList(!isAxiosError(shipmentListResp) ? shipmentListResp : []);
             },
         });
     };
 
+    const handleMoveShipmentList = async () => {
+        // Variable to store the selected value
+        let selectedPayroll: number | null = null;
+
+        openConfirmDialog({
+            title: "Confirm Move Shipments",
+            message: (
+                <>
+                    Move all shipments to:
+                    <Stack>
+                        <Autocomplete
+                            options={shipmentPayrollOptionList}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Planilla" fullWidth />
+                            )}
+                            onChange={(_, newValue) => {
+                                // Update the captured value in the closure
+                                selectedPayroll = parseInt(newValue?.id ?? "") || 0;
+                            }}
+                            fullWidth
+                        />
+                    </Stack>
+                </>
+            ),
+            confirmText: "Move",
+            confirmButtonProps: {
+                color: "primary",
+            },
+            onConfirm: async () => {
+                if (!selectedPayroll) {
+                    showToastError("No Shipment Payroll was selected.");
+                    return;
+                }
+
+                setLoading(true);
+                const resp = await ShipmentApi.moveShipmentList(selectedPayroll, selectedRows);
+                setLoading(false);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Moving Shipment resp: ", { resp });
+                }
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
+                showToastSuccess(resp.message);
+
+                setLoading(true);
+                // Use selectedPayroll in your API call
+                const shipmentListResp = await ShipmentApi.getShipmentAggregated(payrollCode);
+                setLoading(false);
+                setShipmentAggregatedList(!isAxiosError(shipmentListResp) ? shipmentListResp : []);
+            },
+        });
+    };
     // rendering helper functions
     const renderShipmentRow = (indexAggregated: number, indexShipment: number, row: Shipment) => {
         const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
@@ -503,10 +574,11 @@ export function ShipmentDataTable({
     return (
         <Box sx={{ width: "100%" }}>
             <Paper sx={{ mb: 2 }}>
-                <CustomTableToolbar
+                <ShipmentTableToolBar
                     numSelected={selectedRows.length}
                     tableTitle="Shipments"
                     handleDelete={handleDeleteSelected}
+                    handleMove={handleMoveShipmentList}
                 />
                 <TableContainer>
                     <Table

@@ -15,7 +15,7 @@ import Stack from "@mui/material/Stack";
 import { DateTime } from "luxon";
 import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
-import { AutocompleteOptionDriver, Shipment, ShipmentAggregated } from "../types";
+import { AutocompleteOptionDriver, Shipment, ShipmentAggregated, ShipmentPayroll } from "../types";
 import { ShipmentApi } from "../shipment_payroll_utils";
 import { Product, Route } from "@/pages/route_product/types";
 import { isAxiosError } from "axios";
@@ -35,6 +35,7 @@ interface ShipmentFormDialogProps extends FormDialogProps {
     routeList: Route[];
     shipmentToEdit?: Shipment | null;
     setShipmentToEdit?: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    shipmentPayrollList?: ShipmentPayroll[];
 }
 
 const shipmentFormSchema = z.object({
@@ -189,7 +190,14 @@ const shipmentFormSchema = z.object({
         .min(1, {
             message: "El campo Kg. Destino no puede estar vacío.",
         }),
-    shipment_payroll_code: z.number(),
+    shipment_payroll_code: z
+        .number({
+            invalid_type_error: "Valor inválido.",
+            required_error: "El Planilla es obligatorio.",
+        })
+        .min(1, {
+            message: "El campo Planilla no puede estar vacío.",
+        }),
     driver_payroll_code: z.number().nullish(),
 });
 
@@ -230,6 +238,7 @@ export const ShipmentFormDialog = ({
     routeList,
     shipmentToEdit,
     setShipmentToEdit,
+    shipmentPayrollList,
 }: ShipmentFormDialogProps) => {
     // React form hook setup
     const {
@@ -253,6 +262,15 @@ export const ShipmentFormDialog = ({
     const watchedOrigin = watch("origin");
 
     // Memoized option lists for better performance
+    const shipmentPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            shipmentPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [shipmentPayrollList],
+    );
+
     const truckPlateOptionList: AutocompleteOption[] = useMemo(
         () =>
             Array.from(new Set(driverList.map((item) => item.truck_plate ?? "")))
@@ -484,6 +502,36 @@ export const ShipmentFormDialog = ({
             <Stack spacing={2}>
                 {/* Row 1: Date, Driver, Truck Plate */}
                 <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                    {shipmentToEdit && (
+                        <Controller
+                            name="shipment_payroll_code"
+                            control={control}
+                            render={({ field }) => (
+                                <Autocomplete
+                                    options={shipmentPayrollOptionList}
+                                    value={
+                                        shipmentPayrollOptionList.find(
+                                            (option) => String(option.id) === String(field.value),
+                                        ) || null
+                                    }
+                                    onChange={(_, newValue) => {
+                                        field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Planilla"
+                                            error={!!errors.shipment_payroll_code}
+                                            helperText={errors.shipment_payroll_code?.message}
+                                            fullWidth
+                                        />
+                                    )}
+                                    fullWidth
+                                />
+                            )}
+                        />
+                    )}
+
                     <Controller
                         name="shipment_date"
                         control={control}
@@ -533,8 +581,11 @@ export const ShipmentFormDialog = ({
                                     <TextField
                                         {...params}
                                         label="Chofer"
-                                        error={!!errors.driver_code}
-                                        helperText={errors.driver_code?.message}
+                                        error={!!errors.driver_code || !!errors.driver_name}
+                                        helperText={
+                                            errors.driver_code?.message ||
+                                            errors.driver_name?.message
+                                        }
                                         fullWidth
                                     />
                                 )}
@@ -593,8 +644,11 @@ export const ShipmentFormDialog = ({
                                     <TextField
                                         {...params}
                                         label="Producto"
-                                        error={!!errors.product_code}
-                                        helperText={errors.product_code?.message}
+                                        error={!!errors.product_code || !!errors.product_name}
+                                        helperText={
+                                            errors.product_code?.message ||
+                                            errors.product_name?.message
+                                        }
                                         fullWidth
                                     />
                                 )}
