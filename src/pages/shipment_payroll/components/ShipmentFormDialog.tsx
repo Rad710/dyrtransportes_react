@@ -502,36 +502,6 @@ export const ShipmentFormDialog = ({
             <Stack spacing={2}>
                 {/* Row 1: Date, Driver, Truck Plate */}
                 <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                    {shipmentToEdit && (
-                        <Controller
-                            name="shipment_payroll_code"
-                            control={control}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    options={shipmentPayrollOptionList}
-                                    value={
-                                        shipmentPayrollOptionList.find(
-                                            (option) => String(option.id) === String(field.value),
-                                        ) || null
-                                    }
-                                    onChange={(_, newValue) => {
-                                        field.onChange(parseInt(newValue?.id ?? "") || 0);
-                                    }}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Planilla"
-                                            error={!!errors.shipment_payroll_code}
-                                            helperText={errors.shipment_payroll_code?.message}
-                                            fullWidth
-                                        />
-                                    )}
-                                    fullWidth
-                                />
-                            )}
-                        />
-                    )}
-
                     <Controller
                         name="shipment_date"
                         control={control}
@@ -621,6 +591,36 @@ export const ShipmentFormDialog = ({
                             />
                         )}
                     />
+
+                    {shipmentToEdit && (
+                        <Controller
+                            name="shipment_payroll_code"
+                            control={control}
+                            render={({ field }) => (
+                                <Autocomplete
+                                    options={shipmentPayrollOptionList}
+                                    value={
+                                        shipmentPayrollOptionList.find(
+                                            (option) => String(option.id) === String(field.value),
+                                        ) || null
+                                    }
+                                    onChange={(_, newValue) => {
+                                        field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Planilla"
+                                            error={!!errors.shipment_payroll_code}
+                                            helperText={errors.shipment_payroll_code?.message}
+                                            fullWidth
+                                        />
+                                    )}
+                                    fullWidth
+                                />
+                            )}
+                        />
+                    )}
                 </Stack>
 
                 {/* Row 2: Product, Origin, Destination */}

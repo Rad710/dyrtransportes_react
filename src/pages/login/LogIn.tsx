@@ -198,7 +198,7 @@ export const LogIn = ({ title }: PropsTitle) => {
                         />
                     </FormControl>
                     <FormControlLabel
-                        control={<Checkbox value="remember" color="primary" />}
+                        control={<Checkbox name="remember_me" color="primary" />}
                         label="Remember me"
                     />
                     <Button type="submit" fullWidth variant="contained">

@@ -12,15 +12,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     token: null,
     user: null,
     setAuth: (token, user) => {
-        // Save to sessionStorage when setting auth
-        sessionStorage.setItem("token", token);
-        sessionStorage.setItem("user", JSON.stringify(user));
+        // Save to localStorage when setting auth
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
         set({ token, user });
     },
     logout: () => {
-        // Clear sessionStorage on logout
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
+        // Clear localStorage on logout
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         set({ token: null, user: null });
     },
 }));
@@ -29,8 +29,8 @@ export const hydrateAuth = async () => {
     return new Promise<void>((resolve) => {
         // Simulate a small delay to ensure consistent behavior
         setTimeout(() => {
-            const token = sessionStorage.getItem("token");
-            const user = sessionStorage.getItem("user");
+            const token = localStorage.getItem("token");
+            const user = localStorage.getItem("user");
 
             if (token && user) {
                 useAuthStore.getState().setAuth(token, JSON.parse(user));
