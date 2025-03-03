@@ -1,24 +1,24 @@
+import { ApiResponse } from "@/types";
+
 export type Route = {
     route_code?: number | null;
     origin: string;
     destination: string;
-    price: string | number;
-    payroll_price: string | number;
+    price: string;
+    payroll_price: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
-
-    success?: string;
-    error?: string;
+    modification_timestamp?: string;
 };
+
+export type RouteApiResponse = Route & ApiResponse;
 
 export type Product = {
     product_code?: number | null;
     product_name: string;
     deleted?: boolean;
-    company_id?: string;
     modification_user?: string;
-
-    success?: string;
-    error?: string;
+    modification_timestamp?: string;
 };
+
+export type ProductApiResponse = Product & ApiResponse;

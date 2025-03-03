@@ -124,15 +124,9 @@ pipeline {
         stage('Test & eslint') {
             steps {
                 echo "Starting ESLint..."
-                sh "eslint src --ext js,jsx \
-                    --report-unused-disable-directives \
-                    --max-warnings 0 \
-                    --format checkstyle > eslint.xml | exit 0"
+                sh "eslint --format checkstyle > eslint.xml | exit 0"
 
-                sh "eslint src --ext js,jsx \
-                    --report-unused-disable-directives \
-                    --max-warnings 0 \
-                    --format json > eslint.json | exit 0"
+                sh "eslint --format json > eslint.json | exit 0"
 
                 recordIssues enabledForFailure: true, 
                     aggregatingResults: true, 
@@ -153,7 +147,7 @@ pipeline {
 
                         echo 'Sonar start'
                         sh "sonar-scanner -Dsonar.eslint.reportPaths=eslint.json \
-                            -Dsonar.projectKey=D-y-R-Transportes-React \
+                            -Dsonar.projectKey=dyrtransportes-frontend-react \
                             -Dsonar.sourceEncoding=UTF-8"
 
                         echo 'Sonar end'

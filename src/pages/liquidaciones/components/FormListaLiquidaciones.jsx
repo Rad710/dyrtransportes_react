@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { PlusIcon } from "@radix-ui/react-icons";
 import { Button, Dialog, Flex, Text, TextField } from "@radix-ui/themes";
-import { Form } from "react-router-dom";
+import { Form } from "react-router";
 import CalloutMessage from "../../../components/CalloutMessage";
 import { postLiquidacion } from "../../../utils/liquidaciones";
 

@@ -1,209 +1,131 @@
-import { toastAxiosError, toastSuccess } from "@/utils/notification";
-import axios, { AxiosError, AxiosResponse } from "axios";
-import { saveAs } from "file-saver";
-import { Product, Route } from "./types";
-import { PromiseResult } from "@/types";
+import { AxiosError, AxiosResponse } from "axios";
+import { Product, ProductApiResponse, Route, RouteApiResponse } from "./types";
+import { ApiResponse } from "@/types";
+import { api } from "@/utils/axios";
 
 export const RouteApi = {
-    getRoute: async (code: number | null): Promise<Route | null> =>
-        axios
-            .get(`${import.meta.env.VITE_API_URL}/route/${code}`)
-            .then((response: AxiosResponse<Route | null>) => response.data ?? null)
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return null;
+    getRouteList: async () =>
+        api
+            .get(`/routes`)
+            .then((response: AxiosResponse<Route[] | null>) => response.data ?? [])
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    getRouteList: async (): Promise<Route[]> =>
-        axios
-            .get(`${import.meta.env.VITE_API_URL}/routes`)
-            .then(
-                (response: AxiosResponse<Route[] | null>) =>
-                    response.data?.map(
-                        (item: Route): Route => ({
-                            ...item,
-                            price: parseFloat(item.price?.toString() ?? "") || 0,
-                            payroll_price: parseFloat(item.payroll_price?.toString() ?? "") || 0,
-                        })
-                    ) ?? []
-            )
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return [];
-            }),
-
-    postRoute: async (payload: Route): Promise<Route | null> =>
-        axios
-            .post(`${import.meta.env.VITE_API_URL}/route`, payload)
-            .then((response: AxiosResponse<Route | null>) => {
-                if (response.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    postRoute: async (payload: Route) =>
+        api
+            .post(`/route`, payload)
+            .then((response: AxiosResponse<RouteApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<Route | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    putRoute: async (code: number, payload: Route): Promise<Route | null> =>
-        axios
-            .put(`${import.meta.env.VITE_API_URL}/route/${code}`, payload)
-            .then((response: AxiosResponse<Route | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    putRoute: async (code: number, payload: Route) =>
+        api
+            .put(`/route/${code}`, payload)
+            .then((response: AxiosResponse<RouteApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<Route | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    deleteRoute: async (code: number): Promise<PromiseResult | null> =>
-        axios
-            .delete(`${import.meta.env.VITE_API_URL}/route/${code}`)
-            .then((response: AxiosResponse<{ success: string } | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    deleteRoute: async (code: number) =>
+        api
+            .delete(`/route/${code}`)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse?.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    deleteRouteList: async (codeList: number[]): Promise<PromiseResult | null> =>
-        axios
-            .delete(`${import.meta.env.VITE_API_URL}/routes`, {
+    deleteRouteList: async (codeList: number[]) =>
+        api
+            .delete(`/routes`, {
                 data: codeList,
             })
-            .then((response: AxiosResponse<{ success: string } | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse?.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
     exportRouteList: async () =>
-        axios
-            .get(`${import.meta.env.VITE_API_URL}/export-routes`, {
+        api
+            .get(`/export-routes`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                if (response.data) {
-                    saveAs(new Blob([response.data]), "lista_de_precios.xlsx");
-                    toastSuccess("Planilla exportada exitosamente.");
-                } else {
-                    toastSuccess("Error al exportar planilla.");
-                }
+                return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
             }),
 };
 
 export const ProductApi = {
-    getProductList: async (): Promise<Product[]> =>
-        axios
-            .get(`${import.meta.env.VITE_API_URL}/products`)
+    getProductList: async () =>
+        api
+            .get(`/products`)
             .then((response: AxiosResponse<Product[] | null>) => response.data ?? [])
-            .catch((errorResponse: AxiosError<{ error: string }>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return [];
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
-    postProduct: async (payload: Product): Promise<Product | null> =>
-        axios
-            .post(`${import.meta.env.VITE_API_URL}/product`, payload)
-            .then((response: AxiosResponse<Product | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    postProduct: async (payload: Product) =>
+        api
+            .post(`/product`, payload)
+            .then((response: AxiosResponse<ProductApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<Product | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    putProduct: async (code: number, payload: Product): Promise<Product | null> =>
-        axios
-            .put(`${import.meta.env.VITE_API_URL}/product/${code}`, payload)
-            .then((response: AxiosResponse<Product | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    putProduct: async (code: number, payload: Product) =>
+        api
+            .put(`/product/${code}`, payload)
+            .then((response: AxiosResponse<ProductApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<Product | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    deleteProduct: async (code: number): Promise<PromiseResult | null> =>
-        axios
-            .delete(`${import.meta.env.VITE_API_URL}/product/${code}`)
-            .then((response: AxiosResponse<{ success: string } | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+    deleteProduct: async (code: number) =>
+        api
+            .delete(`/product/${code}`)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    // TODO CREATE ENDPOINT
-    deleteProductList: async (codeList: number[]): Promise<PromiseResult | null> =>
-        axios
-            .delete(`${import.meta.env.VITE_API_URL}/products`, {
+    deleteProductList: async (codeList: number[]) =>
+        api
+            .delete(`/products`, {
                 data: codeList,
             })
-            .then((response: AxiosResponse<{ success: string } | null>) => {
-                if (response?.data?.success) {
-                    toastSuccess(response.data.success);
-                }
+            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
-                return errorResponse.response?.data ?? null;
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 
-    // TODO CREATE ENDPOINT
     exportProductList: async () =>
-        axios
-            .get(`${import.meta.env.VITE_API_URL}/export-products`, {
+        api
+            .get(`/export-products`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                if (response.data) {
-                    saveAs(new Blob([response.data]), "lista_de_productos.xlsx");
-                    toastSuccess("Planilla exportada exitosamente.");
-                } else {
-                    toastSuccess("Error al exportar planilla.");
-                }
+                return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<{ error: string } | null>) => {
-                console.log({ errorResponse });
-                toastAxiosError(errorResponse);
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
             }),
 };

@@ -2,7 +2,32 @@ export type PropsTitle = {
     title: string;
 };
 
-export type PromiseResult = {
+export type ApiResponse = {
+    message: string;
+};
+
+export type FormSubmitResult = {
     success?: string;
     error?: string;
 };
+
+export interface AuthResponse extends ApiResponse {
+    token: string;
+    user: User;
+}
+
+export interface User {
+    user_id: number;
+    email: string;
+    name: string;
+}
+
+export interface FormDialogProps {
+    open: boolean;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface AutocompleteOption {
+    label: string;
+    id: string;
+}

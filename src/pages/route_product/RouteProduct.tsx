@@ -1,185 +1,253 @@
 import { useState, useEffect } from "react";
 
-import { Table2Icon } from "lucide-react";
+import { Box, Button, Tab, Tabs } from "@mui/material";
+import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
+import { isAxiosError } from "axios";
+import { saveAs } from "file-saver";
 
-import { AlertDialogConfirm } from "@/components/AlertDialogConfirm";
-import { DataTable } from "@/components/ui/data-table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/context/ToastContext";
+import { useConfirmation } from "@/context/ConfirmationContext";
+import { TabPanel } from "@/components/TabPanel";
+
+import { RouteDataTable } from "./components/RouteDataTable";
+import { RouteFormDialog } from "./components/RouteFormDialog";
 
 import { PropsTitle } from "@/types";
-
-import { routeDataTableColumns, routeFilterColumnList } from "./components/RouteDataTableColumns";
-import { RouteDialogForm } from "./components/RouteDialogForm";
-import { RouteDialogDelete } from "./components/RouteDialogDelete";
-import {
-    productDataTableColumns,
-    productFilterColumnList,
-} from "./components/ProductDataTableColumns";
-import { ProductDialogForm } from "./components/ProductDialogForm";
-import { ProductDialogDelete } from "./components/ProductDialogDelete";
-
 import { Product, Route } from "./types";
-
 import { ProductApi, RouteApi } from "./route_product_utils";
+import { ProductDataTable } from "./components/ProductDataTable";
+import { ProductFormDialog } from "./components/ProductFormDialog";
 
 const RouteTabContent = () => {
-    //STATE
-    const [loading, setLoading] = useState<boolean>(true);
+    // //STATE
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
     //Routes State
     const [routeList, setRouteList] = useState<Route[]>([]);
-    const [selectedRouteRows, setSelectedRouteRows] = useState<number[]>([]);
     const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
-    const [routeToDelete, setRouteToDelete] = useState<Route | null>(null);
 
-    // DATATABLE
-    const routeColumns = routeDataTableColumns(
-        selectedRouteRows,
-        setSelectedRouteRows,
-        setRouteToEdit,
-        setRouteToDelete
-    );
+    // context
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
     useEffect(() => {
         const loadRoutes = async () => {
-            const routes = await RouteApi.getRouteList();
-            setRouteList(routes);
-            setLoading(false);
+            setLoadingTable(true);
+            const resp = await RouteApi.getRouteList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                setRouteList(resp);
+            } else {
+                showToastAxiosError(resp);
+            }
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded routes: ", { routes });
+                console.log("Loaded routes: ", { resp });
             }
         };
 
         loadRoutes();
     }, []);
 
-    const pageSize = 20;
+    const handleExportRouteList = () => {
+        openConfirmDialog({
+            title: "Confirm Export",
+            message: "All Routes will be exported.",
+            confirmText: "Export",
+            confirmButtonProps: {
+                color: "info",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Routes...");
+                }
+                const resp = await RouteApi.exportRouteList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Routes resp: ", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_precios.xlsx");
+
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastError("Error al exportar planilla");
+                }
+            },
+        });
+    };
+
     return (
         <>
-            <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-                <RouteDialogForm
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem",
+                }}
+            >
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setAddFormDialogOpen(true)}
+                >
+                    Add
+                </Button>
+
+                <RouteFormDialog
                     setRouteList={setRouteList}
+                    open={addFormDialogOpen}
+                    setOpen={setAddFormDialogOpen}
+                    setLoading={setLoadingTable}
+                />
+
+                <RouteFormDialog
+                    setRouteList={setRouteList}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    setLoading={setLoadingTable}
                     routeToEdit={routeToEdit}
                     setRouteToEdit={setRouteToEdit}
-                    setSelectedRouteRows={setSelectedRouteRows}
                 />
 
-                <AlertDialogConfirm
-                    buttonContent={
-                        <>
-                            <Table2Icon className="w-6 h-6" />
-                            Exportar
-                        </>
-                    }
-                    variant="green"
-                    size="md-lg"
-                    onClickFunctionPromise={RouteApi.exportRouteList}
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<TableChartIcon />}
+                    onClick={handleExportRouteList}
                 >
-                    <span className="md:text-lg">Se exportarán las Rutas.</span>
-                </AlertDialogConfirm>
+                    Export
+                </Button>
+            </Box>
 
-                <RouteDialogDelete
-                    setRouteList={setRouteList}
-                    selectedRouteRows={selectedRouteRows}
-                    setSelectedRouteRows={setSelectedRouteRows}
-                    routeToDelete={routeToDelete}
-                    setRouteToDelete={setRouteToDelete}
-                />
-            </div>
-
-            {!loading && (
-                <DataTable
-                    data={routeList}
-                    columns={routeColumns}
-                    pageSize={pageSize}
-                    filterColumnList={routeFilterColumnList}
-                />
-            )}
+            <RouteDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                routeList={routeList}
+                setRouteList={setRouteList}
+                setRouteToEdit={setRouteToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
+            />
         </>
     );
 };
 
 const ProductTabContent = () => {
-    //STATE
-    const [loading, setLoading] = useState<boolean>(true);
+    // //STATE
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
-    //Products State
+    //Product State
     const [productList, setProductList] = useState<Product[]>([]);
-    const [selectedProductRows, setSelectedProductRows] = useState<number[]>([]);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
-    // EVENT HANDLERS
-    // Product Handlers and Component
-    const productColumns = productDataTableColumns(
-        selectedProductRows,
-        setSelectedProductRows,
-        setProductToEdit,
-        setProductToDelete
-    );
+    // context
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
+    const { openConfirmDialog } = useConfirmation();
 
-    // USE EFFECT
+    // USE EFFECTS
     useEffect(() => {
         const loadProducts = async () => {
-            const products = await ProductApi.getProductList();
-            setProductList(products);
-            setLoading(false);
+            setLoadingTable(true);
+            const resp = await ProductApi.getProductList();
+            setLoadingTable(false);
+            if (!isAxiosError(resp) && resp) {
+                setProductList(resp);
+            } else {
+                showToastAxiosError(resp);
+            }
 
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded products: ", { products });
+                console.log("Loaded products: ", { resp });
             }
         };
 
         loadProducts();
     }, []);
 
-    const pageSize = 20;
+    const handleExportProductList = () => {
+        openConfirmDialog({
+            title: "Confirm Export",
+            message: "All products will be exported.",
+            confirmText: "Export",
+            confirmButtonProps: {
+                color: "info",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting products...");
+                }
+                const resp = await ProductApi.exportProductList();
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting products resp: ", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    saveAs(new Blob([resp ?? ""]), "lista_de_product.xlsx");
+
+                    showToastSuccess("Planilla exportada exitosamente.");
+                } else {
+                    showToastError("Error al exportar planilla.");
+                }
+            },
+        });
+    };
+
     return (
         <>
-            <div className="flex flex-wrap gap-6 md:gap-x-14 md:justify-end">
-                <ProductDialogForm
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem",
+                }}
+            >
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setAddFormDialogOpen(true)}
+                >
+                    Add
+                </Button>
+
+                <ProductFormDialog
                     setProductList={setProductList}
+                    open={addFormDialogOpen}
+                    setOpen={setAddFormDialogOpen}
+                    setLoading={setLoadingTable}
+                />
+
+                <ProductFormDialog
+                    setProductList={setProductList}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    setLoading={setLoadingTable}
                     productToEdit={productToEdit}
                     setProductToEdit={setProductToEdit}
-                    setSelectedProductRows={setSelectedProductRows}
                 />
 
-                <AlertDialogConfirm
-                    buttonContent={
-                        <>
-                            <Table2Icon className="w-6 h-6" />
-                            Exportar
-                        </>
-                    }
-                    variant="green"
-                    size="md-lg"
-                    onClickFunctionPromise={ProductApi.exportProductList}
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<TableChartIcon />}
+                    onClick={handleExportProductList}
                 >
-                    <span className="md:text-lg">
-                        Se exportarán{" "}
-                        <strong className="font-bold text-gray-700">todos los Productos</strong>
-                    </span>
-                </AlertDialogConfirm>
+                    Export
+                </Button>
+            </Box>
 
-                <ProductDialogDelete
-                    setProductList={setProductList}
-                    selectedProductRows={selectedProductRows}
-                    setSelectedProductRows={setSelectedProductRows}
-                    productToDelete={productToDelete}
-                    setProductToDelete={setProductToDelete}
-                />
-            </div>
-
-            {!loading && (
-                <DataTable
-                    data={productList}
-                    columns={productColumns}
-                    pageSize={pageSize}
-                    filterColumnList={productFilterColumnList}
-                />
-            )}
+            <ProductDataTable
+                loading={loadingTable}
+                setLoading={setLoadingTable}
+                productList={productList}
+                setProductList={setProductList}
+                setProductToEdit={setProductToEdit}
+                setEditFormDialogOpen={setEditFormDialogOpen}
+            />
         </>
     );
 };
@@ -189,33 +257,26 @@ export const RouteProduct = ({ title }: Readonly<PropsTitle>) => {
         document.title = title;
     }, []);
 
-    return (
-        <div className="px-4">
-            <div className="md:flex justify-between items-center">
-                <Tabs defaultValue="routes" className="w-full">
-                    <TabsList>
-                        <TabsTrigger
-                            value="routes"
-                            className="text-xl md:text-2xl text-left mb-2 md:mb-0"
-                        >
-                            Precios
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="products"
-                            className="text-xl md:text-2xl text-left mb-2 md:mb-0"
-                        >
-                            Productos
-                        </TabsTrigger>
-                    </TabsList>
+    const [value, setValue] = useState(0);
 
-                    <TabsContent value="routes" className="md-lg:-mt-8">
-                        <RouteTabContent />
-                    </TabsContent>
-                    <TabsContent value="products" className="md-lg:-mt-8">
-                        <ProductTabContent />
-                    </TabsContent>
+    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+        setValue(newValue);
+    };
+
+    return (
+        <>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                    <Tab label="Prices" id="simple-tab-0" aria-controls="simple-tabpanel-0" />
+                    <Tab label="Products" id="simple-tab-1" aria-controls="simple-tabpanel-1" />
                 </Tabs>
-            </div>
-        </div>
+            </Box>
+            <TabPanel value={value} index={0}>
+                <RouteTabContent />
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+                <ProductTabContent />
+            </TabPanel>
+        </>
     );
 };
