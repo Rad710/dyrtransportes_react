@@ -16,6 +16,7 @@ import { Driver } from "@/pages/driver/Driver";
 import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
 import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
+import { Profile } from "@/pages/profile/Profile";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
             {
                 path: "/drivers",
                 element: <Driver title="Drivers" />,
+            },
+            {
+                path: "/profile",
+                element: <Profile title="Profile" />,
             },
             // {
             //     path: "/dinatran",

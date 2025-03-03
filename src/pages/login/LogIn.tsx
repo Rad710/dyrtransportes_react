@@ -1,4 +1,3 @@
-import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -14,12 +13,25 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
-import { LogInApi } from "./login_utils";
-import { isAxiosError } from "axios";
+import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
 import { Link as RouterLink } from "react-router";
-import { PropsTitle } from "@/types";
+import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
+import { api } from "@/utils/axios";
+import { useEffect, useState } from "react";
+
+const LogInApi = {
+    loginUser: (formData: FormData) =>
+        api
+            .post(`/auth/log-in`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+};
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -64,15 +76,15 @@ const LogInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export const LogIn = ({ title }: PropsTitle) => {
-    const [emailError, setEmailError] = React.useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-    const [passwordError, setPasswordError] = React.useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-    const [formErrorMessage, setFormErrorMessage] = React.useState("");
+    const [emailError, setEmailError] = useState(false);
+    const [emailErrorMessage, setEmailErrorMessage] = useState("");
+    const [passwordError, setPasswordError] = useState(false);
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+    const [formErrorMessage, setFormErrorMessage] = useState("");
 
     const setAuth = useAuthStore((state) => state.setAuth);
 
-    React.useEffect(() => {
+    useEffect(() => {
         document.title = title;
     }, []);
 
@@ -110,13 +122,13 @@ export const LogIn = ({ title }: PropsTitle) => {
             return; // Stop here if validation fails
         }
 
-        const data = new FormData(event.currentTarget);
+        const formData = new FormData(event.currentTarget);
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Login post: ", data);
+            console.log("Login post: ", formData);
         }
 
-        const resp = await LogInApi.loginUser(data);
+        const resp = await LogInApi.loginUser(formData);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("LogIn response: ", { resp });
@@ -124,8 +136,10 @@ export const LogIn = ({ title }: PropsTitle) => {
 
         if (!isAxiosError(resp) && resp) {
             setFormErrorMessage("");
+
+            const rememberMe: boolean = formData.get("remember_me") === "on";
             // Store in Zustand
-            setAuth(resp.token, resp.user);
+            setAuth(resp.token, resp.user, rememberMe);
         } else {
             setFormErrorMessage(resp?.response?.data?.message ?? "Error");
             setEmailError(true);

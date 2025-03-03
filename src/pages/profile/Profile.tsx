@@ -6,26 +6,14 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
+import Alert from "@mui/material/Alert";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
-import { AxiosError, AxiosResponse, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
-import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
+import { PropsTitle } from "@/types";
 import { useEffect, useState } from "react";
-import { api } from "@/utils/axios";
-
-const SignUpApi = {
-    signUpUser: (formData: FormData) =>
-        api
-            .post(`/auth/sign-up`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            })
-            .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            }),
-};
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -46,9 +34,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
     }),
 }));
 
-const RegisterContainer = styled(Stack)(({ theme }) => ({
-    height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
-    minHeight: "100%",
+const ProfileContainer = styled(Stack)(({ theme }) => ({
     padding: theme.spacing(2),
     [theme.breakpoints.up("sm")]: {
         padding: theme.spacing(4),
@@ -69,17 +55,17 @@ const RegisterContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export const SignUp = ({ title }: PropsTitle) => {
+export const Profile = ({ title }: PropsTitle) => {
     const [emailError, setEmailError] = useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = useState("");
-    const [passwordError, setPasswordError] = useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
     const [nameError, setNameError] = useState(false);
     const [nameErrorMessage, setNameErrorMessage] = useState("");
     const [formErrorMessage, setFormErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
-    // store
+    // Get user data from auth store
     const setAuth = useAuthStore((state) => state.setAuth);
+    const user = useAuthStore((state) => state.user);
 
     useEffect(() => {
         document.title = title;
@@ -87,7 +73,6 @@ export const SignUp = ({ title }: PropsTitle) => {
 
     const validateInputs = () => {
         const email = document.getElementById("email") as HTMLInputElement;
-        const password = document.getElementById("password") as HTMLInputElement;
         const name = document.getElementById("name") as HTMLInputElement;
 
         let isValid = true;
@@ -99,15 +84,6 @@ export const SignUp = ({ title }: PropsTitle) => {
         } else {
             setEmailError(false);
             setEmailErrorMessage("");
-        }
-
-        if (!password.value || password.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage("Password must be at least 6 characters long.");
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage("");
         }
 
         if (!name.value || name.value.length < 1) {
@@ -124,37 +100,47 @@ export const SignUp = ({ title }: PropsTitle) => {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setSuccessMessage("");
 
-        if (nameError || emailError || passwordError) {
+        // Validate inputs first
+        if (!validateInputs()) {
             return;
         }
 
-        const formData = new FormData(event.currentTarget);
+        const data = new FormData(event.currentTarget);
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Register post: ", formData);
+            console.log("Profile update data: ", Object.fromEntries(data.entries()));
         }
 
-        const resp = await SignUpApi.signUpUser(formData);
+        const resp = await ProfileEditApi.updateUserProfile(data);
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Register response: ", { resp });
+            console.log("Profile update response: ", { resp });
         }
 
-        if (!isAxiosError(resp) && resp) {
+        if (!isAxiosError(resp) && resp?.user) {
             setFormErrorMessage("");
-            // Store in Zustand
-            setAuth(resp.token, resp.user);
+            setSuccessMessage("Profile updated successfully!");
+
+            // Update user in auth store
+            setAuth(resp.token || sessionStorage.getItem("token"), resp.user);
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
-            setEmailError(true);
-            setPasswordError(true);
+            setFormErrorMessage(
+                resp?.response?.data?.message || resp?.message || "Error updating profile",
+            );
+            setSuccessMessage("");
         }
     };
 
     return (
-        <RegisterContainer direction="column" justifyContent="space-between" overflow="auto">
-            <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
+        <ProfileContainer
+            direction="column"
+            justifyContent="space-between"
+            overflow="auto"
+            sx={{ position: "relative" }}
+        >
+            <ColorModeSelect sx={{ position: "absolute", top: "1rem", right: "1rem" }} />
 
             <Card variant="outlined" sx={{ overflowY: "visible" }}>
                 <DyRTransportesIcon />
@@ -163,12 +149,19 @@ export const SignUp = ({ title }: PropsTitle) => {
                     variant="h4"
                     sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
                 >
-                    Sign up
+                    Edit Profile
                 </Typography>
+
                 {formErrorMessage && (
-                    <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
+                    <Alert severity="error" sx={{ width: "100%" }}>
                         {formErrorMessage}
-                    </Box>
+                    </Alert>
+                )}
+
+                {successMessage && (
+                    <Alert severity="success" sx={{ width: "100%" }}>
+                        {successMessage}
+                    </Alert>
                 )}
 
                 <Box
@@ -185,6 +178,7 @@ export const SignUp = ({ title }: PropsTitle) => {
                             fullWidth
                             id="name"
                             placeholder="Jon Snow"
+                            defaultValue={user?.name || ""}
                             error={nameError}
                             helperText={nameErrorMessage}
                             color={nameError ? "error" : "primary"}
@@ -200,33 +194,50 @@ export const SignUp = ({ title }: PropsTitle) => {
                             name="email"
                             autoComplete="email"
                             variant="outlined"
+                            defaultValue={user?.email || ""}
                             error={emailError}
                             helperText={emailErrorMessage}
-                            color={passwordError ? "error" : "primary"}
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <FormLabel htmlFor="password">Password</FormLabel>
-                        <TextField
-                            required
-                            fullWidth
-                            name="password"
-                            placeholder="••••••"
-                            type="password"
-                            id="password"
-                            autoComplete="new-password"
-                            variant="outlined"
-                            error={passwordError}
-                            helperText={passwordErrorMessage}
-                            color={passwordError ? "error" : "primary"}
+                            color={emailError ? "error" : "primary"}
                         />
                     </FormControl>
 
-                    <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
-                        Sign up
-                    </Button>
+                    <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
+                        Leave password fields blank if you don&apos;t want to change your password.
+                    </Typography>
+
+                    <FormControl>
+                        <FormLabel htmlFor="current_password">Current Password</FormLabel>
+                        <TextField
+                            fullWidth
+                            name="current_password"
+                            placeholder="••••••"
+                            type="password"
+                            id="current_password"
+                            autoComplete="current-password"
+                            variant="outlined"
+                        />
+                    </FormControl>
+
+                    <FormControl>
+                        <FormLabel htmlFor="new_password">New Password</FormLabel>
+                        <TextField
+                            fullWidth
+                            name="new_password"
+                            placeholder="••••••"
+                            type="password"
+                            id="new_password"
+                            autoComplete="new-password"
+                            variant="outlined"
+                        />
+                    </FormControl>
+
+                    <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                        <Button type="submit" fullWidth variant="contained">
+                            Save Changes
+                        </Button>
+                    </Stack>
                 </Box>
             </Card>
-        </RegisterContainer>
+        </ProfileContainer>
     );
 };

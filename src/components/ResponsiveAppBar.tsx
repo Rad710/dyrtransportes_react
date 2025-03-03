@@ -35,7 +35,7 @@ const pages = [
 const settings = [
     {
         name: "Profile",
-        url: "/product",
+        url: "/profile",
     },
     {
         name: "Logout",
