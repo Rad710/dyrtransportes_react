@@ -40,6 +40,16 @@ export const DriverApi = {
                 return errorResponse ?? null;
             }),
 
+    updateActiveStatus: async (payroll: Driver) =>
+        api
+            .patch(`/driver/${payroll.driver_code ?? 0}/active-status`, payroll)
+            .then((response: AxiosResponse<DriverApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
     deleteDriver: async (code: number) =>
         api
             .delete(`/driver/${code}`)

@@ -17,6 +17,7 @@ import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrol
 import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
 import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
 import { Profile } from "@/pages/profile/Profile";
+import { DriverList } from "@/pages/driver_payroll/DriverList";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -101,6 +102,15 @@ const router = createBrowserRouter([
                     {
                         path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
                         element: <ShipmentList title="Shipments" />,
+                    },
+                ],
+            },
+            {
+                path: "/driver-list",
+                children: [
+                    {
+                        index: true,
+                        element: <DriverList title="Driver Payrolls" />,
                     },
                 ],
             },

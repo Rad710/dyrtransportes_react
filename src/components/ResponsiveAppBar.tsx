@@ -1,4 +1,6 @@
-import * as React from "react";
+import { useState } from "react";
+import { Link as RouterLink, useLocation } from "react-router";
+
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -12,46 +14,26 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 
-import { Link as RouterLink, useLocation } from "react-router";
-
-import { DyRTransportesIcon } from "./DyRTransportesIcon";
 import { useAuthStore } from "@/stores/authStore";
+import { DyRTransportesIcon } from "./DyRTransportesIcon";
 
-const pages = [
-    {
-        name: "Shipment Payrolls",
-        url: "/shipment-payroll-list",
-    },
-    {
-        name: "Routes",
-        url: "/routes",
-    },
-    {
-        name: "Drivers",
-        url: "/drivers",
-    },
-] as const;
-
-const settings = [
-    {
-        name: "Profile",
-        url: "/profile",
-    },
-    {
-        name: "Logout",
-        url: "/log-out",
-    },
-] as const;
+interface AppMenuLink {
+    name: string;
+    url: string;
+    onClick?: () => void;
+}
 
 export const ResponsiveAppBar = () => {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    // STATE
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
     const location = useLocation();
     const currentPath = location.pathname;
 
     const logout = useAuthStore((state) => state.logout);
 
-    const handleLogout = async () => {
+    // HANDLERS
+    const handleLogout = () => {
         logout();
     };
 
@@ -74,6 +56,38 @@ export const ResponsiveAppBar = () => {
     const isActive = (path: string) => {
         return currentPath.includes(path);
     };
+
+    // pages urls
+    const pages: AppMenuLink[] = [
+        {
+            name: "Shipment Payrolls",
+            url: "/shipment-payroll-list",
+        },
+        {
+            name: "Driver Payrolls",
+            url: "/driver-list",
+        },
+        {
+            name: "Routes",
+            url: "/routes",
+        },
+        {
+            name: "Drivers",
+            url: "/drivers",
+        },
+    ];
+
+    const settings: AppMenuLink[] = [
+        {
+            name: "Profile",
+            url: "/profile",
+        },
+        {
+            name: "Logout",
+            url: "/log-out",
+            onClick: handleLogout,
+        },
+    ];
 
     return (
         <AppBar position="static">
@@ -180,12 +194,6 @@ export const ResponsiveAppBar = () => {
                                     textDecoration: "none",
                                     fontWeight: isActive(page.url) ? "bold" : "normal",
                                     borderBottom: isActive(page.url) ? "2px solid" : "none",
-                                    borderColor: isActive(page.url)
-                                        ? "secondary.info"
-                                        : "transparent",
-                                    backgroundColor: isActive(page.url)
-                                        ? "primary.dark"
-                                        : "transparent",
                                     "&:visited": { color: "inherit" },
                                     "&:hover": { color: "inherit" },
                                 }}
@@ -230,9 +238,7 @@ export const ResponsiveAppBar = () => {
                                             "&:visited": { color: "inherit" },
                                             "&:hover": { color: "inherit" },
                                         }}
-                                        onClick={
-                                            setting.name === "Logout" ? handleLogout : undefined
-                                        }
+                                        onClick={setting.onClick}
                                     >
                                         {setting.name}
                                     </Typography>
