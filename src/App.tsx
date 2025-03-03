@@ -60,6 +60,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 const router = createBrowserRouter([
     {
         path: "/log-in",
+        errorElement: <ErrorPage />,
         element: (
             <PublicRoute>
                 <LogIn title="Log in" />
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/sign-up",
+        errorElement: <ErrorPage />,
         element: (
             <PublicRoute>
                 <SignUp title="Sign Up" />
@@ -106,12 +108,16 @@ const router = createBrowserRouter([
                 ],
             },
             {
-                path: "/driver-list",
+                path: "/driver-payroll-list",
                 children: [
                     {
                         index: true,
                         element: <DriverList title="Driver Payrolls" />,
                     },
+                    // {
+                    //     path: "/driver-payroll-list/:driver_code/",
+                    //     element: <DriverPayrollList title="Driver Payrolls" />,
+                    // },
                 ],
             },
             {

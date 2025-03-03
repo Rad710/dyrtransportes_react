@@ -69,16 +69,13 @@ export const DriverList = ({ title }: Readonly<PropsTitle>) => {
     };
 
     const handleActiveToggle = async (payroll: Driver, active: boolean) => {
-        const newPayroll: Driver = {
-            ...payroll,
-            deleted: !active,
-        };
-
         if (import.meta.env.VITE_DEBUG) {
-            console.log(`Updating active status for driver, `, { payroll, newPayroll });
+            console.log(`Updating active status for driver, `, { payroll });
         }
 
-        const resp = await DriverApi.updateActiveStatus(newPayroll);
+        const resp = !active
+            ? await DriverApi.deleteDriver(payroll?.driver_code ?? 0)
+            : await DriverApi.restoreDriver(payroll?.driver_code ?? 0);
         if (isAxiosError(resp) || !resp) {
             showToastAxiosError(resp);
             return;

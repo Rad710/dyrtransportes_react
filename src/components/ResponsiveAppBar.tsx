@@ -65,7 +65,7 @@ export const ResponsiveAppBar = () => {
         },
         {
             name: "Driver Payrolls",
-            url: "/driver-list",
+            url: "/driver-payroll-list",
         },
         {
             name: "Routes",
