@@ -10,16 +10,32 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
-
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink } from "react-router";
 import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
 import { api } from "@/utils/axios";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Define login form schema with Zod
+const loginFormSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
+    remember_me: z.boolean().optional(),
+});
+
+// Type inference for our form data
+type LoginFormData = z.infer<typeof loginFormSchema>;
 
 const LogInApi = {
     loginUser: (formData: FormData) =>
@@ -76,56 +92,42 @@ const LogInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export const LogIn = ({ title }: PropsTitle) => {
-    const [emailError, setEmailError] = useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = useState("");
-    const [passwordError, setPasswordError] = useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [formErrorMessage, setFormErrorMessage] = useState("");
-
     const setAuth = useAuthStore((state) => state.setAuth);
+
+    // Initialize React Hook Form with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginFormSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+            remember_me: false,
+        },
+    });
 
     useEffect(() => {
         document.title = title;
-    }, []);
+    }, [title]);
 
-    const validateInputs = () => {
-        const email = document.getElementById("email") as HTMLInputElement;
-        const password = document.getElementById("password") as HTMLInputElement;
-
-        let isValid = true;
-
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-            setEmailError(true);
-            setEmailErrorMessage("Please enter a valid email address.");
-            isValid = false;
-        } else {
-            setEmailError(false);
-            setEmailErrorMessage("");
-        }
-
-        if (!password.value || password.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage("Password must be at least 6 characters long.");
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage("");
-        }
-
-        return isValid;
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        if (!validateInputs()) {
-            return; // Stop here if validation fails
+    const onSubmit = async (data: LoginFormData) => {
+        const formData = new FormData();
+        formData.append("email", data.email);
+        formData.append("password", data.password);
+        if (data.remember_me) {
+            formData.append("remember_me", "on");
         }
 
-        const formData = new FormData(event.currentTarget);
-
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Login post: ", formData);
+            console.log("Login post: ", Object.fromEntries(formData));
         }
 
         const resp = await LogInApi.loginUser(formData);
@@ -136,14 +138,10 @@ export const LogIn = ({ title }: PropsTitle) => {
 
         if (!isAxiosError(resp) && resp) {
             setFormErrorMessage("");
-
-            const rememberMe: boolean = formData.get("remember_me") === "on";
             // Store in Zustand
-            setAuth(resp.token, resp.user, rememberMe);
+            setAuth(resp.token, resp.user, !!data.remember_me);
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
-            setEmailError(true);
-            setPasswordError(true);
+            setFormErrorMessage(resp?.response?.data?.message ?? "Invalid email or password");
         }
     };
 
@@ -167,7 +165,7 @@ export const LogIn = ({ title }: PropsTitle) => {
 
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     noValidate
                     autoComplete="on"
                     sx={{
@@ -180,39 +178,53 @@ export const LogIn = ({ title }: PropsTitle) => {
                     <FormControl>
                         <FormLabel htmlFor="email">Email</FormLabel>
                         <TextField
-                            error={emailError}
-                            helperText={emailErrorMessage}
                             id="email"
                             type="email"
-                            name="email"
                             placeholder="your@email.com"
                             autoComplete="email"
                             autoFocus
-                            required
                             fullWidth
                             variant="outlined"
-                            color={emailError ? "error" : "primary"}
+                            error={!!errors.email}
+                            helperText={errors.email?.message}
+                            {...register("email")}
                         />
                     </FormControl>
                     <FormControl>
                         <FormLabel htmlFor="password">Password</FormLabel>
                         <TextField
-                            error={passwordError}
-                            helperText={passwordErrorMessage}
-                            name="password"
-                            placeholder="••••••"
-                            type="password"
                             id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••"
                             autoComplete="current-password"
-                            autoFocus
-                            required
                             fullWidth
                             variant="outlined"
-                            color={passwordError ? "error" : "primary"}
+                            error={!!errors.password}
+                            helperText={errors.password?.message}
+                            {...register("password")}
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={togglePasswordVisibility}
+                                                edge="end"
+                                            >
+                                                {showPassword ? (
+                                                    <VisibilityOffIcon />
+                                                ) : (
+                                                    <VisibilityIcon />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
                         />
                     </FormControl>
                     <FormControlLabel
-                        control={<Checkbox name="remember_me" color="primary" />}
+                        control={<Checkbox color="primary" {...register("remember_me")} />}
                         label="Remember me"
                     />
                     <Button type="submit" fullWidth variant="contained">

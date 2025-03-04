@@ -6,14 +6,37 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Define signup form schema with Zod
+const signUpFormSchema = z.object({
+    name: z.string().min(1, { message: "Name is required." }),
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    password: z
+        .string()
+        .min(8, { message: "Password must be at least 8 characters long." })
+        .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/, {
+            message:
+                "Password must be at least 8 characters and include at least one number, one lowercase letter, and one uppercase letter",
+        }),
+});
+
+// Type inference for our form data
+type SignUpFormData = z.infer<typeof signUpFormSchema>;
 
 const SignUpApi = {
     signUpUser: (formData: FormData) =>
@@ -70,69 +93,42 @@ const RegisterContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export const SignUp = ({ title }: PropsTitle) => {
-    const [emailError, setEmailError] = useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = useState("");
-    const [passwordError, setPasswordError] = useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
-    const [nameError, setNameError] = useState(false);
-    const [nameErrorMessage, setNameErrorMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [formErrorMessage, setFormErrorMessage] = useState("");
 
     // store
     const setAuth = useAuthStore((state) => state.setAuth);
 
+    // Initialize React Hook Form with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<SignUpFormData>({
+        resolver: zodResolver(signUpFormSchema),
+        defaultValues: {
+            name: "",
+            email: "",
+            password: "",
+        },
+    });
+
     useEffect(() => {
         document.title = title;
-    }, []);
+    }, [title]);
 
-    const validateInputs = () => {
-        const email = document.getElementById("email") as HTMLInputElement;
-        const password = document.getElementById("password") as HTMLInputElement;
-        const name = document.getElementById("name") as HTMLInputElement;
-
-        let isValid = true;
-
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-            setEmailError(true);
-            setEmailErrorMessage("Please enter a valid email address.");
-            isValid = false;
-        } else {
-            setEmailError(false);
-            setEmailErrorMessage("");
-        }
-
-        if (!password.value || password.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage("Password must be at least 6 characters long.");
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage("");
-        }
-
-        if (!name.value || name.value.length < 1) {
-            setNameError(true);
-            setNameErrorMessage("Name is required.");
-            isValid = false;
-        } else {
-            setNameError(false);
-            setNameErrorMessage("");
-        }
-
-        return isValid;
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        if (nameError || emailError || passwordError) {
-            return;
-        }
-
-        const formData = new FormData(event.currentTarget);
+    const onSubmit = async (data: SignUpFormData) => {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("email", data.email);
+        formData.append("password", data.password);
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Register post: ", formData);
+            console.log("Register post: ", Object.fromEntries(formData));
         }
 
         const resp = await SignUpApi.signUpUser(formData);
@@ -146,9 +142,7 @@ export const SignUp = ({ title }: PropsTitle) => {
             // Store in Zustand
             setAuth(resp.token, resp.user);
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
-            setEmailError(true);
-            setPasswordError(true);
+            setFormErrorMessage(resp?.response?.data?.message ?? "Error creating account");
         }
     };
 
@@ -173,56 +167,70 @@ export const SignUp = ({ title }: PropsTitle) => {
 
                 <Box
                     component="form"
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                 >
                     <FormControl>
                         <FormLabel htmlFor="name">Full name</FormLabel>
                         <TextField
-                            autoComplete="name"
-                            name="name"
-                            required
-                            fullWidth
                             id="name"
                             placeholder="Jon Snow"
-                            error={nameError}
-                            helperText={nameErrorMessage}
-                            color={nameError ? "error" : "primary"}
+                            autoComplete="name"
+                            fullWidth
+                            variant="outlined"
+                            error={!!errors.name}
+                            helperText={errors.name?.message}
+                            {...register("name")}
                         />
                     </FormControl>
                     <FormControl>
                         <FormLabel htmlFor="email">Email</FormLabel>
                         <TextField
-                            required
-                            fullWidth
                             id="email"
                             placeholder="your@email.com"
-                            name="email"
                             autoComplete="email"
+                            fullWidth
                             variant="outlined"
-                            error={emailError}
-                            helperText={emailErrorMessage}
-                            color={passwordError ? "error" : "primary"}
+                            error={!!errors.email}
+                            helperText={errors.email?.message}
+                            {...register("email")}
                         />
                     </FormControl>
                     <FormControl>
                         <FormLabel htmlFor="password">Password</FormLabel>
                         <TextField
-                            required
-                            fullWidth
-                            name="password"
-                            placeholder="••••••"
-                            type="password"
                             id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••"
                             autoComplete="new-password"
+                            fullWidth
                             variant="outlined"
-                            error={passwordError}
-                            helperText={passwordErrorMessage}
-                            color={passwordError ? "error" : "primary"}
+                            error={!!errors.password}
+                            helperText={errors.password?.message}
+                            {...register("password")}
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={togglePasswordVisibility}
+                                                edge="end"
+                                            >
+                                                {showPassword ? (
+                                                    <VisibilityOffIcon />
+                                                ) : (
+                                                    <VisibilityIcon />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
                         />
                     </FormControl>
 
-                    <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
+                    <Button type="submit" fullWidth variant="contained">
                         Sign up
                     </Button>
                 </Box>

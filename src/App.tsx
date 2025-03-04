@@ -16,7 +16,7 @@ import { Driver } from "@/pages/driver/Driver";
 import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
 import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
-import { Profile } from "@/pages/profile/Profile";
+import { UserProfile } from "@/pages/user_profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
@@ -130,7 +130,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "/profile",
-                element: <Profile title="Profile" />,
+                element: <UserProfile title="Profile" />,
             },
             // {
             //     path: "/dinatran",
