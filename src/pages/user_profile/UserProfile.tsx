@@ -168,7 +168,7 @@ export const UserProfile = ({ title }: PropsTitle) => {
             showToastSuccess(resp.message);
 
             // Update user in auth store
-            setAuth(resp.token || sessionStorage.getItem("token") || "", resp.user);
+            setAuth(sessionStorage.getItem("token") || "", resp.user);
 
             // Reset only the password fields after successful update
             reset({

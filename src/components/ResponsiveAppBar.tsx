@@ -61,11 +61,11 @@ export const ResponsiveAppBar = () => {
     const pages: AppMenuLink[] = [
         {
             name: "Shipment Payrolls",
-            url: "/shipment-payroll-list",
+            url: "/shipment-payrolls",
         },
         {
             name: "Driver Payrolls",
-            url: "/driver-payroll-list",
+            url: "/driver-payrolls",
         },
         {
             name: "Routes",

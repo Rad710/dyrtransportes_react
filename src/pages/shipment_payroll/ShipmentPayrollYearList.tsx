@@ -227,7 +227,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
 
                                 <Button
                                     component={Link}
-                                    to={`/shipment-payroll-list/${year}`}
+                                    to={`/shipment-payrolls/${year}`}
                                     variant="contained"
                                     color="info"
                                     sx={{

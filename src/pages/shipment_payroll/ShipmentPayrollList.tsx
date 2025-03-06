@@ -20,7 +20,7 @@ import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialo
 import { CustomSwitch } from "@/components/CustomSwitch";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
-    const match = useMatch("/shipment-payroll-list/:year");
+    const match = useMatch("/shipment-payrolls/:year");
     const year = parseInt(match?.params?.year ?? "") || 0;
 
     // STATE
@@ -341,7 +341,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                                     {/* Button - full width on mobile */}
                                     <Button
                                         component={Link}
-                                        to={`/shipment-payroll-list/payroll/${payroll.payroll_code ?? 0}`}
+                                        to={`/shipment-payrolls/payroll/${payroll.payroll_code ?? 0}`}
                                         variant="contained"
                                         color="info"
                                         sx={{

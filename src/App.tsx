@@ -18,6 +18,7 @@ import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollLis
 import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
 import { UserProfile } from "@/pages/user_profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
+import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -91,32 +92,36 @@ const router = createBrowserRouter([
                 element: <Home title="D y R Transportes" />,
             },
             {
-                path: "/shipment-payroll-list",
+                path: "/shipment-payrolls",
                 children: [
                     {
                         index: true,
                         element: <ShipmentPayrollYearList title="Shipment Payrolls" />,
                     },
                     {
-                        path: "/shipment-payroll-list/:year/",
+                        path: ":year",
                         element: <ShipmentPayrollList title="Shipment Payrolls" />,
                     },
                     {
-                        path: "/shipment-payroll-list/payroll/:shipment_payroll_code",
+                        path: "payroll/:shipment_payroll_code",
                         element: <ShipmentList title="Shipments" />,
                     },
                 ],
             },
             {
-                path: "/driver-payroll-list",
+                path: "/driver-payrolls",
                 children: [
                     {
                         index: true,
                         element: <DriverList title="Driver Payrolls" />,
                     },
+                    {
+                        path: ":driver_code",
+                        element: <DriverPayrollList title="Driver Payrolls" />,
+                    },
                     // {
-                    //     path: "/driver-payroll-list/:driver_code/",
-                    //     element: <DriverPayrollList title="Driver Payrolls" />,
+                    //     path: ":driver_code/payroll/:driver_payroll_code",
+                    //     element: <DriverPayroll title="Driver Payrolls" />,
                     // },
                 ],
             },

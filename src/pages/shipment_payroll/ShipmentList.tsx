@@ -22,7 +22,7 @@ import { saveAs } from "file-saver";
 import { CustomSwitch } from "@/components/CustomSwitch";
 
 export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
-    const match = useMatch("/shipment-payroll-list/payroll/:payroll_code");
+    const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
 
     // State

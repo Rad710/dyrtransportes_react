@@ -1,105 +1,95 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router";
-import {
-    Box,
-    Button,
-    List,
-    ListItem,
-    Typography,
-    TextField,
-    InputAdornment,
-    Divider,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { isAxiosError } from "axios";
-
 import { PropsTitle } from "@/types";
-
+import { useEffect, useState } from "react";
+import { Link, useMatch } from "react-router";
+import { DriverPayroll } from "./types";
+import { DriverPayrollApi } from "./driver_payroll_utils";
+import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { Box, Button, Divider, List, ListItem, Typography } from "@mui/material";
 import { Driver } from "../driver/types";
 import { DriverApi } from "../driver/driver_utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
+import { DateTime } from "luxon";
 
-export const DriverList = ({ title }: Readonly<PropsTitle>) => {
-    // STATE
-    const [loading, setLoading] = useState<boolean>(true);
-    const [driverList, setDriverList] = useState<Driver[]>([]);
-    const [filteredDriverList, setFilteredDriverList] = useState<Driver[]>([]);
+export const DriverPayrollList = ({ title }: PropsTitle) => {
+    const match = useMatch("/driver-payrolls/:driver_code/");
+    const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
 
-    // CONTEXT
+    // state
+    const [loading, setLoading] = useState<boolean>(false);
+    const [driver, setDriver] = useState<Driver | null>(null);
+    const [driverPayrollList, setDriverPayrollList] = useState<DriverPayroll[]>([]);
+
+    // context
     const { showToastSuccess, showToastAxiosError } = useToast();
 
-    const loadDriverList = async () => {
+    const loadDriverPayrollList = async () => {
         setLoading(true);
-        const resp = await DriverApi.getDriverList();
+        const [respDriver, respPayrollList] = await Promise.all([
+            DriverApi.getDriver(driverCode),
+            DriverPayrollApi.getDriverPayrollList(driverCode),
+        ]);
         setLoading(false);
 
-        if (!isAxiosError(resp) && resp) {
-            setDriverList(resp);
-            setFilteredDriverList(resp); // Initialize filtered list with all drivers
-        } else {
-            showToastAxiosError(resp);
+        if (isAxiosError(respDriver) || !respDriver) {
+            showToastAxiosError(respDriver);
+            return;
         }
 
+        if (isAxiosError(respPayrollList) || !respPayrollList) {
+            showToastAxiosError(respPayrollList);
+            return;
+        }
+
+        setDriver(respDriver);
+        setDriverPayrollList(respPayrollList);
+
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded drivers ", { resp });
+            console.log("Loaded driver", { respDriver });
+            console.log("Loaded drivers payrolls", { respPayrollList });
         }
     };
 
-    // USE EFFECTS
+    // use effect
     useEffect(() => {
         document.title = title;
-        loadDriverList();
+
+        loadDriverPayrollList();
     }, []);
 
-    //HANDLERS
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const query = e.target.value.toLowerCase().trim();
-
-        if (query === "") {
-            setFilteredDriverList(driverList);
-        } else {
-            const filtered = driverList.filter(
-                (driver) =>
-                    driver.driver_name?.toLowerCase().includes(query) ||
-                    driver.driver_surname?.toLowerCase().includes(query),
-            );
-            setFilteredDriverList(filtered);
-        }
-    };
-
-    const handleActiveToggle = async (driver: Driver, active: boolean) => {
+    //handlers
+    const handlePaidToggle = async (payroll: DriverPayroll, paid: boolean) => {
         if (import.meta.env.VITE_DEBUG) {
-            console.log(`Updating active status for driver, `, { driver });
+            console.log(`Updating paid status for payroll, `, { payroll });
         }
 
-        const resp = !active
-            ? await DriverApi.deleteDriver(driver?.driver_code ?? 0)
-            : await DriverApi.restoreDriver(driver?.driver_code ?? 0);
+        const newPayload: DriverPayroll = {
+            ...payroll,
+            paid: paid,
+        };
+
+        const resp = await DriverPayrollApi.updateCollectionStatus(newPayload);
         if (isAxiosError(resp) || !resp) {
             showToastAxiosError(resp);
             return;
         }
 
-        const driverResp = await DriverApi.getDriver(driver.driver_code ?? 0);
-        if (!isAxiosError(driverResp) && driverResp) {
-            const updatedDriverList = driverList.map((item) =>
-                item.driver_code !== driver.driver_code ? item : driverResp,
+        const payrollResp = await DriverPayrollApi.getDriverPayroll(payroll.payroll_code ?? 0);
+        if (!isAxiosError(payrollResp) && payrollResp) {
+            const updatedPayrollList = driverPayrollList.map((item) =>
+                item.payroll_code !== payroll.payroll_code ? item : payrollResp,
             );
-            setDriverList(updatedDriverList);
-
-            // Also update the filtered list to reflect changes
-            setFilteredDriverList(
-                filteredDriverList.map((item) =>
-                    item.driver_code !== driver.driver_code ? item : driverResp,
-                ),
-            );
+            setDriverPayrollList(updatedPayrollList);
         } else {
-            showToastAxiosError(driverResp);
+            showToastAxiosError(payrollResp);
         }
-        const driverName = `${driver.driver_name ?? ""} ${driver.driver_surname ?? ""}`;
+        const payrollDateTime = DateTime.fromHTTP(payroll.payroll_timestamp);
+
         showToastSuccess(
-            `Driver ${driverName.trim()} marked as ${active ? "active" : "deactivated"}`,
+            `Driver ${payrollDateTime.toLocaleString({
+                month: "long",
+                day: "numeric",
+            })} marked as ${paid ? "paid" : "unpaid"}`,
         );
     };
 
@@ -115,42 +105,21 @@ export const DriverList = ({ title }: Readonly<PropsTitle>) => {
                 }}
             >
                 <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
-                    Lista de Conductores
+                    Lista de Liquidaciones de{" "}
+                    {((driver?.driver_name ?? "") + " " + (driver?.driver_surname ?? "")).trim()}
                 </Typography>
-
-                <TextField
-                    placeholder="Search drivers..."
-                    onChange={handleSearchChange}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                        width: { xs: "100%", md: "300px" },
-                        mt: { xs: 1, md: 0 },
-                    }}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon />
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
-                />
             </Box>
 
             {!loading && (
                 <List sx={{ width: "100%" }}>
-                    {filteredDriverList.length === 0 ? (
+                    {driverPayrollList.length === 0 ? (
                         <Box sx={{ textAlign: "center", my: 3 }}>
-                            <Typography variant="body1">
-                                No drivers found matching your search.
-                            </Typography>
+                            <Typography variant="body1">No driver Payrolls</Typography>
                         </Box>
                     ) : (
-                        filteredDriverList.map((driver) => (
+                        driverPayrollList.map((payroll) => (
                             <ListItem
-                                key={driver.driver_code}
+                                key={payroll.payroll_code ?? 0}
                                 sx={{
                                     bgcolor: "background.paper",
                                     borderRadius: 1,
@@ -184,7 +153,7 @@ export const DriverList = ({ title }: Readonly<PropsTitle>) => {
                                         >
                                             <Button
                                                 component={Link}
-                                                to={`/driver-payrolls/${driver.driver_code ?? 0}`}
+                                                to={`/driver-payrolls/${driver?.driver_code ?? 0}/${payroll?.payroll_code ?? 0}`}
                                                 variant="contained"
                                                 color="info"
                                                 sx={{
@@ -201,7 +170,13 @@ export const DriverList = ({ title }: Readonly<PropsTitle>) => {
                                                     px: 2,
                                                 }}
                                             >
-                                                {driver.driver_name} {driver.driver_surname}
+                                                {DateTime.fromHTTP(
+                                                    payroll.payroll_timestamp,
+                                                ).toLocaleString({
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                })}
                                             </Button>
                                             <Divider
                                                 sx={{
@@ -223,12 +198,12 @@ export const DriverList = ({ title }: Readonly<PropsTitle>) => {
                                         }}
                                     >
                                         <CustomSwitch
-                                            checked={!driver.deleted}
+                                            checked={payroll.paid}
                                             onChange={(e) =>
-                                                handleActiveToggle(driver, e.target.checked)
+                                                handlePaidToggle(payroll, e.target.checked)
                                             }
-                                            textChecked="Active"
-                                            textUnchecked="Deactivated"
+                                            textChecked="Paid"
+                                            textUnchecked="Unpaid"
                                         />
                                     </Box>
                                 </Box>
