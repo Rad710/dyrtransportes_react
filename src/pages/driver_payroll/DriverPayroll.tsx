@@ -7,7 +7,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DriverPayroll as DriverPayrollType } from "./types";
 import { Driver } from "../driver/types";
-import { Shipment, ShipmentPayroll } from "../shipment_payroll/types";
+import { Shipment } from "../shipment_payroll/types";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
 import { TabPanel } from "@/components/TabPanel";
 
@@ -21,16 +21,15 @@ import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipme
 import { ShipmentFormDialog } from "../shipment_payroll/components/ShipmentFormDialog";
 import { ProductApi, RouteApi } from "../route_product/route_product_utils";
 import { Product, Route } from "../route_product/types";
-import { ShipmentPayrollApi } from "../shipment_payroll/shipment_payroll_utils";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
-    driver: Driver | null;
+    driverCode: number;
 }
 
 const DriverPayrollShipmentsTab = ({
     driverPayrollCode,
-    driver,
+    driverCode,
 }: DriverPayrollShipmentsTabProps) => {
     // //STATE
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
@@ -40,8 +39,8 @@ const DriverPayrollShipmentsTab = ({
     const [payrollShipmentList, setPayrollShipmentList] = useState<Shipment[]>([]);
 
     // used for autocomplete options for dialog form
+    const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
     const [productList, setProductList] = useState<Product[]>([]);
-    const [shipmentPayrollList, setShipmentPayrollList] = useState<ShipmentPayroll[]>([]);
     const [driverList, setDriverList] = useState<Driver[]>([]);
     const [routeList, setRouteList] = useState<Route[]>([]);
 
@@ -53,9 +52,9 @@ const DriverPayrollShipmentsTab = ({
     // USE EFFECTS
     const loadDriverPayrollShipments = async () => {
         setLoadingTable(true);
-        const [shipmentPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
+        const [driverPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
             await Promise.all([
-                ShipmentPayrollApi.getShipmentPayrollList(),
+                DriverPayrollApi.getDriverPayrollList(driverCode),
                 DriverPayrollApi.getDriverPayrollShipmentList(driverPayrollCode),
                 RouteApi.getRouteList(),
                 ProductApi.getProductList(),
@@ -63,11 +62,11 @@ const DriverPayrollShipmentsTab = ({
             ]);
         setLoadingTable(false);
 
-        if (!isAxiosError(shipmentPayrollsResp) && shipmentPayrollsResp) {
-            setShipmentPayrollList(shipmentPayrollsResp);
+        if (!isAxiosError(driverPayrollsResp) && driverPayrollsResp) {
+            setDriverPayrollList(driverPayrollsResp);
         } else {
-            showToastAxiosError(shipmentPayrollsResp);
-            setShipmentPayrollList([]);
+            showToastAxiosError(driverPayrollsResp);
+            setDriverPayrollList([]);
         }
 
         if (!isAxiosError(shipmentsResp) && shipmentsResp) {
@@ -99,7 +98,7 @@ const DriverPayrollShipmentsTab = ({
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded driver shipmentPayrollsResp", { shipmentPayrollsResp });
+            console.log("Loaded driver driverPayrollList", { driverPayrollList });
             console.log("Loaded driver shipmentsResp", { shipmentsResp });
             console.log("Loaded driver routesResp", { routesResp });
             console.log("Loaded driver productsResp", { productsResp });
@@ -110,9 +109,6 @@ const DriverPayrollShipmentsTab = ({
     useEffect(() => {
         loadDriverPayrollShipments();
     }, []);
-
-    console.log({ shipmentToEdit });
-    console.log({ shipmentPayrollList });
 
     return (
         <>
@@ -133,7 +129,7 @@ const DriverPayrollShipmentsTab = ({
                     routeList={routeList}
                     shipmentToEdit={shipmentToEdit}
                     setShipmentToEdit={setShipmentToEdit}
-                    shipmentPayrollList={shipmentPayrollList}
+                    driverPayrollList={driverPayrollList}
                 />
             </Box>
 
@@ -338,7 +334,10 @@ export const DriverPayroll = ({ title }: PropsTitle) => {
                 </Tabs>
             </Box>
             <TabPanel value={tabValue} index={tabShipments}>
-                <DriverPayrollShipmentsTab driverPayrollCode={driverPayrollCode} driver={driver} />
+                <DriverPayrollShipmentsTab
+                    driverPayrollCode={driverPayrollCode}
+                    driverCode={driverCode}
+                />
             </TabPanel>
             <TabPanel value={tabValue} index={tabExpenses}>
                 <DriverPayrollExpensesTab

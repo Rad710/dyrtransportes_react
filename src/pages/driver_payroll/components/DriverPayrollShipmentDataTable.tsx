@@ -136,6 +136,19 @@ export const DriverPayrollShipmentDataTable = ({
             renderCell: ({ row }) =>
                 DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
             minWidth: 70,
+            sortComparator: (v1, v2) => {
+                // Convert both dates to timestamp for comparison
+                const date1 = v1 ? DateTime.fromHTTP(v1, { zone: "local" }).toMillis() : null;
+                const date2 = v2 ? DateTime.fromHTTP(v2, { zone: "local" }).toMillis() : null;
+
+                // Handle null values (null values should come last in sorting)
+                if (date1 === null && date2 === null) return 0;
+                if (date1 === null) return 1;
+                if (date2 === null) return -1;
+
+                // Compare timestamps
+                return date1 - date2;
+            },
         },
         {
             field: "dispatch_code",

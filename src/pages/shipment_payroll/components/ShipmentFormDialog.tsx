@@ -22,6 +22,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";
 import { Driver } from "@/pages/driver/types";
+import { DriverPayroll } from "@/pages/driver_payroll/types";
 
 const parser = getGlobalizeParser();
 const floatFormatter = getGlobalizeNumberFormatter(2, 2);
@@ -270,28 +271,21 @@ interface ShipmentFormDialogFields {
     productList: Product[];
     driverList: Driver[];
     routeList: Route[];
-    shipmentToEdit?: Shipment | null;
     shipmentPayrollList?: ShipmentPayroll[];
+    driverPayrollList?: DriverPayroll[];
 }
 const ShipmentFormDialogFields = ({
     form,
     productList,
     driverList,
     routeList,
-    shipmentToEdit,
     shipmentPayrollList,
+    driverPayrollList,
 }: Readonly<ShipmentFormDialogFields>) => {
     // Watch origin field for dependent fields
     const watchedOrigin = form.watch("origin");
+
     // Memoized option lists for better performance
-    const shipmentPayrollOptionList: AutocompleteOption[] = useMemo(
-        () =>
-            shipmentPayrollList?.map((item) => ({
-                id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
-            })) ?? [],
-        [shipmentPayrollList],
-    );
     const truckPlateOptionList: AutocompleteOption[] = useMemo(
         () =>
             Array.from(new Set(driverList.map((item) => item.truck_plate ?? "")))
@@ -340,6 +334,25 @@ const ShipmentFormDialogFields = ({
                 trailer_plate: item.trailer_plate ?? "",
             })),
         [driverList],
+    );
+
+    // optional options enable the fields
+    const shipmentPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            shipmentPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [shipmentPayrollList],
+    );
+
+    const driverPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            driverPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [driverPayrollList],
     );
 
     return (
@@ -438,7 +451,7 @@ const ShipmentFormDialogFields = ({
                     )}
                 />
 
-                {shipmentToEdit && (
+                {shipmentPayrollList && (
                     <Controller
                         name="shipment_payroll_code"
                         control={form.control}
@@ -460,6 +473,38 @@ const ShipmentFormDialogFields = ({
                                         error={!!form.formState.errors.shipment_payroll_code}
                                         helperText={
                                             form.formState.errors.shipment_payroll_code?.message
+                                        }
+                                        fullWidth
+                                    />
+                                )}
+                                fullWidth
+                            />
+                        )}
+                    />
+                )}
+
+                {driverPayrollList && (
+                    <Controller
+                        name="driver_payroll_code"
+                        control={form.control}
+                        render={({ field }) => (
+                            <Autocomplete
+                                options={driverPayrollOptionList}
+                                value={
+                                    driverPayrollOptionList.find(
+                                        (option) => String(option.id) === String(field.value),
+                                    ) || null
+                                }
+                                onChange={(_, newValue) => {
+                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Liquidación"
+                                        error={!!form.formState.errors.driver_payroll_code}
+                                        helperText={
+                                            form.formState.errors.driver_payroll_code?.message
                                         }
                                         fullWidth
                                     />
@@ -706,6 +751,7 @@ interface ShipmentFormDialogProps extends FormDialogProps {
     shipmentToEdit?: Shipment | null;
     setShipmentToEdit?: React.Dispatch<React.SetStateAction<Shipment | null>>;
     shipmentPayrollList?: ShipmentPayroll[];
+    driverPayrollList?: DriverPayroll[];
 }
 export const ShipmentFormDialog = ({
     payrollCode,
@@ -718,6 +764,7 @@ export const ShipmentFormDialog = ({
     shipmentToEdit,
     setShipmentToEdit,
     shipmentPayrollList,
+    driverPayrollList,
 }: Readonly<ShipmentFormDialogProps>) => {
     // STATE
     // React form hook setup
@@ -869,8 +916,8 @@ export const ShipmentFormDialog = ({
                         productList={productList}
                         driverList={driverList}
                         routeList={routeList}
-                        shipmentToEdit={shipmentToEdit}
                         shipmentPayrollList={shipmentPayrollList}
+                        driverPayrollList={driverPayrollList}
                     />
                 </Box>
             </DialogContent>

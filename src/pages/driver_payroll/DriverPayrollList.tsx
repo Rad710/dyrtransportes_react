@@ -83,13 +83,9 @@ export const DriverPayrollList = ({ title }: PropsTitle) => {
         } else {
             showToastAxiosError(payrollResp);
         }
-        const payrollDateTime = DateTime.fromHTTP(payroll.payroll_timestamp);
 
         showToastSuccess(
-            `Driver ${payrollDateTime.toLocaleString({
-                month: "long",
-                day: "numeric",
-            })} marked as ${paid ? "paid" : "unpaid"}`,
+            `Driver Payroll #${payroll.payroll_code ?? 0} marked as ${paid ? "paid" : "unpaid"}`,
         );
     };
 
@@ -177,6 +173,17 @@ export const DriverPayrollList = ({ title }: PropsTitle) => {
                                                     month: "long",
                                                     day: "numeric",
                                                 })}
+                                                <Typography
+                                                    component="span"
+                                                    sx={{
+                                                        ml: 1,
+                                                        color: "text.secondary",
+                                                        opacity: 0.7,
+                                                        fontWeight: "normal",
+                                                    }}
+                                                >
+                                                    [#{payroll.payroll_code ?? 0}]
+                                                </Typography>
                                             </Button>
                                             <Divider
                                                 sx={{
