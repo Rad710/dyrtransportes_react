@@ -64,7 +64,7 @@ const createPriceSchema = (fieldName: string) =>
         .transform((arg) => parser(arg).toFixed(2));
 
 const routeFormSchema = z.object({
-    route_code: z.number().nullish(),
+    route_code: z.number().positive("Código Ruta inválido").nullish(),
     origin: createRequiredStringSchema("Origen"),
     destination: createRequiredStringSchema("Destino"),
     price: createPriceSchema("Precio"),
@@ -74,8 +74,7 @@ const routeFormSchema = z.object({
 type RouteFormSchema = z.infer<typeof routeFormSchema>;
 
 interface RouteFormDialogProps extends FormDialogProps {
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    setRouteList: React.Dispatch<React.SetStateAction<Route[]>>;
+    loadRouteList: () => Promise<void>;
     routeToEdit?: Route | null;
     setRouteToEdit?: React.Dispatch<React.SetStateAction<Route | null>>;
 }
@@ -89,10 +88,9 @@ const ROUTE_FORM_DEFAULT_VALUE: RouteFormSchema = {
 };
 
 export const RouteFormDialog = ({
-    setLoading,
     open,
     setOpen,
-    setRouteList,
+    loadRouteList,
     routeToEdit,
     setRouteToEdit,
 }: RouteFormDialogProps) => {
@@ -190,10 +188,7 @@ export const RouteFormDialog = ({
         setSubmitResult({ success: resp.message });
         showToastSuccess(resp.message);
 
-        setLoading(true);
-        const routeListResp = await RouteApi.getRouteList();
-        setLoading(false);
-        setRouteList(!isAxiosError(routeListResp) ? routeListResp : []);
+        await loadRouteList();
 
         handleClose();
     };

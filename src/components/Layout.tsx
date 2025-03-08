@@ -10,7 +10,7 @@ export const Layout = () => {
                     <ResponsiveAppBar />
                 </Box>
             </Box>
-            <Container maxWidth={false}>
+            <Container maxWidth={false} sx={{ padding: 3 }}>
                 <Outlet />
             </Container>
         </>

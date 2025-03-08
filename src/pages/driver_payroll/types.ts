@@ -13,3 +13,7 @@ export type DriverPayroll = {
 };
 
 export type DriverPayrollApiResponse = DriverPayroll & ApiResponse;
+
+export type ShipmentExpenses = {
+    expense_code: number;
+};

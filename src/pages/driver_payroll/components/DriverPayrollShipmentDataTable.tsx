@@ -1,32 +1,38 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Route } from "../types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useState } from "react";
-import { RouteApi } from "../route_product_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
+import { Shipment } from "@/pages/shipment_payroll/types";
+import { ShipmentApi } from "@/pages/shipment_payroll/shipment_payroll_utils";
+import { DriverPayrollApi } from "../driver_payroll_utils";
+import { DateTime } from "luxon";
 
-type RouteDataTableProps = {
+type DriverPayrollShipmentDataTableProps = {
+    driverPayrollCode: number;
     loading: boolean;
-    routeList: Route[];
-    loadRouteList: () => Promise<void>;
-    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    shipmentList: Shipment[];
+    setShipmentList: React.Dispatch<React.SetStateAction<Shipment[]>>;
+    setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
-export const RouteDataTable = ({
+export const DriverPayrollShipmentDataTable = ({
+    driverPayrollCode,
     loading,
-    routeList,
-    loadRouteList,
-    setRouteToEdit,
+    setLoading,
+    shipmentList,
+    setShipmentList,
+    setShipmentToEdit,
     setEditFormDialogOpen,
-}: RouteDataTableProps) => {
+}: DriverPayrollShipmentDataTableProps) => {
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -35,33 +41,33 @@ export const RouteDataTable = ({
     const { showToastSuccess, showToastAxiosError } = useToast();
 
     useEffect(() => {
-        // on route list rerender empty selection
+        // on shipment list rerender empty selection
         setSelectedRows([]);
-    }, [routeList]);
+    }, [shipmentList]);
 
-    const paginationModel = { page: 0, pageSize: 25 };
-
-    const handleEditRoute = (row: Route) => {
-        setRouteToEdit(row);
+    const handleEditShipment = (row: Shipment) => {
+        setShipmentToEdit(row);
         setEditFormDialogOpen(true);
     };
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
             title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Routes?`,
+            message: `Are you sure you want to delete all selected Shipments?`,
             confirmText: "Delete",
             confirmButtonProps: {
                 color: "error",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Routes...", selectedRows);
+                    console.log("Deleting Shipments...", selectedRows);
                 }
 
-                const resp = await RouteApi.deleteRouteList(selectedRows as number[]);
+                setLoading(true);
+                const resp = await ShipmentApi.deleteShipmentList(selectedRows as number[]);
+                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Routes resp: ", { resp });
+                    console.log("Deleting Shipments resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -71,18 +77,20 @@ export const RouteDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadRouteList();
+                const shipmentsResp =
+                    await DriverPayrollApi.getDriverPayrollShipmentList(driverPayrollCode);
+                setShipmentList(!isAxiosError(shipmentsResp) ? shipmentsResp : []);
             },
         });
     };
 
-    const handleDeleteRouteItem = (row: Route) => {
+    const handleDeleteShipmentItem = (row: Shipment) => {
         openConfirmDialog({
             title: "Confirm Delete",
             message: (
                 <>
-                    Are you sure you want to delete Route: <strong>{row.origin}</strong> -{" "}
-                    <strong>{row.destination}</strong>?
+                    Are you sure you want to delete Shipment: <strong>{row.dispatch_code}</strong> -{" "}
+                    <strong>{row.receipt_code}</strong>?
                 </>
             ),
             confirmText: "Delete",
@@ -91,12 +99,14 @@ export const RouteDataTable = ({
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Route", row);
+                    console.log("Deleting Shipment", row);
                 }
 
-                const resp = await RouteApi.deleteRoute(row.route_code ?? 0);
+                setLoading(true);
+                const resp = await ShipmentApi.deleteShipment(row.shipment_code ?? 0);
+                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Route resp: ", { resp });
+                    console.log("Deleting Shipment resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -106,17 +116,46 @@ export const RouteDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadRouteList();
+                const shipmentsResp =
+                    await DriverPayrollApi.getDriverPayrollShipmentList(driverPayrollCode);
+                setShipmentList(!isAxiosError(shipmentsResp) ? shipmentsResp : []);
             },
         });
     };
 
-    const columns: GridColDef<Route>[] = [
+    const columns: GridColDef<Shipment>[] = [
         {
-            field: "route_code",
-            headerName: "Code",
+            field: "shipment_payroll_code",
+            headerName: "Payroll #",
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
+        },
+        {
+            field: "shipment_date",
+            headerName: "Date",
+            renderCell: ({ row }) =>
+                DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
+            minWidth: 70,
+        },
+        {
+            field: "dispatch_code",
+            headerName: "Dispatch",
+            minWidth: 130,
+            flex: 1,
+            align: "right",
+        },
+        {
+            field: "receipt_code",
+            headerName: "Receipt",
+            minWidth: 130,
+            flex: 1,
+            align: "right",
+        },
+        {
+            field: "product_name",
+            headerName: "Product",
+            minWidth: 130,
+            flex: 1,
         },
         {
             field: "origin",
@@ -130,12 +169,30 @@ export const RouteDataTable = ({
             minWidth: 130,
             flex: 1,
         },
+
+        {
+            field: "origin_weight",
+            headerName: "Origin Weight",
+            renderCell: ({ row }) => formatter(parseInt(row.origin_weight)),
+            minWidth: 100,
+            flex: 0.8,
+            align: "right",
+        },
+        {
+            field: "destination_weight",
+            headerName: "Destination Weight",
+            renderCell: ({ row }) => formatter(parseInt(row.destination_weight)),
+            minWidth: 100,
+            flex: 0.8,
+            align: "right",
+        },
         {
             field: "price",
             headerName: "Price",
             renderCell: ({ row }) => formatter(parseFloat(row.price)),
-            minWidth: 100,
+            minWidth: 120,
             flex: 0.8,
+            align: "right",
         },
         {
             field: "payroll_price",
@@ -143,12 +200,16 @@ export const RouteDataTable = ({
             renderCell: ({ row }) => formatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
+            align: "right",
         },
         {
-            field: "modification_user",
-            headerName: "Modified by",
-            minWidth: 130,
-            flex: 1,
+            field: "total",
+            headerName: "Total",
+            renderCell: ({ row }) =>
+                formatter(parseInt(row.destination_weight) * parseFloat(row.payroll_price)),
+            minWidth: 120,
+            flex: 0.8,
+            align: "right",
         },
         {
             field: "action",
@@ -161,11 +222,11 @@ export const RouteDataTable = ({
                     menuItems={[
                         {
                             text: "Edit",
-                            handleClick: () => handleEditRoute(params.row),
+                            handleClick: () => handleEditShipment(params.row),
                         },
                         {
                             text: "Delete",
-                            handleClick: () => handleDeleteRouteItem(params.row),
+                            handleClick: () => handleDeleteShipmentItem(params.row),
                         },
                     ]}
                 />
@@ -173,26 +234,34 @@ export const RouteDataTable = ({
         },
     ];
 
+    const paginationModel = { page: 0, pageSize: -1 };
+
+    const columnVisibilityModel = {
+        price: false,
+        dispatch_code: false,
+    };
+
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Routes"
+                tableTitle="Payroll Shipments"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
-                    rows={routeList}
+                    rows={shipmentList}
                     columns={columns}
+                    columnVisibilityModel={columnVisibilityModel}
                     initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[25, 50, 100]}
+                    pageSizeOptions={[{ label: "All", value: -1 }]}
                     checkboxSelection
                     disableRowSelectionOnClick
                     sx={{
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Route) => row.route_code ?? 0}
+                    getRowId={(row: Shipment) => row.shipment_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

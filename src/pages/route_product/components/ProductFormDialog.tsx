@@ -30,15 +30,14 @@ const createRequiredStringSchema = (fieldName: string) =>
         });
 
 const productFormSchema = z.object({
-    product_code: z.number().nullish(),
+    product_code: z.number().positive("Código Producto inválido").nullish(),
     product_name: createRequiredStringSchema("Nombre del Producto"),
 });
 
 type ProductFormSchema = z.infer<typeof productFormSchema>;
 
 interface ProductFormDialogProps extends FormDialogProps {
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
+    loadProductList: () => Promise<void>;
     productToEdit?: Product | null;
     setProductToEdit?: React.Dispatch<React.SetStateAction<Product | null>>;
 }
@@ -49,10 +48,9 @@ const PRODUCT_FORM_DEFAULT_VALUE: ProductFormSchema = {
 };
 
 export const ProductFormDialog = ({
-    setLoading,
     open,
     setOpen,
-    setProductList,
+    loadProductList,
     productToEdit,
     setProductToEdit,
 }: ProductFormDialogProps) => {
@@ -146,10 +144,7 @@ export const ProductFormDialog = ({
         setSubmitResult({ success: resp.message });
         showToastSuccess(resp.message);
 
-        setLoading(true);
-        const productListResp = await ProductApi.getProductList();
-        setLoading(false);
-        setProductList(!isAxiosError(productListResp) ? productListResp : []);
+        await loadProductList();
 
         handleClose();
     };

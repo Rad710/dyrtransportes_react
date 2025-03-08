@@ -94,7 +94,7 @@ export const DriverPayrollList = ({ title }: PropsTitle) => {
     };
 
     return (
-        <Box sx={{ padding: 3 }}>
+        <Box>
             <Box
                 sx={{
                     display: "flex",
@@ -153,7 +153,7 @@ export const DriverPayrollList = ({ title }: PropsTitle) => {
                                         >
                                             <Button
                                                 component={Link}
-                                                to={`/driver-payrolls/${driver?.driver_code ?? 0}/${payroll?.payroll_code ?? 0}`}
+                                                to={`/driver-payrolls/${driver?.driver_code ?? 0}/payroll/${payroll?.payroll_code ?? 0}`}
                                                 variant="contained"
                                                 color="info"
                                                 sx={{

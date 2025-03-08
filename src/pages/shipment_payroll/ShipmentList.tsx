@@ -57,30 +57,35 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
             setShipmentPayrollList(shipmentPayrollsResp);
         } else {
             showToastAxiosError(shipmentPayrollsResp);
+            setShipmentPayrollList([]);
         }
 
         if (!isAxiosError(shipmentsResp) && shipmentsResp) {
             setShipmentAggregatedList(shipmentsResp);
         } else {
             showToastAxiosError(shipmentsResp);
+            setShipmentAggregatedList([]);
         }
 
         if (!isAxiosError(routesResp) && routesResp) {
             setRouteList(routesResp);
         } else {
             showToastAxiosError(routesResp);
+            setRouteList([]);
         }
 
         if (!isAxiosError(productsResp) && productsResp) {
             setProductList(productsResp);
         } else {
             showToastAxiosError(productsResp);
+            setProductList([]);
         }
 
         if (!isAxiosError(driversResp) && driversResp) {
             setDriverList(driversResp.filter((item) => !item.deleted));
         } else {
             showToastAxiosError(driversResp);
+            setDriverList([]);
         }
 
         if (import.meta.env.VITE_DEBUG) {
@@ -94,6 +99,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     // USE EFFECTS
     useEffect(() => {
         document.title = title;
+
         loadShipmentListAndAutocompleteOptions();
     }, []);
 
@@ -222,10 +228,9 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
                     <ShipmentFormDialog
                         payrollCode={payrollCode}
-                        setShipmentAggregatedList={setShipmentAggregatedList}
+                        loadShipmentList={loadShipmentListAndAutocompleteOptions}
                         open={addFormDialogOpen}
                         setOpen={setAddFormDialogOpen}
-                        setLoading={setLoadingTable}
                         productList={productList}
                         driverList={driverList}
                         routeList={routeList}
@@ -233,10 +238,9 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
                     <ShipmentFormDialog
                         payrollCode={payrollCode}
-                        setShipmentAggregatedList={setShipmentAggregatedList}
+                        loadShipmentList={loadShipmentListAndAutocompleteOptions}
                         open={editFormDialogOpen}
                         setOpen={setEditFormDialogOpen}
-                        setLoading={setLoadingTable}
                         productList={productList}
                         driverList={driverList}
                         routeList={routeList}
@@ -258,9 +262,8 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
 
             <ShipmentDataTable
                 loading={loadingTable}
-                setLoading={setLoadingTable}
                 shipmentAggregatedList={shipmentAggregatedList}
-                setShipmentAggregatedList={setShipmentAggregatedList}
+                loadShipmentList={loadShipmentListAndAutocompleteOptions}
                 payrollCode={payrollCode}
                 setShipmentToEdit={setShipmentToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}

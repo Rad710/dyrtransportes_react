@@ -30,7 +30,7 @@ const createRequiredStringSchema = (fieldName: string) =>
         });
 
 const driverFormSchema = z.object({
-    driver_code: z.number().nullish(),
+    driver_code: z.number().positive("Código Chofer inválido").nullish(),
     driver_id: createRequiredStringSchema("Cédula"),
     driver_name: createRequiredStringSchema("Nombre"),
     driver_surname: createRequiredStringSchema("Apellido"),
@@ -41,8 +41,7 @@ const driverFormSchema = z.object({
 type DriverFormSchema = z.infer<typeof driverFormSchema>;
 
 interface DriverFormDialogProps extends FormDialogProps {
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
+    loadDriverList: () => Promise<void>;
     driverToEdit?: Driver | null;
     setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
 }
@@ -57,10 +56,9 @@ const DRIVER_FORM_DEFAULT_VALUE: DriverFormSchema = {
 };
 
 export const DriverFormDialog = ({
-    setLoading,
     open,
     setOpen,
-    setDriverList,
+    loadDriverList,
     driverToEdit,
     setDriverToEdit,
 }: DriverFormDialogProps) => {
@@ -158,17 +156,7 @@ export const DriverFormDialog = ({
         setSubmitResult({ success: resp.message });
         showToastSuccess(resp.message);
 
-        setLoading(true);
-        const driverListResp = await DriverApi.getDriverList();
-        setLoading(false);
-
-        if (!isAxiosError(driverListResp)) {
-            const filteredDrivers = driverListResp.filter((item) => !item.deleted);
-            setDriverList(filteredDrivers);
-        } else {
-            setDriverList([]);
-        }
-
+        await loadDriverList();
         handleClose();
     };
 

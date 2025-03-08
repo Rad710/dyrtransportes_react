@@ -202,7 +202,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     };
 
     return (
-        <Box sx={{ padding: 3 }}>
+        <Box>
             <Box
                 sx={{
                     display: "flex",

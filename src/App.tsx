@@ -19,6 +19,7 @@ import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
 import { UserProfile } from "@/pages/user_profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
 import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
+import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -119,10 +120,10 @@ const router = createBrowserRouter([
                         path: ":driver_code",
                         element: <DriverPayrollList title="Driver Payrolls" />,
                     },
-                    // {
-                    //     path: ":driver_code/payroll/:driver_payroll_code",
-                    //     element: <DriverPayroll title="Driver Payrolls" />,
-                    // },
+                    {
+                        path: ":driver_code/payroll/:driver_payroll_code",
+                        element: <DriverPayroll title="Driver Payrolls" />,
+                    },
                 ],
             },
             {

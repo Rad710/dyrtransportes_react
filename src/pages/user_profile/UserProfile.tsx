@@ -55,11 +55,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }));
 
 const UserProfileContainer = styled(Stack)(({ theme }) => ({
-    padding: theme.spacing(2),
     width: "100%", // Ensure container is full width
-    [theme.breakpoints.up("sm")]: {
-        padding: theme.spacing(4),
-    },
     "&::before": {
         content: '""',
         display: "block",

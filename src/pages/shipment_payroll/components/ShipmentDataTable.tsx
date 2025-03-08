@@ -428,9 +428,8 @@ const TableShipmentAggregatedTableTotalRow = ({
 
 type ShipmentDataTableProps = {
     loading: boolean;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     shipmentAggregatedList: ShipmentAggregated[];
-    setShipmentAggregatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
+    loadShipmentList: () => Promise<void>;
     payrollCode: number;
     setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -438,9 +437,8 @@ type ShipmentDataTableProps = {
 };
 export function ShipmentDataTable({
     loading,
-    setLoading,
     shipmentAggregatedList,
-    setShipmentAggregatedList,
+    loadShipmentList,
     payrollCode,
     setShipmentToEdit,
     setEditFormDialogOpen,
@@ -484,9 +482,7 @@ export function ShipmentDataTable({
                     console.log("Deleting Shipments...", selectedRows);
                 }
 
-                setLoading(true);
                 const resp = await ShipmentApi.deleteShipmentList(selectedRows);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Shipments resp: ", { resp });
                 }
@@ -498,12 +494,7 @@ export function ShipmentDataTable({
 
                 showToastSuccess(resp.message);
 
-                setLoading(true);
-                const shipmentAggregatedResp = await ShipmentApi.getShipmentAggregated(payrollCode);
-                setLoading(false);
-                setShipmentAggregatedList(
-                    !isAxiosError(shipmentAggregatedResp) ? shipmentAggregatedResp : [],
-                );
+                await loadShipmentList();
             },
         });
     };
@@ -567,9 +558,7 @@ export function ShipmentDataTable({
                     console.log("Deleting Shipment", row);
                 }
 
-                setLoading(true);
                 const resp = await ShipmentApi.deleteShipment(row.shipment_code ?? 0);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Shipment resp: ", { resp });
                 }
@@ -580,10 +569,7 @@ export function ShipmentDataTable({
                 }
                 showToastSuccess(resp.message);
 
-                setLoading(true);
-                const shipmentListResp = await ShipmentApi.getShipmentAggregated(payrollCode);
-                setLoading(false);
-                setShipmentAggregatedList(!isAxiosError(shipmentListResp) ? shipmentListResp : []);
+                await loadShipmentList();
             },
         });
     };
@@ -626,9 +612,7 @@ export function ShipmentDataTable({
                     return;
                 }
 
-                setLoading(true);
                 const resp = await ShipmentApi.moveShipmentList(selectedPayroll, selectedRows);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment resp: ", { resp });
                 }
@@ -638,11 +622,7 @@ export function ShipmentDataTable({
                 }
                 showToastSuccess(resp.message);
 
-                setLoading(true);
-                // Use selectedPayroll in your API call
-                const shipmentListResp = await ShipmentApi.getShipmentAggregated(payrollCode);
-                setLoading(false);
-                setShipmentAggregatedList(!isAxiosError(shipmentListResp) ? shipmentListResp : []);
+                await loadShipmentList();
             },
         });
     };

@@ -26,7 +26,7 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
 }));
 
 const shipmentPayrollFormSchema = z.object({
-    payroll_code: z.number().nullish(),
+    payroll_code: z.number().positive("Código Planilla inválido").nullish(),
     payroll_timestamp: z.date({
         required_error: "Para crear la planilla se necesita de una fecha.",
     }),

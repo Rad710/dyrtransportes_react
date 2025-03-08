@@ -15,7 +15,7 @@ import Stack from "@mui/material/Stack";
 import { DateTime } from "luxon";
 import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
-import { AutocompleteOptionDriver, Shipment, ShipmentAggregated, ShipmentPayroll } from "../types";
+import { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
 import { ShipmentApi } from "../shipment_payroll_utils";
 import { Product, Route } from "@/pages/route_product/types";
 import { isAxiosError } from "axios";
@@ -27,7 +27,7 @@ const parser = getGlobalizeParser();
 const floatFormatter = getGlobalizeNumberFormatter(2, 2);
 
 const shipmentFormSchema = z.object({
-    shipment_code: z.number().nullish(),
+    shipment_code: z.number().positive("Código Carga inválido").nullish(),
     shipment_date: z.coerce.date({
         required_error: "El campo Fecha es obligatorio.",
     }),
@@ -186,13 +186,13 @@ const shipmentFormSchema = z.object({
         .min(1, {
             message: "El campo Planilla no puede estar vacío.",
         }),
-    driver_payroll_code: z.number().nullish(),
+    driver_payroll_code: z.number().positive("Código Liquidación inválido").nullish(),
 });
 type ShipmentFormSchema = z.infer<typeof shipmentFormSchema>;
 
 const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentFormSchema => ({
     shipment_code: null,
-    shipment_date: DateTime.now().toJSDate(),
+    shipment_date: DateTime.now().startOf("day").toJSDate(),
     driver_name: "",
     driver_code: 0,
     truck_plate: "",
@@ -362,13 +362,13 @@ const ShipmentFormDialogFields = ({
                                 },
                             }}
                             value={DateTime.fromJSDate(
-                                field.value ?? DateTime.now().toJSDate(),
+                                field.value ?? DateTime.now().startOf("day").toJSDate(),
                             ).toFormat("yyyy-MM-dd")}
                             onChange={(e) => {
                                 field.onChange(
                                     e.target.value
                                         ? DateTime.fromISO(e.target.value).toJSDate()
-                                        : DateTime.now().toJSDate(),
+                                        : DateTime.now().startOf("day").toJSDate(),
                                 );
                             }}
                         />
@@ -699,8 +699,7 @@ const ShipmentFormDialogFields = ({
 
 interface ShipmentFormDialogProps extends FormDialogProps {
     payrollCode: number;
-    setShipmentAggregatedList: React.Dispatch<React.SetStateAction<ShipmentAggregated[]>>;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    loadShipmentList: () => Promise<void>;
     productList: Product[];
     driverList: Driver[];
     routeList: Route[];
@@ -710,10 +709,9 @@ interface ShipmentFormDialogProps extends FormDialogProps {
 }
 export const ShipmentFormDialog = ({
     payrollCode,
-    setShipmentAggregatedList,
+    loadShipmentList,
     open,
     setOpen,
-    setLoading,
     productList,
     driverList,
     routeList,
@@ -811,15 +809,7 @@ export const ShipmentFormDialog = ({
         setSubmitResult({ success: resp.message ?? "Operación exitosa" });
         showToastSuccess(resp.message ?? "Operación exitosa");
 
-        setLoading(true);
-        const shipmentsResp = await ShipmentApi.getShipmentAggregated(payrollCode);
-        setLoading(false);
-
-        if (!isAxiosError(shipmentsResp) && shipmentsResp) {
-            setShipmentAggregatedList(shipmentsResp);
-        } else {
-            showToastAxiosError(shipmentsResp);
-        }
+        await loadShipmentList();
 
         handleClose();
     };

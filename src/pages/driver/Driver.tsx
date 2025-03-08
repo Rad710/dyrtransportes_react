@@ -32,24 +32,25 @@ const ActiveDriverTabContent = () => {
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
+    const loadActiveDriverList = async () => {
+        setLoadingTable(true);
+        const resp = await DriverApi.getDriverList();
+        setLoadingTable(false);
+        if (!isAxiosError(resp) && resp) {
+            const filteredDrivers = resp.filter((item) => !item.deleted);
+            setActiveDriverList(filteredDrivers);
+        } else {
+            showToastAxiosError(resp);
+            setActiveDriverList([]);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Loaded active drivers: ", { resp });
+        }
+    };
+
     useEffect(() => {
-        const loadDrivers = async () => {
-            setLoadingTable(true);
-            const resp = await DriverApi.getDriverList();
-            setLoadingTable(false);
-            if (!isAxiosError(resp) && resp) {
-                const filteredDrivers = resp.filter((item) => !item.deleted);
-                setActiveDriverList(filteredDrivers);
-            } else {
-                showToastAxiosError(resp);
-            }
-
-            if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded active drivers: ", { resp });
-            }
-        };
-
-        loadDrivers();
+        loadActiveDriverList();
     }, []);
 
     const handleExportDriverList = () => {
@@ -98,17 +99,15 @@ const ActiveDriverTabContent = () => {
                 </Button>
 
                 <DriverFormDialog
-                    setDriverList={setActiveDriverList}
+                    loadDriverList={loadActiveDriverList}
                     open={addFormDialogOpen}
                     setOpen={setAddFormDialogOpen}
-                    setLoading={setLoadingTable}
                 />
 
                 <DriverFormDialog
-                    setDriverList={setActiveDriverList}
+                    loadDriverList={loadActiveDriverList}
                     open={editFormDialogOpen}
                     setOpen={setEditFormDialogOpen}
-                    setLoading={setLoadingTable}
                     driverToEdit={driverToEdit}
                     setDriverToEdit={setDriverToEdit}
                 />
@@ -124,10 +123,9 @@ const ActiveDriverTabContent = () => {
             </Box>
 
             <DriverDataTable
+                loadDriverList={loadActiveDriverList}
                 loading={loadingTable}
-                setLoading={setLoadingTable}
                 driverList={activeDriverList}
-                setDriverList={setActiveDriverList}
                 setDriverToEdit={setDriverToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
                 mode="active"
@@ -146,25 +144,26 @@ const DeactivatedDriverTabContent = () => {
     // context
     const { showToastAxiosError } = useToast();
 
+    const loadDeactivatedDriverList = async () => {
+        setLoadingTable(true);
+        const resp = await DriverApi.getDriverList();
+        setLoadingTable(false);
+        if (!isAxiosError(resp) && resp) {
+            const filteredDrivers = resp.filter((item) => item.deleted);
+            setDeactivatedDriverList(filteredDrivers);
+        } else {
+            showToastAxiosError(resp);
+            setDeactivatedDriverList([]);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Loaded deactivated drivers: ", { resp });
+        }
+    };
+
     // USE EFFECTS
     useEffect(() => {
-        const loadDrivers = async () => {
-            setLoadingTable(true);
-            const resp = await DriverApi.getDriverList();
-            setLoadingTable(false);
-            if (!isAxiosError(resp) && resp) {
-                const filteredDrivers = resp.filter((item) => item.deleted);
-                setDeactivatedDriverList(filteredDrivers);
-            } else {
-                showToastAxiosError(resp);
-            }
-
-            if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded deactivated drivers: ", { resp });
-            }
-        };
-
-        loadDrivers();
+        loadDeactivatedDriverList();
     }, []);
 
     return (
@@ -175,9 +174,8 @@ const DeactivatedDriverTabContent = () => {
         >
             <DriverDataTable
                 loading={loadingTable}
-                setLoading={setLoadingTable}
                 driverList={deactivatedDriverList}
-                setDriverList={setDeactivatedDriverList}
+                loadDriverList={loadDeactivatedDriverList}
                 mode="deactivated"
             />
         </Box>

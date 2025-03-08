@@ -14,9 +14,8 @@ type DriverTableMode = "active" | "deactivated";
 type DriverDataTableProps = {
     mode: DriverTableMode;
     loading: boolean;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     driverList: Driver[];
-    setDriverList: React.Dispatch<React.SetStateAction<Driver[]>>;
+    loadDriverList: () => Promise<void>;
     setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
     setEditFormDialogOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -24,9 +23,8 @@ type DriverDataTableProps = {
 export const DriverDataTable = ({
     mode,
     loading,
-    setLoading,
     driverList,
-    setDriverList,
+    loadDriverList,
     setDriverToEdit,
     setEditFormDialogOpen,
 }: DriverDataTableProps) => {
@@ -42,7 +40,7 @@ export const DriverDataTable = ({
         setSelectedRows([]);
     }, [driverList]);
 
-    const paginationModel = { page: 0, pageSize: 5 };
+    const paginationModel = { page: 0, pageSize: 25 };
 
     const handleEditDriver = (row: Driver) => {
         if (setDriverToEdit && setEditFormDialogOpen) {
@@ -64,9 +62,7 @@ export const DriverDataTable = ({
                     console.log("Deleting Drivers...", selectedRows);
                 }
 
-                setLoading(true);
                 const resp = await DriverApi.deleteDriverList(selectedRows as number[]);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Drivers resp: ", { resp });
                 }
@@ -78,23 +74,10 @@ export const DriverDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                refreshDriverList();
+                await loadDriverList();
             },
         });
     };
-
-    const refreshDriverList = async () => {
-        const driverListResp = await DriverApi.getDriverList();
-        if (!isAxiosError(driverListResp)) {
-            const filteredDrivers = driverListResp.filter((item) =>
-                mode === "active" ? !item.deleted : item.deleted,
-            );
-            setDriverList(filteredDrivers);
-        } else {
-            setDriverList([]);
-        }
-    };
-
     const handleDeleteDriverItem = (row: Driver) => {
         openConfirmDialog({
             title: "Confirm Delete",
@@ -113,9 +96,7 @@ export const DriverDataTable = ({
                     console.log("Deleting Driver", row);
                 }
 
-                setLoading(true);
                 const resp = await DriverApi.deleteDriver(row.driver_code ?? 0);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Driver resp: ", { resp });
                 }
@@ -127,7 +108,7 @@ export const DriverDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                refreshDriverList();
+                await loadDriverList();
             },
         });
     };
@@ -150,9 +131,7 @@ export const DriverDataTable = ({
                     console.log("Restoring Driver", row);
                 }
 
-                setLoading(true);
                 const resp = await DriverApi.restoreDriver(row.driver_code ?? 0);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Restoring Driver resp: ", { resp });
                 }
@@ -164,7 +143,7 @@ export const DriverDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                refreshDriverList();
+                await loadDriverList();
             },
         });
     };
@@ -256,7 +235,7 @@ export const DriverDataTable = ({
                     rows={driverList}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10, 25]}
+                    pageSizeOptions={[25, 50, 100]}
                     checkboxSelection
                     disableRowSelectionOnClick
                     sx={{

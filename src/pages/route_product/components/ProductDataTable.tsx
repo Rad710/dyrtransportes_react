@@ -11,18 +11,16 @@ import { useToast } from "@/context/ToastContext";
 
 type ProductDataTableProps = {
     loading: boolean;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     productList: Product[];
-    setProductList: React.Dispatch<React.SetStateAction<Product[]>>;
+    loadProductList: () => Promise<void>;
     setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const ProductDataTable = ({
     loading,
-    setLoading,
     productList,
-    setProductList,
+    loadProductList,
     setProductToEdit,
     setEditFormDialogOpen,
 }: ProductDataTableProps) => {
@@ -38,7 +36,7 @@ export const ProductDataTable = ({
         setSelectedRows([]);
     }, [productList]);
 
-    const paginationModel = { page: 0, pageSize: 5 };
+    const paginationModel = { page: 0, pageSize: 25 };
 
     const handleEditProduct = (row: Product) => {
         setProductToEdit(row);
@@ -58,9 +56,7 @@ export const ProductDataTable = ({
                     console.log("Deleting Products...", selectedRows);
                 }
 
-                setLoading(true);
                 const resp = await ProductApi.deleteProductList(selectedRows as number[]);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Products resp: ", { resp });
                 }
@@ -72,8 +68,7 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const productListResp = await ProductApi.getProductList();
-                setProductList(!isAxiosError(productListResp) ? productListResp : []);
+                await loadProductList();
             },
         });
     };
@@ -95,9 +90,7 @@ export const ProductDataTable = ({
                     console.log("Deleting Product", row);
                 }
 
-                setLoading(true);
                 const resp = await ProductApi.deleteProduct(row.product_code ?? 0);
-                setLoading(false);
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Product resp: ", { resp });
                 }
@@ -109,8 +102,7 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                const productListResp = await ProductApi.getProductList();
-                setProductList(!isAxiosError(productListResp) ? productListResp : []);
+                await loadProductList();
             },
         });
     };
@@ -169,7 +161,7 @@ export const ProductDataTable = ({
                     rows={productList}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10, 25]}
+                    pageSizeOptions={[25, 50, 100]}
                     checkboxSelection
                     disableRowSelectionOnClick
                     sx={{

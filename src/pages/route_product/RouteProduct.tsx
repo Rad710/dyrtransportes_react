@@ -20,7 +20,7 @@ import { ProductFormDialog } from "./components/ProductFormDialog";
 
 const RouteTabContent = () => {
     // //STATE
-    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
@@ -33,23 +33,24 @@ const RouteTabContent = () => {
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
+    const loadRouteList = async () => {
+        setLoading(true);
+        const resp = await RouteApi.getRouteList();
+        setLoading(false);
+        if (!isAxiosError(resp) && resp) {
+            setRouteList(resp);
+        } else {
+            showToastAxiosError(resp);
+            setRouteList([]);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Loaded routes: ", { resp });
+        }
+    };
+
     useEffect(() => {
-        const loadRoutes = async () => {
-            setLoadingTable(true);
-            const resp = await RouteApi.getRouteList();
-            setLoadingTable(false);
-            if (!isAxiosError(resp) && resp) {
-                setRouteList(resp);
-            } else {
-                showToastAxiosError(resp);
-            }
-
-            if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded routes: ", { resp });
-            }
-        };
-
-        loadRoutes();
+        loadRouteList();
     }, []);
 
     const handleExportRouteList = () => {
@@ -81,7 +82,7 @@ const RouteTabContent = () => {
     };
 
     return (
-        <>
+        <Box>
             <Box
                 sx={{
                     display: "flex",
@@ -98,19 +99,17 @@ const RouteTabContent = () => {
                 </Button>
 
                 <RouteFormDialog
-                    setRouteList={setRouteList}
                     open={addFormDialogOpen}
                     setOpen={setAddFormDialogOpen}
-                    setLoading={setLoadingTable}
+                    loadRouteList={loadRouteList}
                 />
 
                 <RouteFormDialog
-                    setRouteList={setRouteList}
                     open={editFormDialogOpen}
                     setOpen={setEditFormDialogOpen}
-                    setLoading={setLoadingTable}
                     routeToEdit={routeToEdit}
                     setRouteToEdit={setRouteToEdit}
+                    loadRouteList={loadRouteList}
                 />
 
                 <Button
@@ -124,20 +123,19 @@ const RouteTabContent = () => {
             </Box>
 
             <RouteDataTable
-                loading={loadingTable}
-                setLoading={setLoadingTable}
+                loading={loading}
                 routeList={routeList}
-                setRouteList={setRouteList}
+                loadRouteList={loadRouteList}
                 setRouteToEdit={setRouteToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
             />
-        </>
+        </Box>
     );
 };
 
 const ProductTabContent = () => {
     // //STATE
-    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
@@ -150,23 +148,24 @@ const ProductTabContent = () => {
     const { openConfirmDialog } = useConfirmation();
 
     // USE EFFECTS
+    const loadProductList = async () => {
+        setLoading(true);
+        const resp = await ProductApi.getProductList();
+        setLoading(false);
+        if (!isAxiosError(resp) && resp) {
+            setProductList(resp);
+        } else {
+            showToastAxiosError(resp);
+            setProductList([]);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Loaded products: ", { resp });
+        }
+    };
+
     useEffect(() => {
-        const loadProducts = async () => {
-            setLoadingTable(true);
-            const resp = await ProductApi.getProductList();
-            setLoadingTable(false);
-            if (!isAxiosError(resp) && resp) {
-                setProductList(resp);
-            } else {
-                showToastAxiosError(resp);
-            }
-
-            if (import.meta.env.VITE_DEBUG) {
-                console.log("Loaded products: ", { resp });
-            }
-        };
-
-        loadProducts();
+        loadProductList();
     }, []);
 
     const handleExportProductList = () => {
@@ -215,17 +214,15 @@ const ProductTabContent = () => {
                 </Button>
 
                 <ProductFormDialog
-                    setProductList={setProductList}
+                    loadProductList={loadProductList}
                     open={addFormDialogOpen}
                     setOpen={setAddFormDialogOpen}
-                    setLoading={setLoadingTable}
                 />
 
                 <ProductFormDialog
-                    setProductList={setProductList}
+                    loadProductList={loadProductList}
                     open={editFormDialogOpen}
                     setOpen={setEditFormDialogOpen}
-                    setLoading={setLoadingTable}
                     productToEdit={productToEdit}
                     setProductToEdit={setProductToEdit}
                 />
@@ -241,10 +238,9 @@ const ProductTabContent = () => {
             </Box>
 
             <ProductDataTable
-                loading={loadingTable}
-                setLoading={setLoadingTable}
+                loading={loading}
                 productList={productList}
-                setProductList={setProductList}
+                loadProductList={loadProductList}
                 setProductToEdit={setProductToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
             />
