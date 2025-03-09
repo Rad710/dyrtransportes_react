@@ -1,4 +1,4 @@
-import { alpha, Toolbar, Tooltip, Typography, IconButton } from "@mui/material";
+import { alpha, Toolbar, Tooltip, Typography, IconButton, Box, Button } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -6,12 +6,14 @@ interface DataTableToolbar {
     tableTitle: string;
     numSelected: number;
     handleDelete?: () => void;
+    handleMove?: () => void;
 }
 
 export const DataTableToolbar = ({
     tableTitle,
     numSelected,
     handleDelete,
+    handleMove,
 }: Readonly<DataTableToolbar>) => {
     return (
         <Toolbar
@@ -40,13 +42,30 @@ export const DataTableToolbar = ({
                     {tableTitle}
                 </Typography>
             )}
-            {handleDelete && numSelected > 0 && (
-                <Tooltip title="Delete">
-                    <IconButton onClick={handleDelete}>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
-            )}
+
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 2,
+                    paddingRight: 3,
+                }}
+            >
+                {handleMove && numSelected > 0 && (
+                    <Tooltip title="Move">
+                        <Button variant="outlined" onClick={handleMove}>
+                            Mover
+                        </Button>
+                    </Tooltip>
+                )}
+
+                {handleDelete && numSelected > 0 && (
+                    <Tooltip title="Delete">
+                        <IconButton onClick={handleDelete}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </Box>
         </Toolbar>
     );
 };

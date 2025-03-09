@@ -29,6 +29,22 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
+    moveShipmentList: async (driverPayrollCode: number, shipmentCodeList: number[]) => {
+        const payload = {
+            driverPayrollCode: driverPayrollCode,
+            shipmentCodeList: shipmentCodeList,
+        };
+
+        return api
+            .patch(`/driver-payroll/move-shipments`, payload)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            });
+    },
+
     getDriverPayrollShipmentExpenseList: async (driverPayrollCode: number) =>
         api
             .get(`/driver-payroll/${driverPayrollCode}/shipment-expenses`)

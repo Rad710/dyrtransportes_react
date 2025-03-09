@@ -9,21 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 
-import {
-    alpha,
-    Toolbar,
-    Tooltip,
-    Typography,
-    IconButton,
-    Button,
-    Autocomplete,
-    CircularProgress,
-    Stack,
-    TablePagination,
-    TextField,
-} from "@mui/material";
-
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Autocomplete, CircularProgress, Stack, TablePagination, TextField } from "@mui/material";
 
 import { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
@@ -35,6 +21,7 @@ import { isAxiosError } from "axios";
 import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { AutocompleteOption } from "@/types";
+import { DataTableToolbar } from "@/components/DataTableToolbar";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
@@ -143,71 +130,6 @@ const columns: readonly Column[] = [
         align: "right",
     },
 ];
-
-interface GroupedShipmentsTableToolBar {
-    tableTitle: string;
-    numSelected: number;
-    handleDelete: () => void;
-    handleMove: () => void;
-}
-const GroupedShipmentsTableToolBar = ({
-    tableTitle,
-    numSelected,
-    handleDelete,
-    handleMove,
-}: Readonly<GroupedShipmentsTableToolBar>) => {
-    return (
-        <Toolbar
-            sx={[
-                {
-                    pl: { sm: 2 },
-                    pr: { xs: 1, sm: 1 },
-                },
-                numSelected > 0 && {
-                    bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-                },
-            ]}
-        >
-            {numSelected > 0 ? (
-                <Typography
-                    sx={{ flex: "1 1 100%" }}
-                    color="inherit"
-                    variant="subtitle1"
-                    component="div"
-                >
-                    {numSelected} selected
-                </Typography>
-            ) : (
-                <Typography sx={{ flex: "1 1 100%" }} variant="h6" id="tableTitle" component="div">
-                    {tableTitle}
-                </Typography>
-            )}
-            <Box
-                sx={{
-                    display: "flex",
-                    gap: 2,
-                    paddingRight: 3,
-                }}
-            >
-                {numSelected > 0 && (
-                    <Tooltip title="Move">
-                        <Button variant="outlined" onClick={handleMove}>
-                            Mover
-                        </Button>
-                    </Tooltip>
-                )}
-                {numSelected > 0 && (
-                    <Tooltip title="Delete">
-                        <IconButton onClick={handleDelete}>
-                            <DeleteIcon />
-                        </IconButton>
-                    </Tooltip>
-                )}
-            </Box>
-        </Toolbar>
-    );
-};
 
 interface GroupedShipmentsTableHeadProps {
     numSelected: number;
@@ -636,7 +558,7 @@ export function GroupedShipmentsDataTable({
     return (
         <Box sx={{ width: "100%" }}>
             <Paper sx={{ mb: 2 }}>
-                <GroupedShipmentsTableToolBar
+                <DataTableToolbar
                     numSelected={selectedRows.length}
                     tableTitle="Shipments"
                     handleDelete={handleDeleteSelected}

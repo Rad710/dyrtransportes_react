@@ -152,7 +152,7 @@ export const ShipmentApi = {
         };
 
         return api
-            .patch(`/move-shipments`, payload)
+            .patch(`/shipment-payroll/move-shipments`, payload)
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })

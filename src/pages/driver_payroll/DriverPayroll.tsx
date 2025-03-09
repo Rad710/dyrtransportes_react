@@ -140,6 +140,8 @@ const DriverPayrollShipmentsTab = ({
                 shipmentList={payrollShipmentList}
                 setShipmentToEdit={setShipmentToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
+                driverPayrollCode={driverPayrollCode}
+                driverPayrollList={driverPayrollList}
             />
         </Box>
     );
