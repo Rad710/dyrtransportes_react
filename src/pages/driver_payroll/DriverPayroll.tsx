@@ -229,6 +229,7 @@ const DriverPayrollExpensesTab = ({
                     setOpen={setEditFormDialogOpen}
                     expenseToEdit={shipmentExpenseToEdit}
                     setExpenseToEdit={setShipmentExpenseToEdit}
+                    driverPayrollList={driverPayrollList}
                 />
             </Box>
 

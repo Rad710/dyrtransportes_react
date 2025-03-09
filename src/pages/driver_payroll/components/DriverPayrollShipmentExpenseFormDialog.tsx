@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,11 +14,12 @@ import Stack from "@mui/material/Stack";
 
 import { DateTime } from "luxon";
 import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
-import { FormDialogProps, FormSubmitResult } from "@/types";
+import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { ShipmentExpense } from "../types";
+import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../driver_payroll_utils";
+import { Autocomplete } from "@mui/material";
 
 // Utility functions for number formatting and parsing
 const parser = getGlobalizeParser();
@@ -106,9 +107,22 @@ const formSchemaToExpense = (formSchema: ShipmentExpenseFormSchema): ShipmentExp
 // Form fields component
 interface ShipmentExpenseFormDialogFields {
     form: UseFormReturn<ShipmentExpenseFormSchema>;
+    driverPayrollList?: DriverPayroll[];
 }
 
-const ShipmentExpenseFormDialogFields = ({ form }: Readonly<ShipmentExpenseFormDialogFields>) => {
+const ShipmentExpenseFormDialogFields = ({
+    form,
+    driverPayrollList,
+}: Readonly<ShipmentExpenseFormDialogFields>) => {
+    const driverPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            driverPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [driverPayrollList],
+    );
+
     return (
         <Stack spacing={2}>
             {/* Row 1: Date and Receipt */}
@@ -155,6 +169,38 @@ const ShipmentExpenseFormDialogFields = ({ form }: Readonly<ShipmentExpenseFormD
                         />
                     )}
                 />
+
+                {driverPayrollList && (
+                    <Controller
+                        name="driver_payroll_code"
+                        control={form.control}
+                        render={({ field }) => (
+                            <Autocomplete
+                                options={driverPayrollOptionList}
+                                value={
+                                    driverPayrollOptionList.find(
+                                        (option) => String(option.id) === String(field.value),
+                                    ) || null
+                                }
+                                onChange={(_, newValue) => {
+                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Liquidación"
+                                        error={!!form.formState.errors.driver_payroll_code}
+                                        helperText={
+                                            form.formState.errors.driver_payroll_code?.message
+                                        }
+                                        fullWidth
+                                    />
+                                )}
+                                fullWidth
+                            />
+                        )}
+                    />
+                )}
             </Stack>
 
             {/* Row 2: Amount and Reason */}
@@ -197,6 +243,7 @@ interface DriverPayrollShipmentExpenseFormDialogProps extends FormDialogProps {
     loadExpenseList: () => Promise<void>;
     expenseToEdit?: ShipmentExpense | null;
     setExpenseToEdit?: React.Dispatch<React.SetStateAction<ShipmentExpense | null>>;
+    driverPayrollList?: DriverPayroll[];
 }
 
 export const DriverPayrollShipmentExpenseFormDialog = ({
@@ -206,6 +253,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
     setOpen,
     expenseToEdit,
     setExpenseToEdit,
+    driverPayrollList,
 }: Readonly<DriverPayrollShipmentExpenseFormDialogProps>) => {
     // STATE
     // React form hook setup
@@ -355,7 +403,10 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
-                    <ShipmentExpenseFormDialogFields form={form} />
+                    <ShipmentExpenseFormDialogFields
+                        form={form}
+                        driverPayrollList={driverPayrollList}
+                    />
                 </Box>
             </DialogContent>
             <DialogActions>

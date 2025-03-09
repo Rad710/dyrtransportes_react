@@ -1,15 +1,146 @@
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import { Shipment } from "@/pages/shipment_payroll/types";
 import { ShipmentApi } from "@/pages/shipment_payroll/shipment_payroll_utils";
 import { DateTime } from "luxon";
+
+const formatter = getGlobalizeNumberFormatter(0, 2);
+
+const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+    // Calculate totals with useMemo inside the component
+    const totals = useMemo(() => {
+        const totalOrigin = shipmentList.reduce(
+            (sum, item) => sum + parseFloat(item.origin_weight),
+            0,
+        );
+        const totalDestination = shipmentList.reduce(
+            (sum, item) => sum + parseFloat(item.destination_weight),
+            0,
+        );
+        const totalMoney = shipmentList.reduce(
+            (sum, item) =>
+                sum + parseFloat(item.destination_weight) * parseFloat(item.payroll_price),
+            0,
+        );
+        return { totalOrigin, totalDestination, totalMoney };
+    }, [shipmentList]);
+
+    return (
+        <Box
+            sx={{
+                p: 2,
+                display: "flex",
+                justifyContent: "space-evenly",
+                flexDirection: isMobile ? "column" : "row",
+                backgroundColor: theme.palette.background.paper,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                boxShadow: theme.shadows[1],
+            }}
+        >
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pr: 2,
+                }}
+            >
+                <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
+                    Origin:
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "right",
+                        ml: "auto",
+                        color: theme.palette.text.secondary,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totals.totalOrigin)}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pr: 2,
+                }}
+            >
+                <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
+                    Destination:
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "right",
+                        ml: "auto",
+                        color: theme.palette.text.secondary,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totals.totalDestination)}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pr: 2,
+                }}
+            >
+                <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
+                    Diff:
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "right",
+                        ml: "auto",
+                        color: theme.palette.text.secondary,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totals.totalDestination - totals.totalOrigin)}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pr: 2,
+                }}
+            >
+                <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
+                    Total:
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "right",
+                        ml: "auto",
+                        color: theme.palette.text.secondary,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totals.totalMoney)}
+                </Typography>
+            </Box>
+        </Box>
+    );
+};
 
 type DriverPayrollShipmentDataTableProps = {
     loading: boolean;
@@ -18,8 +149,6 @@ type DriverPayrollShipmentDataTableProps = {
     setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
-
-const formatter = getGlobalizeNumberFormatter(0, 2);
 
 export const DriverPayrollShipmentDataTable = ({
     loading,
@@ -267,6 +396,8 @@ export const DriverPayrollShipmentDataTable = ({
                     }
                     rowSelectionModel={selectedRows}
                 />
+
+                <DriverPayrollShipmentDataTableFooter shipmentList={shipmentList} />
             </Paper>
         </Box>
     );

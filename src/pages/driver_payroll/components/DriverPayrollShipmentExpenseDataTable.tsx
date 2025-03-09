@@ -1,4 +1,4 @@
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -11,6 +11,57 @@ import { DateTime } from "luxon";
 import { ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../driver_payroll_utils";
 
+const formatter = getGlobalizeNumberFormatter(0, 2);
+
+const DriverPayrollShipmentExpenseDataTableFooter = ({
+    expenseList,
+}: {
+    expenseList: ShipmentExpense[];
+}) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+    // Calculate totals with useMemo inside the component
+    const totalAmount = expenseList.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+
+    return (
+        <Box
+            sx={{
+                p: 2,
+                display: "flex",
+                justifyContent: "flex-end",
+                flexDirection: isMobile ? "column" : "row",
+                backgroundColor: theme.palette.background.paper,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                boxShadow: theme.shadows[1],
+            }}
+        >
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    pr: 2,
+                }}
+            >
+                <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
+                    Total:
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        textAlign: "right",
+                        ml: "auto",
+                        color: theme.palette.text.secondary,
+                        fontWeight: "bold",
+                    }}
+                >
+                    {formatter(totalAmount)}
+                </Typography>
+            </Box>
+        </Box>
+    );
+};
+
 type DriverPayrollShipmentExpenseDataTableProps = {
     loading: boolean;
     loadDriverPayrollShipmentExpenseList: () => Promise<void>;
@@ -19,8 +70,6 @@ type DriverPayrollShipmentExpenseDataTableProps = {
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     showReceiptColumn: boolean;
 };
-
-const formatter = getGlobalizeNumberFormatter(0, 2);
 
 export const DriverPayrollShipmentExpenseDataTable = ({
     loading,
@@ -150,7 +199,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         {
             field: "reason",
             headerName: "Reason",
-            minWidth: 120,
+            minWidth: 100,
             flex: 1.5,
         },
         {
@@ -198,7 +247,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />
-            <Paper sx={{ height: "100%", width: "100%" }}>
+            <Paper sx={{ width: "100%" }}>
                 <DataGrid
                     rows={expenseList}
                     columns={columns}
@@ -217,6 +266,8 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                     }
                     rowSelectionModel={selectedRows}
                 />
+
+                <DriverPayrollShipmentExpenseDataTableFooter expenseList={expenseList} />
             </Paper>
         </Box>
     );
