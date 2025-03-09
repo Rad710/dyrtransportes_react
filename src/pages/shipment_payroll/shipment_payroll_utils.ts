@@ -1,7 +1,7 @@
 import { ApiResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
 import { DateTime } from "luxon";
-import { Shipment, ShipmentApiResponse, ShipmentAggregated, ShipmentPayroll } from "./types";
+import { Shipment, ShipmentApiResponse, ShipmentPayroll, GroupedShipments } from "./types";
 import { api } from "@/utils/axios";
 
 export type ShipmentPayrollApiResponse = ShipmentPayroll & ApiResponse;
@@ -115,10 +115,10 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    getShipmentAggregated: async (shipment_payroll_code: number) =>
+    getGroupedShipmentsList: async (shipment_payroll_code: number) =>
         api
-            .get(`/shipments-aggregated?shipment_payroll_code=${shipment_payroll_code}`)
-            .then((response: AxiosResponse<ShipmentAggregated[] | null>) => {
+            .get(`/shipment-payroll/${shipment_payroll_code}/shipments/grouped-shipments`)
+            .then((response: AxiosResponse<GroupedShipments[] | null>) => {
                 return response.data ?? [];
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {

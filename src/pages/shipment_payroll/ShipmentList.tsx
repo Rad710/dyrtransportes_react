@@ -5,12 +5,12 @@ import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PropsTitle } from "@/types";
-import { Shipment, ShipmentAggregated, ShipmentPayroll } from "./types";
+import { GroupedShipments, Shipment, ShipmentPayroll } from "./types";
 import { isAxiosError } from "axios";
 
 import { ShipmentApi, ShipmentPayrollApi } from "./shipment_payroll_utils";
 import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
-import { ShipmentDataTable } from "./components/ShipmentDataTable";
+import { GroupedShipmentsDataTable } from "./components/GroupedShipmentsDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
 import { ProductApi, RouteApi } from "../route_product/route_product_utils";
@@ -28,7 +28,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
     // State
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
     const [shipmentPayrollList, setShipmentPayrollList] = useState<ShipmentPayroll[]>([]);
-    const [shipmentAggregatedList, setShipmentAggregatedList] = useState<ShipmentAggregated[]>([]);
+    const [groupedShipmentsList, setGroupedShipmentsList] = useState<GroupedShipments[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
     const [shipmentToEdit, setShipmentToEdit] = useState<Shipment | null>(null);
@@ -46,7 +46,7 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         const [shipmentPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
             await Promise.all([
                 ShipmentPayrollApi.getShipmentPayrollList(),
-                ShipmentApi.getShipmentAggregated(payrollCode),
+                ShipmentApi.getGroupedShipmentsList(payrollCode),
                 RouteApi.getRouteList(),
                 ProductApi.getProductList(),
                 DriverApi.getDriverList(),
@@ -61,10 +61,10 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         }
 
         if (!isAxiosError(shipmentsResp) && shipmentsResp) {
-            setShipmentAggregatedList(shipmentsResp);
+            setGroupedShipmentsList(shipmentsResp);
         } else {
             showToastAxiosError(shipmentsResp);
-            setShipmentAggregatedList([]);
+            setGroupedShipmentsList([]);
         }
 
         if (!isAxiosError(routesResp) && routesResp) {
@@ -260,9 +260,9 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
                 </Box>
             </Box>
 
-            <ShipmentDataTable
+            <GroupedShipmentsDataTable
                 loading={loadingTable}
-                shipmentAggregatedList={shipmentAggregatedList}
+                groupedShipmentsList={groupedShipmentsList}
                 loadShipmentList={loadShipmentListAndAutocompleteOptions}
                 payrollCode={payrollCode}
                 setShipmentToEdit={setShipmentToEdit}

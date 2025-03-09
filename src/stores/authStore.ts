@@ -12,14 +12,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     token: null,
     user: null,
     setAuth: (token, user, rememberMe) => {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+
         sessionStorage.setItem("token", token);
         sessionStorage.setItem("user", JSON.stringify(user));
 
-        // clean localStorage
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
-        // Save to localStorage when rememberMe
         if (rememberMe) {
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
@@ -27,11 +28,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ token, user });
     },
     logout: () => {
-        // Clear localStorage on logout
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
         set({
             token: null,
             user: null,

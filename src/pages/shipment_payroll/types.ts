@@ -41,15 +41,16 @@ export type Shipment = {
 
 export type ShipmentApiResponse = Shipment & ApiResponse;
 
-export type ShipmentAggregated = {
-    product: string;
-    destination: string;
-    origin: string;
+export type GroupedShipments = {
     shipments: Shipment[];
-    subtotalDestination: string;
-    subtotalDifference: string;
-    subtotalMoney: string;
-    subtotalOrigin: string;
+    product: string;
+    origin: string;
+    destination: string;
+
+    subtotal_origin_weight: string;
+    subtotal_destination_weight: string;
+    subtotal_difference: string;
+    subtotal_money: string;
 };
 
 export interface AutocompleteOptionDriver extends AutocompleteOption {

@@ -25,7 +25,7 @@ import {
 
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import { Shipment, ShipmentAggregated, ShipmentPayroll } from "../types";
+import { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import React, { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -42,7 +42,7 @@ type Column = {
     id: keyof Shipment | "diff" | "total" | "checkbox";
     label: string;
     rowValue: (row: Shipment) => string;
-    aggregatedRowValue: (row: ShipmentAggregated) => string;
+    groupedRowValue: (row: GroupedShipments) => string;
     minWidth?: number;
     align?: "right" | "left";
 };
@@ -52,110 +52,110 @@ const columns: readonly Column[] = [
         id: "checkbox",
         label: "",
         rowValue: () => "",
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
     },
     {
         id: "shipment_date",
         label: "Date",
         rowValue: (row) =>
             DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
-        aggregatedRowValue: () => "Subtotal",
+        groupedRowValue: () => "Subtotal",
         align: "left",
     },
     {
         id: "driver_name",
         label: "Driver",
         rowValue: (row) => row.driver_name,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "left",
     },
     {
         id: "truck_plate",
         label: "Truck Plate",
         rowValue: (row) => row.truck_plate,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "left",
     },
     {
         id: "product_name",
         label: "Product",
         rowValue: (row) => row.product_name,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "left",
     },
     {
         id: "origin",
         label: "Origin",
         rowValue: (row) => row.origin,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "left",
     },
     {
         id: "destination",
         label: "Destination",
         rowValue: (row) => row.destination,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "left",
     },
     {
         id: "dispatch_code",
         label: "Dispatch",
         rowValue: (row) => row.dispatch_code,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "right",
     },
     {
         id: "receipt_code",
         label: "Receipt",
         rowValue: (row) => row.receipt_code,
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "right",
     },
     {
         id: "origin_weight",
         label: "Origin Weight",
         rowValue: (row) => formatter(parseInt(row.origin_weight)),
-        aggregatedRowValue: (aggregatedShipment) =>
-            formatter(parseInt(aggregatedShipment.subtotalOrigin)),
+        groupedRowValue: (groupedShipments) =>
+            formatter(parseInt(groupedShipments.subtotal_origin_weight)),
         align: "right",
     },
     {
         id: "destination_weight",
         label: "Destination Weight",
         rowValue: (row) => formatter(parseInt(row.destination_weight)),
-        aggregatedRowValue: (aggregatedShipment) =>
-            formatter(parseInt(aggregatedShipment.subtotalDestination)),
+        groupedRowValue: (groupedShipments) =>
+            formatter(parseInt(groupedShipments.subtotal_destination_weight)),
         align: "right",
     },
     {
         id: "price",
         label: "Price",
         rowValue: (row) => formatter(parseFloat(row.price)),
-        aggregatedRowValue: () => "",
+        groupedRowValue: () => "",
         align: "right",
     },
     {
         id: "total",
         label: "Total",
         rowValue: (row) => formatter(parseInt(row.destination_weight) * parseFloat(row.price)),
-        aggregatedRowValue: (aggregatedShipment) =>
-            formatter(parseFloat(aggregatedShipment.subtotalMoney)),
+        groupedRowValue: (groupedShipments) =>
+            formatter(parseFloat(groupedShipments.subtotal_money)),
         align: "right",
     },
 ];
 
-interface ShipmentTableToolBar {
+interface GroupedShipmentsTableToolBar {
     tableTitle: string;
     numSelected: number;
     handleDelete: () => void;
     handleMove: () => void;
 }
-const ShipmentTableToolBar = ({
+const GroupedShipmentsTableToolBar = ({
     tableTitle,
     numSelected,
     handleDelete,
     handleMove,
-}: Readonly<ShipmentTableToolBar>) => {
+}: Readonly<GroupedShipmentsTableToolBar>) => {
     return (
         <Toolbar
             sx={[
@@ -209,7 +209,7 @@ const ShipmentTableToolBar = ({
     );
 };
 
-interface ShipmentTableHeadProps {
+interface GroupedShipmentsTableHeadProps {
     numSelected: number;
     onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
     rowCount: number;
@@ -218,7 +218,7 @@ const ShipmentTableHead = ({
     numSelected,
     onSelectAllClick,
     rowCount,
-}: Readonly<ShipmentTableHeadProps>) => {
+}: Readonly<GroupedShipmentsTableHeadProps>) => {
     return (
         <TableHead>
             <TableRow>
@@ -256,7 +256,7 @@ interface TableShipmentRowProps {
     handleSelect: (row: Shipment) => void;
     handleEditShipment: (row: Shipment) => void;
     handleDeleteShipmentItem: (row: Shipment) => void;
-    indexAggregated: number;
+    indexGroupedShipment: number;
     indexShipment: number;
     row: Shipment;
 }
@@ -265,12 +265,12 @@ const TableShipmentRow = ({
     handleSelect,
     handleEditShipment,
     handleDeleteShipmentItem,
-    indexAggregated,
+    indexGroupedShipment,
     indexShipment,
     row,
 }: Readonly<TableShipmentRowProps>) => {
     const isItemSelected = selectedRows.includes(row.shipment_code ?? 0);
-    const labelId = `enhanced-table-checkbox-${indexAggregated}-${indexShipment}`;
+    const labelId = `enhanced-table-checkbox-${indexGroupedShipment}-${indexShipment}`;
 
     // render rows
     return (
@@ -318,7 +318,7 @@ const TableShipmentRow = ({
         </TableRow>
     );
 };
-const TableShipmentAggregatedRow = ({ row }: { row: ShipmentAggregated }) => {
+const TableShipmentAggregatedRow = ({ row }: { row: GroupedShipments }) => {
     return (
         <TableRow
             sx={{
@@ -340,7 +340,7 @@ const TableShipmentAggregatedRow = ({ row }: { row: ShipmentAggregated }) => {
                             color: "text.secondary",
                         }}
                     >
-                        {column.aggregatedRowValue(row)}
+                        {column.groupedRowValue(row)}
                     </TableCell>
                 );
             })}
@@ -349,27 +349,27 @@ const TableShipmentAggregatedRow = ({ row }: { row: ShipmentAggregated }) => {
     );
 };
 
-const TableShipmentAggregatedTableTotalRow = ({
-    shipmentAggregatedList,
+const TableGroupedShipmentsTableTotalRow = ({
+    groupedShipmentsList,
 }: {
-    shipmentAggregatedList: ShipmentAggregated[];
+    groupedShipmentsList: GroupedShipments[];
 }) => {
     // Calculate totals with useMemo inside the component
     const totals = useMemo(() => {
-        const totalOrigin = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalOrigin),
+        const totalOrigin = groupedShipmentsList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotal_origin_weight),
             0,
         );
-        const totalDestination = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalDestination),
+        const totalDestination = groupedShipmentsList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotal_destination_weight),
             0,
         );
-        const totalMoney = shipmentAggregatedList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotalMoney),
+        const totalMoney = groupedShipmentsList.reduce(
+            (sum, item) => sum + parseFloat(item.subtotal_money),
             0,
         );
         return { totalOrigin, totalDestination, totalMoney };
-    }, [shipmentAggregatedList]);
+    }, [groupedShipmentsList]);
 
     return (
         <TableRow
@@ -426,24 +426,24 @@ const TableShipmentAggregatedTableTotalRow = ({
     );
 };
 
-type ShipmentDataTableProps = {
+type GroupedShipmentsDataTableProps = {
     loading: boolean;
-    shipmentAggregatedList: ShipmentAggregated[];
+    groupedShipmentsList: GroupedShipments[];
     loadShipmentList: () => Promise<void>;
     payrollCode: number;
     setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     shipmentPayrollList: ShipmentPayroll[];
 };
-export function ShipmentDataTable({
+export function GroupedShipmentsDataTable({
     loading,
-    shipmentAggregatedList,
+    groupedShipmentsList,
     loadShipmentList,
     payrollCode,
     setShipmentToEdit,
     setEditFormDialogOpen,
     shipmentPayrollList,
-}: Readonly<ShipmentDataTableProps>) {
+}: Readonly<GroupedShipmentsDataTableProps>) {
     // state
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
@@ -466,7 +466,7 @@ export function ShipmentDataTable({
     useEffect(() => {
         // on change list rerender empty selection
         setSelectedRows([]);
-    }, [shipmentAggregatedList]);
+    }, [groupedShipmentsList]);
 
     // HANDLERS
     const handleDeleteSelected = () => {
@@ -501,7 +501,7 @@ export function ShipmentDataTable({
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelected = shipmentAggregatedList
+            const newSelected = groupedShipmentsList
                 .map((shipmentList) =>
                     shipmentList.shipments.map((n: Shipment): number => n.shipment_code ?? 0),
                 )
@@ -629,14 +629,14 @@ export function ShipmentDataTable({
     // rendering helper functions
 
     // values
-    const rowCount = shipmentAggregatedList
+    const rowCount = groupedShipmentsList
         .map((item) => item.shipments.length)
         .reduce((sum, num) => sum + num, 0);
 
     return (
         <Box sx={{ width: "100%" }}>
             <Paper sx={{ mb: 2 }}>
-                <ShipmentTableToolBar
+                <GroupedShipmentsTableToolBar
                     numSelected={selectedRows.length}
                     tableTitle="Shipments"
                     handleDelete={handleDeleteSelected}
@@ -670,12 +670,12 @@ export function ShipmentDataTable({
                             )}
 
                             {!loading &&
-                                shipmentAggregatedList.map(
-                                    (aggregatedShipment, indexAggregated) => (
+                                groupedShipmentsList.map(
+                                    (groupedShipments, indexGroupedShipment) => (
                                         <React.Fragment
-                                            key={`${aggregatedShipment.product}|${aggregatedShipment.origin}|${aggregatedShipment.destination}`}
+                                            key={`${groupedShipments.product}|${groupedShipments.origin}|${groupedShipments.destination}`}
                                         >
-                                            {aggregatedShipment.shipments.map(
+                                            {groupedShipments.shipments.map(
                                                 (row, indexShipment) => (
                                                     <TableShipmentRow
                                                         selectedRows={selectedRows}
@@ -684,7 +684,7 @@ export function ShipmentDataTable({
                                                         handleDeleteShipmentItem={
                                                             handleDeleteShipmentItem
                                                         }
-                                                        indexAggregated={indexAggregated}
+                                                        indexGroupedShipment={indexGroupedShipment}
                                                         indexShipment={indexShipment}
                                                         row={row}
                                                         key={row.shipment_code ?? 0}
@@ -692,16 +692,16 @@ export function ShipmentDataTable({
                                                 ),
                                             )}
                                             <TableShipmentAggregatedRow
-                                                key={`${aggregatedShipment.product}|${aggregatedShipment.origin}|${aggregatedShipment.destination}`}
-                                                row={aggregatedShipment}
+                                                key={`${groupedShipments.product}|${groupedShipments.origin}|${groupedShipments.destination}`}
+                                                row={groupedShipments}
                                             />
                                         </React.Fragment>
                                     ),
                                 )}
 
-                            {!loading && shipmentAggregatedList.length ? (
-                                <TableShipmentAggregatedTableTotalRow
-                                    shipmentAggregatedList={shipmentAggregatedList}
+                            {!loading && groupedShipmentsList.length ? (
+                                <TableGroupedShipmentsTableTotalRow
+                                    groupedShipmentsList={groupedShipmentsList}
                                 />
                             ) : (
                                 <TableRow>

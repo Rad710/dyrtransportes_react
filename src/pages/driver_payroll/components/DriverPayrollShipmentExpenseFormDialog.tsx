@@ -30,12 +30,10 @@ const shipmentExpenseFormSchema = z.object({
     expense_date: z.coerce.date({
         required_error: "El campo Fecha es obligatorio.",
     }),
-    receipt: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Recibo es obligatorio.",
-        })
-        .min(1, "El campo Recibo no puede estar vacío"),
+    receipt: z.string({
+        invalid_type_error: "Valor inválido.",
+        required_error: "El campo Recibo es obligatorio.",
+    }),
     amount: z.coerce
         .string({
             invalid_type_error: "Valor inválido.",
@@ -63,12 +61,10 @@ const shipmentExpenseFormSchema = z.object({
             }
         })
         .transform((arg) => parser(arg).toFixed(2)),
-    reason: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Motivo es obligatorio.",
-        })
-        .min(1, "El campo Motivo no puede estar vacío"),
+    reason: z.string({
+        invalid_type_error: "Valor inválido.",
+        required_error: "El campo Motivo es obligatorio.",
+    }),
     driver_payroll_code: z.number({
         invalid_type_error: "Valor inválido.",
         required_error: "El código de Liquidación es obligatorio.",
