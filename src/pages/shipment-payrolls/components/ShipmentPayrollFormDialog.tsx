@@ -14,7 +14,7 @@ import TextField from "@mui/material/TextField";
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useState } from "react";
 import { ShipmentPayroll } from "../types";
-import { ShipmentPayrollApi } from "../shipment_payroll_utils";
+import { ShipmentPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";

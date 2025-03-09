@@ -2,7 +2,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
 import { DriverPayroll, ShipmentExpense, ShipmentExpenseApiResponse } from "./types";
-import { Shipment } from "../shipment_payroll/types";
+import { Shipment } from "../shipment-payrolls/types";
 
 export const DriverPayrollApi = {
     getDriverPayroll: async (payrollCode: number) =>

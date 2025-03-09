@@ -16,7 +16,7 @@ import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import React, { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
-import { ShipmentApi } from "../shipment_payroll_utils";
+import { ShipmentApi } from "../utils";
 import { isAxiosError } from "axios";
 import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";

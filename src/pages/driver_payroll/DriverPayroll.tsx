@@ -7,7 +7,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DriverPayroll as DriverPayrollType, ShipmentExpense } from "./types";
 import { Driver } from "../driver/types";
-import { Shipment } from "../shipment_payroll/types";
+import { Shipment } from "../shipment-payrolls/types";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
 import { TabPanel } from "@/components/TabPanel";
 
@@ -18,7 +18,7 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipmentDataTable";
-import { ShipmentFormDialog } from "../shipment_payroll/components/ShipmentFormDialog";
+import { ShipmentFormDialog } from "../shipment-payrolls/components/ShipmentFormDialog";
 import { ProductApi, RouteApi } from "../route_product/route_product_utils";
 import { Product, Route } from "../route_product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";

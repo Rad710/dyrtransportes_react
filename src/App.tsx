@@ -2,8 +2,8 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { Box, CircularProgress, CssBaseline, StyledEngineProvider } from "@mui/material";
 
 import AppTheme from "./theme/AppTheme";
-import { LogIn } from "@/pages/login/LogIn";
-import { SignUp } from "@/pages/signup/SignUp";
+import { LogIn } from "@/pages/auth/LogIn";
+import { SignUp } from "@/pages/auth/SignUp";
 import { Home } from "@/pages/home/Home";
 import { ReactNode, useEffect, useState } from "react";
 import { hydrateAuth, useAuthStore } from "./stores/authStore";
@@ -13,13 +13,13 @@ import { RouteProduct } from "./pages/route_product/RouteProduct";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { Driver } from "@/pages/driver/Driver";
-import { ShipmentPayrollYearList } from "@/pages/shipment_payroll/ShipmentPayrollYearList";
-import { ShipmentPayrollList } from "@/pages/shipment_payroll/ShipmentPayrollList";
-import { ShipmentList } from "@/pages/shipment_payroll/ShipmentList";
+import { ShipmentPayrollYearList } from "@/pages/shipment-payrolls/ShipmentPayrollYearList";
+import { ShipmentPayrollList } from "@/pages/shipment-payrolls/ShipmentPayrollList";
 import { UserProfile } from "@/pages/user_profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
 import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
 import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";
+import { ShipmentPayroll } from "./pages/shipment-payrolls/ShipmentPayroll";
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
     const token = useAuthStore((state) => state.token);
@@ -105,7 +105,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "payroll/:shipment_payroll_code",
-                        element: <ShipmentList title="Shipments" />,
+                        element: <ShipmentPayroll title="Shipments" />,
                     },
                 ],
             },

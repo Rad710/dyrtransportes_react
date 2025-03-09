@@ -105,9 +105,7 @@ export const ShipmentApi = {
 
     getShipmentList: async (shipment_payroll_code?: number | null) =>
         api
-            .get(
-                `/shipments${shipment_payroll_code ? `?shipment_payroll_code=${shipment_payroll_code}` : ""}`,
-            )
+            .get(`/shipments?shipment_payroll_code=${shipment_payroll_code}`)
             .then((response: AxiosResponse<Shipment[] | null>) => {
                 return response.data ?? [];
             })
@@ -115,9 +113,9 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    getGroupedShipmentsList: async (shipment_payroll_code: number) =>
+    getGroupedShipmentsList: async (shipmentPayrollCode: number) =>
         api
-            .get(`/shipment-payroll/${shipment_payroll_code}/shipments/grouped-shipments`)
+            .get(`/shipment/grouped-shipments?shipment_payroll_code=${shipmentPayrollCode}`)
             .then((response: AxiosResponse<GroupedShipments[] | null>) => {
                 return response.data ?? [];
             })
@@ -152,7 +150,7 @@ export const ShipmentApi = {
         };
 
         return api
-            .patch(`/shipment-payroll/move-shipments`, payload)
+            .patch(`/shipments/change-shipment-payroll`, payload)
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
@@ -185,7 +183,7 @@ export const ShipmentApi = {
 
     exportShipmentList: async (shipmentPayrollCode: number) =>
         api
-            .get(`/export-shipments?shipment_payroll_code=${shipmentPayrollCode}`, {
+            .get(`/shipments/export-excel?shipment_payroll_code=${shipmentPayrollCode}`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {

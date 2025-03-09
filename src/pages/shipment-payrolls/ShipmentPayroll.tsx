@@ -5,10 +5,10 @@ import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PropsTitle } from "@/types";
-import { GroupedShipments, Shipment, ShipmentPayroll } from "./types";
+import { GroupedShipments, Shipment, ShipmentPayroll as ShipmentPayrollType } from "./types";
 import { isAxiosError } from "axios";
 
-import { ShipmentApi, ShipmentPayrollApi } from "./shipment_payroll_utils";
+import { ShipmentApi, ShipmentPayrollApi } from "./utils";
 import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
 import { GroupedShipmentsDataTable } from "./components/GroupedShipmentsDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -21,13 +21,13 @@ import { DateTime } from "luxon";
 import { saveAs } from "file-saver";
 import { CustomSwitch } from "@/components/CustomSwitch";
 
-export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
+export const ShipmentPayroll = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
 
     // State
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
-    const [shipmentPayrollList, setShipmentPayrollList] = useState<ShipmentPayroll[]>([]);
+    const [shipmentPayrollList, setShipmentPayrollList] = useState<ShipmentPayrollType[]>([]);
     const [groupedShipmentsList, setGroupedShipmentsList] = useState<GroupedShipments[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
@@ -131,8 +131,8 @@ export const ShipmentList = ({ title }: Readonly<PropsTitle>) => {
         });
     };
 
-    const handleCollectionToggle = async (payroll: ShipmentPayroll, collected: boolean) => {
-        const newPayroll: ShipmentPayroll = {
+    const handleCollectionToggle = async (payroll: ShipmentPayrollType, collected: boolean) => {
+        const newPayroll: ShipmentPayrollType = {
             ...payroll,
             collected: collected,
         };

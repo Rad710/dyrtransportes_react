@@ -16,7 +16,7 @@ import { DateTime } from "luxon";
 import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
-import { ShipmentApi } from "../shipment_payroll_utils";
+import { ShipmentApi } from "../utils";
 import { Product, Route } from "@/pages/route_product/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";

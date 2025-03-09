@@ -11,7 +11,7 @@ import { ShipmentPayroll } from "./types";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
-import { ShipmentPayrollApi } from "./shipment_payroll_utils";
+import { ShipmentPayrollApi } from "./utils";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     // STATE
