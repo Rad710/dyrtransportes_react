@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 
 import { PropsTitle } from "@/types";
-import { getHelloWorld, getProtectedHelloWorld } from "@/utils/utils";
+import { api } from "@/utils/axios";
+
+const getHelloWorld = () => api.get(`/hello-world`);
+
+const getProtectedHelloWorld = () => api.get(`/protected/hello-world`);
 
 export const Home = ({ title }: PropsTitle) => {
     useEffect(() => {
