@@ -1,7 +1,7 @@
 import { AxiosError, AxiosResponse } from "axios";
 import { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
-import { DriverPayroll } from "./types";
+import { DriverPayroll, ShipmentExpense, ShipmentExpenseApiResponse } from "./types";
 import { Shipment } from "../shipment_payroll/types";
 
 export const DriverPayrollApi = {
@@ -29,6 +29,14 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
+    getDriverPayrollShipmentExpenseList: async (driverPayrollCode: number) =>
+        api
+            .get(`/driver-payroll/${driverPayrollCode}/shipment-expenses`)
+            .then((response: AxiosResponse<ShipmentExpense[] | null>) => response.data ?? [])
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
     updateCollectionStatus: async (payroll: DriverPayroll) =>
         api
             .patch(`/driver-payroll/${payroll.payroll_code ?? 0}/paid-status`, payroll)
@@ -49,5 +57,57 @@ export const DriverPayrollApi = {
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
+            }),
+};
+
+export const ShipmentExpenseApi = {
+    getShipmentExpense: async (expenseCode: number) =>
+        api
+            .get(`/shipment-expense/${expenseCode}`)
+            .then((response: AxiosResponse<ShipmentExpense | null>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    postShipmentExpense: async (payload: ShipmentExpense) =>
+        api
+            .post(`/shipment-expense`, payload)
+            .then((response: AxiosResponse<ShipmentExpenseApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    putShipmentExpense: async (code: number, payload: ShipmentExpense) =>
+        api
+            .put(`/shipment-expense/${code}`, payload)
+            .then((response: AxiosResponse<ShipmentExpenseApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    deleteShipmentExpense: async (code: number) =>
+        api
+            .delete(`/shipment-expense/${code}`)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    deleteShipmentExpenseList: async (codeList: number[]) =>
+        api
+            .delete(`/shipment-expenses`, {
+                data: codeList,
+            })
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
             }),
 };

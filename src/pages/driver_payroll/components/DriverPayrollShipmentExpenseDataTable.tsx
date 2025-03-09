@@ -7,27 +7,29 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
-import { Shipment } from "@/pages/shipment_payroll/types";
-import { ShipmentApi } from "@/pages/shipment_payroll/shipment_payroll_utils";
 import { DateTime } from "luxon";
+import { ShipmentExpense } from "../types";
+import { ShipmentExpenseApi } from "../driver_payroll_utils";
 
-type DriverPayrollShipmentDataTableProps = {
+type DriverPayrollShipmentExpenseDataTableProps = {
     loading: boolean;
-    loadDriverPayrollShipmentList: () => Promise<void>;
-    shipmentList: Shipment[];
-    setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    loadDriverPayrollShipmentExpenseList: () => Promise<void>;
+    expenseList: ShipmentExpense[];
+    setExpenseToEdit: React.Dispatch<React.SetStateAction<ShipmentExpense | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    showReceiptColumn: boolean;
 };
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
-export const DriverPayrollShipmentDataTable = ({
+export const DriverPayrollShipmentExpenseDataTable = ({
     loading,
-    loadDriverPayrollShipmentList,
-    shipmentList,
-    setShipmentToEdit,
+    loadDriverPayrollShipmentExpenseList,
+    expenseList,
+    setExpenseToEdit,
     setEditFormDialogOpen,
-}: DriverPayrollShipmentDataTableProps) => {
+    showReceiptColumn,
+}: DriverPayrollShipmentExpenseDataTableProps) => {
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -36,31 +38,33 @@ export const DriverPayrollShipmentDataTable = ({
     const { showToastSuccess, showToastAxiosError } = useToast();
 
     useEffect(() => {
-        // on shipment list rerender empty selection
+        // on expense list rerender empty selection
         setSelectedRows([]);
-    }, [shipmentList]);
+    }, [expenseList]);
 
-    const handleEditShipment = (row: Shipment) => {
-        setShipmentToEdit(row);
+    const handleEditExpense = (row: ShipmentExpense) => {
+        setExpenseToEdit(row);
         setEditFormDialogOpen(true);
     };
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
             title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Shipments?`,
+            message: `Are you sure you want to delete all selected Expenses?`,
             confirmText: "Delete",
             confirmButtonProps: {
                 color: "error",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Shipments...", selectedRows);
+                    console.log("Deleting Expenses...", selectedRows);
                 }
 
-                const resp = await ShipmentApi.deleteShipmentList(selectedRows as number[]);
+                const resp = await ShipmentExpenseApi.deleteShipmentExpenseList(
+                    selectedRows as number[],
+                );
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Shipments resp: ", { resp });
+                    console.log("Deleting Expenses resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -70,18 +74,18 @@ export const DriverPayrollShipmentDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadDriverPayrollShipmentList();
+                await loadDriverPayrollShipmentExpenseList();
             },
         });
     };
 
-    const handleDeleteShipmentItem = (row: Shipment) => {
+    const handleDeleteExpenseItem = (row: ShipmentExpense) => {
         openConfirmDialog({
             title: "Confirm Delete",
             message: (
                 <>
-                    Are you sure you want to delete Shipment: <strong>{row.dispatch_code}</strong> -{" "}
-                    <strong>{row.receipt_code}</strong>?
+                    Are you sure you want to delete Expense: <strong>{row.receipt}</strong> -
+                    Amount: <strong>{formatter(parseFloat(row.amount))}</strong>?
                 </>
             ),
             confirmText: "Delete",
@@ -90,12 +94,12 @@ export const DriverPayrollShipmentDataTable = ({
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Shipment", row);
+                    console.log("Deleting Expense", row);
                 }
 
-                const resp = await ShipmentApi.deleteShipment(row.shipment_code ?? 0);
+                const resp = await ShipmentExpenseApi.deleteShipmentExpense(row.expense_code ?? 0);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Shipment resp: ", { resp });
+                    console.log("Deleting Expense resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -105,24 +109,24 @@ export const DriverPayrollShipmentDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadDriverPayrollShipmentList();
+                await loadDriverPayrollShipmentExpenseList();
             },
         });
     };
 
-    const columns: GridColDef<Shipment>[] = [
+    const columns: GridColDef<ShipmentExpense>[] = [
         {
-            field: "shipment_payroll_code",
-            headerName: "Payroll #",
+            field: "expense_code",
+            headerName: "Expense #",
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
-            field: "shipment_date",
+            field: "expense_date",
             headerName: "Date",
             renderCell: ({ row }) =>
-                DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
-            minWidth: 70,
+                DateTime.fromHTTP(row.expense_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
+            minWidth: 100,
             sortComparator: (v1, v2) => {
                 // Convert both dates to timestamp for comparison
                 const date1 = v1 ? DateTime.fromHTTP(v1, { zone: "local" }).toMillis() : null;
@@ -138,75 +142,21 @@ export const DriverPayrollShipmentDataTable = ({
             },
         },
         {
-            field: "dispatch_code",
-            headerName: "Dispatch",
-            minWidth: 130,
-            flex: 1,
-            align: "right",
-        },
-        {
-            field: "receipt_code",
+            field: "receipt",
             headerName: "Receipt",
             minWidth: 130,
             flex: 1,
-            align: "right",
         },
         {
-            field: "product_name",
-            headerName: "Product",
-            minWidth: 130,
-            flex: 1,
-        },
-        {
-            field: "origin",
-            headerName: "Origin",
-            minWidth: 130,
-            flex: 1,
-        },
-        {
-            field: "destination",
-            headerName: "Destination",
-            minWidth: 130,
-            flex: 1,
-        },
-
-        {
-            field: "origin_weight",
-            headerName: "Origin Weight",
-            renderCell: ({ row }) => formatter(parseInt(row.origin_weight)),
-            minWidth: 100,
-            flex: 0.8,
-            align: "right",
-        },
-        {
-            field: "destination_weight",
-            headerName: "Destination Weight",
-            renderCell: ({ row }) => formatter(parseInt(row.destination_weight)),
-            minWidth: 100,
-            flex: 0.8,
-            align: "right",
-        },
-        {
-            field: "price",
-            headerName: "Price",
-            renderCell: ({ row }) => formatter(parseFloat(row.price)),
+            field: "reason",
+            headerName: "Reason",
             minWidth: 120,
-            flex: 0.8,
-            align: "right",
+            flex: 1.5,
         },
         {
-            field: "payroll_price",
-            headerName: "Payroll Price",
-            renderCell: ({ row }) => formatter(parseFloat(row.payroll_price)),
-            minWidth: 120,
-            flex: 0.8,
-            align: "right",
-        },
-        {
-            field: "total",
-            headerName: "Total",
-            renderCell: ({ row }) =>
-                formatter(parseInt(row.destination_weight) * parseFloat(row.payroll_price)),
+            field: "amount",
+            headerName: "Amount",
+            renderCell: ({ row }) => formatter(parseFloat(row.amount)),
             minWidth: 120,
             flex: 0.8,
             align: "right",
@@ -222,11 +172,11 @@ export const DriverPayrollShipmentDataTable = ({
                     menuItems={[
                         {
                             text: "Edit",
-                            handleClick: () => handleEditShipment(params.row),
+                            handleClick: () => handleEditExpense(params.row),
                         },
                         {
                             text: "Delete",
-                            handleClick: () => handleDeleteShipmentItem(params.row),
+                            handleClick: () => handleDeleteExpenseItem(params.row),
                         },
                     ]}
                 />
@@ -237,23 +187,23 @@ export const DriverPayrollShipmentDataTable = ({
     const paginationModel = { page: 0, pageSize: -1 };
 
     const columnVisibilityModel = {
-        price: false,
-        dispatch_code: false,
+        expense_code: false,
+        receipt: showReceiptColumn,
     };
 
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Payroll Shipments"
+                tableTitle="Payroll Expenses"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
-                    rows={shipmentList}
+                    rows={expenseList}
                     columns={columns}
-                    columnVisibilityModel={columnVisibilityModel}
                     initialState={{ pagination: { paginationModel } }}
+                    columnVisibilityModel={columnVisibilityModel}
                     pageSizeOptions={[{ label: "All", value: -1 }]}
                     checkboxSelection
                     disableRowSelectionOnClick
@@ -261,7 +211,7 @@ export const DriverPayrollShipmentDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Shipment) => row.shipment_code ?? 0}
+                    getRowId={(row: ShipmentExpense) => row.expense_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

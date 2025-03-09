@@ -14,6 +14,16 @@ export type DriverPayroll = {
 
 export type DriverPayrollApiResponse = DriverPayroll & ApiResponse;
 
-export type ShipmentExpenses = {
-    expense_code: number;
+export type ShipmentExpense = {
+    expense_code?: number | null;
+    expense_date: string;
+    receipt: string;
+    amount: string;
+    reason: string;
+    driver_payroll_code: number;
+    deleted: boolean;
+    modification_user?: string;
+    modification_timestamp?: string;
 };
+
+export type ShipmentExpenseApiResponse = ShipmentExpense & ApiResponse;

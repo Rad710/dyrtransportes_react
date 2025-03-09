@@ -5,7 +5,7 @@ import { DriverApi } from "../driver/driver_utils";
 import { DriverPayrollApi } from "./driver_payroll_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { DriverPayroll as DriverPayrollType } from "./types";
+import { DriverPayroll as DriverPayrollType, ShipmentExpense } from "./types";
 import { Driver } from "../driver/types";
 import { Shipment } from "../shipment_payroll/types";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
@@ -21,18 +21,19 @@ import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipme
 import { ShipmentFormDialog } from "../shipment_payroll/components/ShipmentFormDialog";
 import { ProductApi, RouteApi } from "../route_product/route_product_utils";
 import { Product, Route } from "../route_product/types";
+import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
+import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
     driverCode: number;
 }
-
 const DriverPayrollShipmentsTab = ({
     driverPayrollCode,
     driverCode,
 }: DriverPayrollShipmentsTabProps) => {
     // //STATE
-    const [loadingTable, setLoadingTable] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
@@ -51,7 +52,7 @@ const DriverPayrollShipmentsTab = ({
 
     // USE EFFECTS
     const loadDriverPayrollShipments = async () => {
-        setLoadingTable(true);
+        setLoading(true);
         const [driverPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
             await Promise.all([
                 DriverPayrollApi.getDriverPayrollList(driverCode),
@@ -60,7 +61,7 @@ const DriverPayrollShipmentsTab = ({
                 ProductApi.getProductList(),
                 DriverApi.getDriverList(),
             ]);
-        setLoadingTable(false);
+        setLoading(false);
 
         if (!isAxiosError(driverPayrollsResp) && driverPayrollsResp) {
             setDriverPayrollList(driverPayrollsResp);
@@ -111,7 +112,7 @@ const DriverPayrollShipmentsTab = ({
     }, []);
 
     return (
-        <>
+        <Box>
             <Box
                 sx={{
                     display: "flex",
@@ -134,31 +135,152 @@ const DriverPayrollShipmentsTab = ({
             </Box>
 
             <DriverPayrollShipmentDataTable
-                driverPayrollCode={driverPayrollCode}
-                loading={loadingTable}
-                setLoading={setLoadingTable}
+                loading={loading}
+                loadDriverPayrollShipmentList={loadDriverPayrollShipments}
                 shipmentList={payrollShipmentList}
-                setShipmentList={setPayrollShipmentList}
                 setShipmentToEdit={setShipmentToEdit}
                 setEditFormDialogOpen={setEditFormDialogOpen}
             />
-        </>
+        </Box>
     );
 };
 
 interface DriverPayrollExpensesTabProps {
     driverPayrollCode: number;
-    driver: Driver | null;
-    addFormDialogOpen: boolean;
-    setAddFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    driverCode: number;
+    addExpenseFormDialogOpen: boolean;
+    setAddExpenseFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
 const DriverPayrollExpensesTab = ({
     driverPayrollCode,
-    addFormDialogOpen,
-    setAddFormDialogOpen,
+    driverCode,
+    addExpenseFormDialogOpen,
+    setAddExpenseFormDialogOpen,
 }: DriverPayrollExpensesTabProps) => {
-    return <></>;
+    // //STATE
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
+
+    // used for autocomplete options for dialog form
+    const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
+    const [shipmentExpenseList, setShipmentExpenseList] = useState<ShipmentExpense[]>([]);
+
+    const [shipmentExpenseToEdit, setShipmentExpenseToEdit] = useState<ShipmentExpense | null>(
+        null,
+    );
+
+    // context
+    const { showToastAxiosError } = useToast();
+
+    // USE EFFECTS
+    const loadDriverPayrollShipmentExpenses = async () => {
+        setLoading(true);
+        const [driverPayrollsResp, shipmentExpensesResp] = await Promise.all([
+            DriverPayrollApi.getDriverPayrollList(driverCode),
+            DriverPayrollApi.getDriverPayrollShipmentExpenseList(driverPayrollCode),
+        ]);
+        setLoading(false);
+
+        if (!isAxiosError(driverPayrollsResp) && driverPayrollsResp) {
+            setDriverPayrollList(driverPayrollsResp);
+        } else {
+            showToastAxiosError(driverPayrollsResp);
+            setDriverPayrollList([]);
+        }
+
+        if (!isAxiosError(shipmentExpensesResp) && shipmentExpensesResp) {
+            setShipmentExpenseList(shipmentExpensesResp);
+        } else {
+            showToastAxiosError(shipmentExpensesResp);
+            setShipmentExpenseList([]);
+        }
+
+        if (import.meta.env.VITE_DEBUG) {
+            console.log("Loaded driver driverPayrollList", { driverPayrollList });
+            console.log("Loaded driver shipmentExpensesResp", { shipmentExpensesResp });
+        }
+    };
+
+    useEffect(() => {
+        loadDriverPayrollShipmentExpenses();
+    }, []);
+
+    return (
+        <Box>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "1rem",
+                }}
+            >
+                <DriverPayrollShipmentExpenseFormDialog
+                    payrollCode={driverPayrollCode}
+                    loadExpenseList={loadDriverPayrollShipmentExpenses}
+                    open={addExpenseFormDialogOpen}
+                    setOpen={setAddExpenseFormDialogOpen}
+                />
+
+                <DriverPayrollShipmentExpenseFormDialog
+                    payrollCode={driverPayrollCode}
+                    loadExpenseList={loadDriverPayrollShipmentExpenses}
+                    open={editFormDialogOpen}
+                    setOpen={setEditFormDialogOpen}
+                    expenseToEdit={shipmentExpenseToEdit}
+                    setExpenseToEdit={setShipmentExpenseToEdit}
+                />
+            </Box>
+
+            <Box
+                sx={{
+                    display: { xs: "block", md: "flex" },
+                    gap: "1rem",
+                }}
+            >
+                {/* Con Boleta table */}
+                <Box
+                    sx={{
+                        width: { xs: "100%", md: "50%" },
+                        mb: { xs: 4, md: 0 },
+                    }}
+                >
+                    <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
+                        Con Boleta
+                    </Typography>
+
+                    <DriverPayrollShipmentExpenseDataTable
+                        loading={loading}
+                        loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
+                        expenseList={shipmentExpenseList.filter((item) => item.receipt)}
+                        setExpenseToEdit={setShipmentExpenseToEdit}
+                        setEditFormDialogOpen={setEditFormDialogOpen}
+                        showReceiptColumn={true}
+                    />
+                </Box>
+
+                {/* Sin Boleta table */}
+                <Box
+                    sx={{
+                        width: { xs: "100%", md: "50%" },
+                    }}
+                >
+                    <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
+                        Sin Boleta
+                    </Typography>
+
+                    <DriverPayrollShipmentExpenseDataTable
+                        loading={loading}
+                        loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
+                        expenseList={shipmentExpenseList.filter((item) => !item.receipt)}
+                        setExpenseToEdit={setShipmentExpenseToEdit}
+                        setEditFormDialogOpen={setEditFormDialogOpen}
+                        showReceiptColumn={false}
+                    />
+                </Box>
+            </Box>
+        </Box>
+    );
 };
 
 export const DriverPayroll = ({ title }: PropsTitle) => {
@@ -216,10 +338,33 @@ export const DriverPayroll = ({ title }: PropsTitle) => {
         setTabValue(newValue);
     };
 
-    const handlePaidToggle = (driverPayroll: DriverPayrollType, paid: boolean) => {
-        console.log("paid...");
-    };
+    const handlePaidToggle = async (payroll: DriverPayrollType, paid: boolean) => {
+        if (import.meta.env.VITE_DEBUG) {
+            console.log(`Updating paid status for payroll, `, { payroll });
+        }
 
+        const newPayload: DriverPayrollType = {
+            ...payroll,
+            paid: paid,
+        };
+
+        const resp = await DriverPayrollApi.updateCollectionStatus(newPayload);
+        if (isAxiosError(resp) || !resp) {
+            showToastAxiosError(resp);
+            return;
+        }
+
+        const payrollResp = await DriverPayrollApi.getDriverPayroll(payroll.payroll_code ?? 0);
+        if (!isAxiosError(payrollResp) && payrollResp) {
+            setDriverPayroll(payrollResp);
+        } else {
+            showToastAxiosError(payrollResp);
+        }
+
+        showToastSuccess(
+            `Driver Payroll #${payroll.payroll_code ?? 0} marked as ${paid ? "paid" : "unpaid"}`,
+        );
+    };
     const handleExportDriverPayroll = () => {
         openConfirmDialog({
             title: "Confirm Export",
@@ -342,9 +487,9 @@ export const DriverPayroll = ({ title }: PropsTitle) => {
             <TabPanel value={tabValue} index={tabExpenses}>
                 <DriverPayrollExpensesTab
                     driverPayrollCode={driverPayrollCode}
-                    driver={driver}
-                    addFormDialogOpen={addExpenseFormDialogOpen}
-                    setAddFormDialogOpen={setAddExpenseFormDialogOpen}
+                    driverCode={driverCode}
+                    addExpenseFormDialogOpen={addExpenseFormDialogOpen}
+                    setAddExpenseFormDialogOpen={setAddExpenseFormDialogOpen}
                 />
             </TabPanel>
         </Box>
