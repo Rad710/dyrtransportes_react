@@ -15,7 +15,7 @@ import { ToastProvider } from "@/context/ToastContext";
 import { Driver } from "@/pages/driver/Driver";
 import { ShipmentPayrollYearList } from "@/pages/shipment-payrolls/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "@/pages/shipment-payrolls/ShipmentPayrollList";
-import { UserProfile } from "@/pages/user_profile/UserProfile";
+import { UserProfile } from "@/pages/user-profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
 import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
 import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";

@@ -1,4 +1,4 @@
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { Link, useMatch } from "react-router";
 import { DriverPayroll } from "./types";
@@ -7,11 +7,11 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { Box, Button, Divider, List, ListItem, Typography } from "@mui/material";
 import { Driver } from "../driver/types";
-import { DriverApi } from "../driver/driver_utils";
+import { DriverApi } from "../driver/utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 
-export const DriverPayrollList = ({ title }: PropsTitle) => {
+export const DriverPayrollList = ({ title }: PageProps) => {
     const match = useMatch("/driver-payrolls/:driver_code/");
     const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
 

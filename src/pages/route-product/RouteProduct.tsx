@@ -11,7 +11,7 @@ import { TabPanel } from "@/components/TabPanel";
 import { RouteDataTable } from "./components/RouteDataTable";
 import { RouteFormDialog } from "./components/RouteFormDialog";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { Product, Route } from "./types";
 import { ProductApi, RouteApi } from "./utils";
 import { ProductDataTable } from "./components/ProductDataTable";
@@ -256,7 +256,7 @@ const ProductTabContent = () => {
     );
 };
 
-export const RouteProduct = ({ title }: Readonly<PropsTitle>) => {
+export const RouteProduct = ({ title }: Readonly<PageProps>) => {
     useEffect(() => {
         document.title = title;
     }, []);

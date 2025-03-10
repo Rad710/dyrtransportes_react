@@ -15,7 +15,7 @@ import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
+import { ApiResponse, AuthResponse, PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/axios";
 import { useForm } from "react-hook-form";
@@ -92,7 +92,7 @@ const RegisterContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export const SignUp = ({ title }: PropsTitle) => {
+export const SignUp = ({ title }: PageProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const [formErrorMessage, setFormErrorMessage] = useState("");
 

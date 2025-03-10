@@ -9,7 +9,7 @@ import {
 import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { ShipmentPayroll } from "./types";
 
 import { useToast } from "@/context/ToastContext";
@@ -19,7 +19,7 @@ import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialo
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
 
-export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
+export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
     const match = useMatch("/shipment-payrolls/:year");
     const year = parseInt(match?.params?.year ?? "") || 0;
 

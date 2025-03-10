@@ -4,7 +4,7 @@ import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { GroupedShipments, Shipment, ShipmentPayroll as ShipmentPayrollType } from "./types";
 import { isAxiosError } from "axios";
 
@@ -14,14 +14,14 @@ import { GroupedShipmentsDataTable } from "./components/GroupedShipmentsDataTabl
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
 import { ProductApi, RouteApi } from "../route-product/utils";
-import { DriverApi } from "../driver/driver_utils";
+import { DriverApi } from "../driver/utils";
 import { Product, Route } from "../route-product/types";
 import { Driver } from "../driver/types";
 import { DateTime } from "luxon";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
 
-export const ShipmentPayroll = ({ title }: Readonly<PropsTitle>) => {
+export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
     const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
 

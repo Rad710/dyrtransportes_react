@@ -4,7 +4,6 @@ import { Box, Button, Tab, Tabs } from "@mui/material";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 
 import { isAxiosError } from "axios";
-import { saveAs } from "file-saver";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -12,10 +11,11 @@ import { TabPanel } from "@/components/TabPanel";
 
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { Driver as DriverType } from "./types";
-import { DriverApi } from "./driver_utils";
+import { DriverApi } from "./utils";
 import { DriverDataTable } from "./components/DriverDataTable";
+import { downloadFile } from "@/utils/file";
 
 const ActiveDriverTabContent = () => {
     // STATE
@@ -71,7 +71,11 @@ const ActiveDriverTabContent = () => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "nomina_de_choferes.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "nomina_de_choferes.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
@@ -182,7 +186,7 @@ const DeactivatedDriverTabContent = () => {
     );
 };
 
-export const Driver = ({ title }: Readonly<PropsTitle>) => {
+export const Driver = ({ title }: Readonly<PageProps>) => {
     useEffect(() => {
         document.title = title;
     }, []);

@@ -5,7 +5,7 @@ import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-materia
 import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { ShipmentPayroll } from "./types";
 
 import { useToast } from "@/context/ToastContext";
@@ -13,7 +13,7 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./utils";
 import { downloadFile } from "@/utils/file";
 
-export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
+export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [yearList, setYearList] = useState<number[]>([]);

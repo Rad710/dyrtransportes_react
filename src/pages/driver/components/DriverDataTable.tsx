@@ -5,7 +5,7 @@ import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useState } from "react";
-import { DriverApi } from "../driver_utils";
+import { DriverApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 

@@ -12,7 +12,7 @@ import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
-import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
+import { ApiResponse, AuthResponse, PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -107,7 +107,7 @@ const userProfileFormSchema = z
 
 type UserProfileFormSchema = z.infer<typeof userProfileFormSchema>;
 
-export const UserProfile = ({ title }: PropsTitle) => {
+export const UserProfile = ({ title }: PageProps) => {
     //STATE
     const [formErrorMessage, setFormErrorMessage] = useState("");
     // Password visibility states

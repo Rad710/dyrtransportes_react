@@ -14,7 +14,7 @@ import Stack from "@mui/material/Stack";
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useState } from "react";
 import { Driver } from "../types";
-import { DriverApi } from "../driver_utils";
+import { DriverApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 

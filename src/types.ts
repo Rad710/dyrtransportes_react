@@ -1,4 +1,4 @@
-export type PropsTitle = {
+export type PageProps = {
     title: string;
 };
 

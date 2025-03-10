@@ -1,19 +1,15 @@
 import { useEffect } from "react";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { api } from "@/utils/axios";
 
-const getHelloWorld = () => api.get(`/hello-world`);
-
-const getProtectedHelloWorld = () => api.get(`/protected/hello-world`);
-
-export const Home = ({ title }: PropsTitle) => {
+export const Home = ({ title }: PageProps) => {
     useEffect(() => {
         const testProtected = async () => {
-            const helloWorld = await getHelloWorld();
+            const helloWorld = await api.get(`/hello-world`);
             console.log("API Test: ", { helloWorld });
 
-            const protectedHelloWorld = await getProtectedHelloWorld();
+            const protectedHelloWorld = await api.get(`/protected/hello-world`);
             console.log("Protected API Test: ", { protectedHelloWorld });
         };
 

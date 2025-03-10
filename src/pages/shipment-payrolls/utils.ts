@@ -143,22 +143,18 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    moveShipmentList: async (shipmentPayrollCode: number, shipmentCodeList: number[]) => {
-        const payload = {
-            shipmentPayrollCode: shipmentPayrollCode,
-            shipmentCodeList: shipmentCodeList,
-        };
-
-        return api
-            .patch(`/shipments/change-shipment-payroll`, payload)
+    changeShipmentListPayroll: async (shipmentPayrollCode: number, shipmentCodeList: number[]) =>
+        api
+            .patch(
+                `/shipments/change-shipment-payroll?shipment_payroll_code=${shipmentPayrollCode}`,
+                shipmentCodeList,
+            )
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
-            });
-    },
-
+            }),
     deleteShipment: async (code: number) =>
         api
             .delete(`/shipment/${code}`)

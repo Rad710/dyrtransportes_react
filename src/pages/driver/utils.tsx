@@ -64,7 +64,7 @@ export const DriverApi = {
 
     restoreDriver: async (code: number) =>
         api
-            .patch(`/driver/${code}`)
+            .patch(`/driver/${code}/restore`)
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
@@ -74,11 +74,11 @@ export const DriverApi = {
 
     exportDriverList: async () =>
         api
-            .get(`/export-drivers`, {
+            .get(`/drivers/export-excel`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;

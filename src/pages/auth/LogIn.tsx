@@ -20,7 +20,7 @@ import { useAuthStore } from "@/stores/authStore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink } from "react-router";
-import { ApiResponse, AuthResponse, PropsTitle } from "@/types";
+import { ApiResponse, AuthResponse, PageProps } from "@/types";
 import { api } from "@/utils/axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -91,7 +91,7 @@ const LogInContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-export const LogIn = ({ title }: PropsTitle) => {
+export const LogIn = ({ title }: PageProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const [formErrorMessage, setFormErrorMessage] = useState("");
     const setAuth = useAuthStore((state) => state.setAuth);

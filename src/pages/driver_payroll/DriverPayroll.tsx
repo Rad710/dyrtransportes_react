@@ -1,7 +1,7 @@
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { useMatch } from "react-router";
-import { DriverApi } from "../driver/driver_utils";
+import { DriverApi } from "../driver/utils";
 import { DriverPayrollApi } from "./driver_payroll_utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
@@ -286,7 +286,7 @@ const DriverPayrollExpensesTab = ({
     );
 };
 
-export const DriverPayroll = ({ title }: PropsTitle) => {
+export const DriverPayroll = ({ title }: PageProps) => {
     const match = useMatch("/driver-payrolls/:driver_code/payroll/:driver_payroll_code");
     const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
     const driverPayrollCode = parseInt(match?.params?.driver_payroll_code ?? "") || 0;

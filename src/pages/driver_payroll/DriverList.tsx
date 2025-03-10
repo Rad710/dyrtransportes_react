@@ -13,14 +13,14 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { isAxiosError } from "axios";
 
-import { PropsTitle } from "@/types";
+import { PageProps } from "@/types";
 
 import { useToast } from "@/context/ToastContext";
 import { Driver } from "../driver/types";
-import { DriverApi } from "../driver/driver_utils";
+import { DriverApi } from "../driver/utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
 
-export const DriverList = ({ title }: Readonly<PropsTitle>) => {
+export const DriverList = ({ title }: Readonly<PageProps>) => {
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [driverList, setDriverList] = useState<Driver[]>([]);
