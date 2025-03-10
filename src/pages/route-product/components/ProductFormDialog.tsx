@@ -14,7 +14,7 @@ import Stack from "@mui/material/Stack";
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useState } from "react";
 import { Product } from "../types";
-import { ProductApi } from "../route_product_utils";
+import { ProductApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 

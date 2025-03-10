@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Box, Button, Tab, Tabs } from "@mui/material";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 import { isAxiosError } from "axios";
-import { saveAs } from "file-saver";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -14,9 +13,10 @@ import { RouteFormDialog } from "./components/RouteFormDialog";
 
 import { PropsTitle } from "@/types";
 import { Product, Route } from "./types";
-import { ProductApi, RouteApi } from "./route_product_utils";
+import { ProductApi, RouteApi } from "./utils";
 import { ProductDataTable } from "./components/ProductDataTable";
 import { ProductFormDialog } from "./components/ProductFormDialog";
+import { downloadFile } from "@/utils/file";
 
 const RouteTabContent = () => {
     // //STATE
@@ -71,7 +71,11 @@ const RouteTabContent = () => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_precios.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "lista_de_precios.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
@@ -186,7 +190,11 @@ const ProductTabContent = () => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_product.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "lista_de_productos.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {

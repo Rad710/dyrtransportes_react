@@ -13,13 +13,13 @@ import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
 import { GroupedShipmentsDataTable } from "./components/GroupedShipmentsDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
-import { ProductApi, RouteApi } from "../route_product/route_product_utils";
+import { ProductApi, RouteApi } from "../route-product/utils";
 import { DriverApi } from "../driver/driver_utils";
-import { Product, Route } from "../route_product/types";
+import { Product, Route } from "../route-product/types";
 import { Driver } from "../driver/types";
 import { DateTime } from "luxon";
-import { saveAs } from "file-saver";
 import { CustomSwitch } from "@/components/CustomSwitch";
+import { downloadFile } from "@/utils/file";
 
 export const ShipmentPayroll = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
@@ -121,7 +121,11 @@ export const ShipmentPayroll = ({ title }: Readonly<PropsTitle>) => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "cobranzas.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {

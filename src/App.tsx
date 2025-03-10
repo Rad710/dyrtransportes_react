@@ -9,7 +9,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { hydrateAuth, useAuthStore } from "./stores/authStore";
 import { Layout } from "./components/Layout";
 import { ErrorPage } from "./components/ErrorPage";
-import { RouteProduct } from "./pages/route_product/RouteProduct";
+import { RouteProduct } from "./pages/route-product/RouteProduct";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { Driver } from "@/pages/driver/Driver";

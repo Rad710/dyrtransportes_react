@@ -19,8 +19,8 @@ import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipmentDataTable";
 import { ShipmentFormDialog } from "../shipment-payrolls/components/ShipmentFormDialog";
-import { ProductApi, RouteApi } from "../route_product/route_product_utils";
-import { Product, Route } from "../route_product/types";
+import { ProductApi, RouteApi } from "../route-product/utils";
+import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 

@@ -17,7 +17,7 @@ import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globali
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
 import { ShipmentApi } from "../utils";
-import { Product, Route } from "@/pages/route_product/types";
+import { Product, Route } from "@/pages/route-product/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";

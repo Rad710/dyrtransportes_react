@@ -1,29 +1,32 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Product } from "../types";
+import { Route } from "../types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useState } from "react";
-import { ProductApi } from "../route_product_utils";
+import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 
-type ProductDataTableProps = {
+type RouteDataTableProps = {
     loading: boolean;
-    productList: Product[];
-    loadProductList: () => Promise<void>;
-    setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
+    routeList: Route[];
+    loadRouteList: () => Promise<void>;
+    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ProductDataTable = ({
+const formatter = getGlobalizeNumberFormatter(0, 2);
+
+export const RouteDataTable = ({
     loading,
-    productList,
-    loadProductList,
-    setProductToEdit,
+    routeList,
+    loadRouteList,
+    setRouteToEdit,
     setEditFormDialogOpen,
-}: ProductDataTableProps) => {
+}: RouteDataTableProps) => {
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -32,33 +35,33 @@ export const ProductDataTable = ({
     const { showToastSuccess, showToastAxiosError } = useToast();
 
     useEffect(() => {
-        // on product list rerender empty selection
+        // on route list rerender empty selection
         setSelectedRows([]);
-    }, [productList]);
+    }, [routeList]);
 
     const paginationModel = { page: 0, pageSize: 25 };
 
-    const handleEditProduct = (row: Product) => {
-        setProductToEdit(row);
+    const handleEditRoute = (row: Route) => {
+        setRouteToEdit(row);
         setEditFormDialogOpen(true);
     };
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
             title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Products?`,
+            message: `Are you sure you want to delete all selected Routes?`,
             confirmText: "Delete",
             confirmButtonProps: {
                 color: "error",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Products...", selectedRows);
+                    console.log("Deleting Routes...", selectedRows);
                 }
 
-                const resp = await ProductApi.deleteProductList(selectedRows as number[]);
+                const resp = await RouteApi.deleteRouteList(selectedRows as number[]);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Products resp: ", { resp });
+                    console.log("Deleting Routes resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -68,17 +71,18 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadProductList();
+                await loadRouteList();
             },
         });
     };
 
-    const handleDeleteProductItem = (row: Product) => {
+    const handleDeleteRouteItem = (row: Route) => {
         openConfirmDialog({
             title: "Confirm Delete",
             message: (
                 <>
-                    Are you sure you want to delete Product: <strong>{row.product_name}</strong>?
+                    Are you sure you want to delete Route: <strong>{row.origin}</strong> -{" "}
+                    <strong>{row.destination}</strong>?
                 </>
             ),
             confirmText: "Delete",
@@ -87,12 +91,12 @@ export const ProductDataTable = ({
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Product", row);
+                    console.log("Deleting Route", row);
                 }
 
-                const resp = await ProductApi.deleteProduct(row.product_code ?? 0);
+                const resp = await RouteApi.deleteRoute(row.route_code ?? 0);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Deleting Product resp: ", { resp });
+                    console.log("Deleting Route resp: ", { resp });
                 }
 
                 if (isAxiosError(resp) || !resp) {
@@ -102,23 +106,43 @@ export const ProductDataTable = ({
 
                 showToastSuccess(resp.message);
 
-                await loadProductList();
+                await loadRouteList();
             },
         });
     };
 
-    const columns: GridColDef<Product>[] = [
+    const columns: GridColDef<Route>[] = [
         {
-            field: "product_code",
+            field: "route_code",
             headerName: "Code",
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
-            field: "product_name",
-            headerName: "Product Name",
-            minWidth: 200,
-            flex: 1.5,
+            field: "origin",
+            headerName: "Origin",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "destination",
+            headerName: "Destination",
+            minWidth: 130,
+            flex: 1,
+        },
+        {
+            field: "price",
+            headerName: "Price",
+            renderCell: ({ row }) => formatter(parseFloat(row.price)),
+            minWidth: 100,
+            flex: 0.8,
+        },
+        {
+            field: "payroll_price",
+            headerName: "Payroll Price",
+            renderCell: ({ row }) => formatter(parseFloat(row.payroll_price)),
+            minWidth: 120,
+            flex: 0.8,
         },
         {
             field: "modification_user",
@@ -137,11 +161,11 @@ export const ProductDataTable = ({
                     menuItems={[
                         {
                             text: "Edit",
-                            handleClick: () => handleEditProduct(params.row),
+                            handleClick: () => handleEditRoute(params.row),
                         },
                         {
                             text: "Delete",
-                            handleClick: () => handleDeleteProductItem(params.row),
+                            handleClick: () => handleDeleteRouteItem(params.row),
                         },
                     ]}
                 />
@@ -152,13 +176,13 @@ export const ProductDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Products"
+                tableTitle="Routes"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
-                    rows={productList}
+                    rows={routeList}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[25, 50, 100]}
@@ -168,7 +192,7 @@ export const ProductDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Product) => row.product_code ?? 0}
+                    getRowId={(row: Route) => row.route_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

@@ -4,7 +4,6 @@ import { DateTime } from "luxon";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
-import { saveAs } from "file-saver";
 
 import { PropsTitle } from "@/types";
 import { ShipmentPayroll } from "./types";
@@ -12,6 +11,7 @@ import { ShipmentPayroll } from "./types";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./utils";
+import { downloadFile } from "@/utils/file";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
     // STATE
@@ -135,7 +135,12 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PropsTitle>) => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "lista_de_planillas.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
+
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
                     showToastError("Error al exportar planilla.");

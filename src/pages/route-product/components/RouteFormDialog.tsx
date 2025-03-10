@@ -15,7 +15,7 @@ import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globali
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useState } from "react";
 import { Route } from "../types";
-import { RouteApi } from "../route_product_utils";
+import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 

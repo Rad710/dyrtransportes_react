@@ -8,7 +8,6 @@ import {
 } from "@mui/icons-material";
 import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui/material";
 import { isAxiosError } from "axios";
-import { saveAs } from "file-saver";
 
 import { PropsTitle } from "@/types";
 import { ShipmentPayroll } from "./types";
@@ -18,6 +17,7 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./utils";
 import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialog";
 import { CustomSwitch } from "@/components/CustomSwitch";
+import { downloadFile } from "@/utils/file";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
     const match = useMatch("/shipment-payrolls/:year");
@@ -79,17 +79,13 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                 }
 
                 // Sort by timestamp to get first and last
-                const sortedPayrolls = [...payrollsToExport].sort((a, b) =>
-                    a.payroll_timestamp.localeCompare(b.payroll_timestamp),
-                );
-
-                const startDate = DateTime.fromHTTP(sortedPayrolls[0].payroll_timestamp, {
-                    zone: "local",
-                });
-                const endDate = DateTime.fromHTTP(
-                    sortedPayrolls[sortedPayrolls.length - 1].payroll_timestamp,
+                const startDate = DateTime.fromHTTP(
+                    payrollsToExport[payrollsToExport.length - 1].payroll_timestamp,
                     { zone: "local" },
                 );
+                const endDate = DateTime.fromHTTP(payrollsToExport[0].payroll_timestamp, {
+                    zone: "local",
+                });
 
                 if (!startDate.isValid || !endDate.isValid) {
                     return;
@@ -106,7 +102,12 @@ export const ShipmentPayrollList = ({ title }: Readonly<PropsTitle>) => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_cobranzas.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "lista_de_planillas.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
+
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {
                     showToastError("Error al exportar planilla.");

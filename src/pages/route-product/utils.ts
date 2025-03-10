@@ -56,11 +56,11 @@ export const RouteApi = {
 
     exportRouteList: async () =>
         api
-            .get(`/export-routes`, {
+            .get(`/routes/export-excel`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
@@ -119,11 +119,11 @@ export const ProductApi = {
 
     exportProductList: async () =>
         api
-            .get(`/export-products`, {
+            .get(`/products/export-excel`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;

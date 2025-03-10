@@ -81,11 +81,11 @@ export const ShipmentPayrollApi = {
 
     exportShipmentPayrollList: async (startDate: DateTime, endDate: DateTime) =>
         api
-            .get(`/export-shipment-payrolls?startDate=${startDate}&endDate=${endDate}`, {
+            .get(`/shipment-payrolls/export-excel?start_date=${startDate}&end_date=${endDate}`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
@@ -187,7 +187,7 @@ export const ShipmentApi = {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
