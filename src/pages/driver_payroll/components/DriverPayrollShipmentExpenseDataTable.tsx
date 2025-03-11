@@ -9,7 +9,7 @@ import { useToast } from "@/context/ToastContext";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import { DateTime } from "luxon";
 import { ShipmentExpense } from "../types";
-import { ShipmentExpenseApi } from "../driver_payroll_utils";
+import { ShipmentExpenseApi } from "../utils";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 

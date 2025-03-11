@@ -21,6 +21,7 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
+    // TODO: move to shipments endpoints
     getDriverPayrollShipmentList: async (driverPayrollCode: number) =>
         api
             .get(`/driver-payroll/${driverPayrollCode}/shipments`)
@@ -29,26 +30,18 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    moveShipmentList: async (driverPayrollCode: number, shipmentCodeList: number[]) => {
-        const payload = {
-            driverPayrollCode: driverPayrollCode,
-            shipmentCodeList: shipmentCodeList,
-        };
-
-        return api
-            .patch(`/driver-payroll/move-shipments`, payload)
+    changeShipmentListDriverPayroll: async (
+        driverPayrollCode: number,
+        shipmentCodeList: number[],
+    ) =>
+        api
+            .patch(
+                `/shipments/change-driver-payroll?driver_payroll_code=${driverPayrollCode}`,
+                shipmentCodeList,
+            )
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            });
-    },
-
-    getDriverPayrollShipmentExpenseList: async (driverPayrollCode: number) =>
-        api
-            .get(`/driver-payroll/${driverPayrollCode}/shipment-expenses`)
-            .then((response: AxiosResponse<ShipmentExpense[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
@@ -63,13 +56,13 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    exportDriverPayroll: async (payrollCode: number) =>
+    exportDriverPayroll: async (driverPayrollCode: number) =>
         api
-            .get(`/export-driver-payroll/${payrollCode}`, {
+            .get(`/driver-payrolls/export-excel?driver_payroll_code=${driverPayrollCode}`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
-                return response.data ?? null;
+                return response ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
@@ -81,6 +74,14 @@ export const ShipmentExpenseApi = {
         api
             .get(`/shipment-expense/${expenseCode}`)
             .then((response: AxiosResponse<ShipmentExpense | null>) => response.data ?? null)
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    getShipmentExpenseList: async (driverPayrollCode?: number | null) =>
+        api
+            .get(`/shipment-expenses?driver_payroll_code=${driverPayrollCode}`)
+            .then((response: AxiosResponse<ShipmentExpense[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),

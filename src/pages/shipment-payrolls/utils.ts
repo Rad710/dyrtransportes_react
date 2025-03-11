@@ -143,7 +143,10 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    changeShipmentListPayroll: async (shipmentPayrollCode: number, shipmentCodeList: number[]) =>
+    changeShipmentListShipmentPayroll: async (
+        shipmentPayrollCode: number,
+        shipmentCodeList: number[],
+    ) =>
         api
             .patch(
                 `/shipments/change-shipment-payroll?shipment_payroll_code=${shipmentPayrollCode}`,

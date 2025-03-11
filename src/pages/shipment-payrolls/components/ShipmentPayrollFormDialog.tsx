@@ -160,8 +160,6 @@ export const ShipmentPayrollFormDialog = ({
             console.log("Submitting shipment payroll formData...", { payload });
         }
 
-        setIsSubmitting(true);
-
         const transformedPayload: ShipmentPayroll = {
             ...payload,
             payroll_timestamp: DateTime.fromJSDate(payload.payroll_timestamp).toHTTP() || "",
@@ -172,6 +170,7 @@ export const ShipmentPayrollFormDialog = ({
             });
         }
 
+        setIsSubmitting(true);
         const resp = !payload.payroll_code
             ? await postForm(transformedPayload)
             : await putForm(transformedPayload);

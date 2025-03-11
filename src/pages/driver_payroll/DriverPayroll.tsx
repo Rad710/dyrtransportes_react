@@ -2,7 +2,7 @@ import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { useMatch } from "react-router";
 import { DriverApi } from "../driver/utils";
-import { DriverPayrollApi } from "./driver_payroll_utils";
+import { DriverPayrollApi, ShipmentExpenseApi } from "./utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DriverPayroll as DriverPayrollType, ShipmentExpense } from "./types";
@@ -10,8 +10,6 @@ import { Driver } from "../driver/types";
 import { Shipment } from "../shipment-payrolls/types";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
 import { TabPanel } from "@/components/TabPanel";
-
-import { saveAs } from "file-saver";
 
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -23,6 +21,7 @@ import { ProductApi, RouteApi } from "../route-product/utils";
 import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
+import { downloadFile } from "@/utils/file";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
@@ -180,7 +179,7 @@ const DriverPayrollExpensesTab = ({
         setLoading(true);
         const [driverPayrollsResp, shipmentExpensesResp] = await Promise.all([
             DriverPayrollApi.getDriverPayrollList(driverCode),
-            DriverPayrollApi.getDriverPayrollShipmentExpenseList(driverPayrollCode),
+            ShipmentExpenseApi.getShipmentExpenseList(driverPayrollCode),
         ]);
         setLoading(false);
 
@@ -386,7 +385,11 @@ export const DriverPayroll = ({ title }: PageProps) => {
                 }
 
                 if (!isAxiosError(resp)) {
-                    saveAs(new Blob([resp ?? ""]), "lista_de_precios.xlsx");
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "liquidacion.xlsx",
+                        resp.headers?.["content-disposition"],
+                    );
 
                     showToastSuccess("Planilla exportada exitosamente.");
                 } else {

@@ -37,6 +37,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         const initAuth = async () => {
+            setIsLoading(true);
             await hydrateAuth();
             setIsLoading(false);
         };

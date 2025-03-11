@@ -151,7 +151,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
         });
     };
 
-    const handleTogglePayroll = (payrollCode: number | null, checked: boolean) => {
+    const handleCheckPayroll = (payrollCode: number | null, checked: boolean) => {
         if (payrollCode === null) return;
 
         let newSelectedPayrollList: number[] = [];
@@ -322,7 +322,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                         <Checkbox
                                             checked={isChecked}
                                             onChange={(e) =>
-                                                handleTogglePayroll(
+                                                handleCheckPayroll(
                                                     payroll.payroll_code ?? null,
                                                     e.target.checked,
                                                 )

@@ -496,7 +496,7 @@ export function GroupedShipmentsDataTable({
         });
     };
 
-    const handleChangeShipmentListPayroll = async () => {
+    const handleChangeShipmentListShipmentPayroll = async () => {
         // Variable to store the selected value
         let selectedPayroll: number | null = null;
 
@@ -534,7 +534,7 @@ export function GroupedShipmentsDataTable({
                     return;
                 }
 
-                const resp = await ShipmentApi.changeShipmentListPayroll(
+                const resp = await ShipmentApi.changeShipmentListShipmentPayroll(
                     selectedPayroll,
                     selectedRows,
                 );
@@ -565,7 +565,7 @@ export function GroupedShipmentsDataTable({
                     numSelected={selectedRows.length}
                     tableTitle="Shipments"
                     handleDelete={handleDeleteSelected}
-                    handleMove={handleChangeShipmentListPayroll}
+                    handleMove={handleChangeShipmentListShipmentPayroll}
                 />
                 <TableContainer>
                     <Table

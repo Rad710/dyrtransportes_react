@@ -21,7 +21,7 @@ import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
 import { DriverPayroll } from "../types";
-import { DriverPayrollApi } from "../driver_payroll_utils";
+import { DriverPayrollApi } from "../utils";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
@@ -266,7 +266,7 @@ export const DriverPayrollShipmentDataTable = ({
         });
     };
 
-    const handleMoveShipmentList = async () => {
+    const handleChangeShipmentListDriverPayroll = async () => {
         // Variable to store the selected value
         let selectedPayroll: number | null = null;
 
@@ -305,7 +305,7 @@ export const DriverPayrollShipmentDataTable = ({
                     return;
                 }
 
-                const resp = await DriverPayrollApi.moveShipmentList(
+                const resp = await DriverPayrollApi.changeShipmentListDriverPayroll(
                     selectedPayroll,
                     selectedRows as number[],
                 );
@@ -460,7 +460,7 @@ export const DriverPayrollShipmentDataTable = ({
                 tableTitle="Payroll Shipments"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
-                handleMove={handleMoveShipmentList}
+                handleMove={handleChangeShipmentListDriverPayroll}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
