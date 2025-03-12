@@ -8,6 +8,7 @@ import {
     ShipmentExpenseApiResponse,
 } from "./types";
 import { Shipment } from "../shipment-payrolls/types";
+import { DateTime } from "luxon";
 
 export const DriverPayrollApi = {
     getDriverPayroll: async (payrollCode: number) =>
@@ -104,11 +105,14 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    exportDriverPayroll: async (driverPayrollCode: number) =>
+    exportDriverPayrollList: async (driverCode: number, startDate: DateTime, endDate: DateTime) =>
         api
-            .get(`/driver-payrolls/export-excel?driver_payroll_code=${driverPayrollCode}`, {
-                responseType: "blob",
-            })
+            .get(
+                `/driver-payrolls/export-excel?driver_code=${driverCode}&start_date=${startDate}&end_date=${endDate}`,
+                {
+                    responseType: "blob",
+                },
+            )
             .then((response: AxiosResponse<BlobPart | null>) => {
                 return response ?? null;
             })
