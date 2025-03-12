@@ -106,6 +106,22 @@ export const ShipmentExpenseApi = {
                 return errorResponse ?? null;
             }),
 
+    changeShipmentListDriverPayroll: async (
+        driverPayrollCode: number,
+        shipmentExpenseCodeList: number[],
+    ) =>
+        api
+            .patch(
+                `/shipment-expenses/change-driver-payroll?driver_payroll_code=${driverPayrollCode}`,
+                shipmentExpenseCodeList,
+            )
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
     deleteShipmentExpense: async (code: number) =>
         api
             .delete(`/shipment-expense/${code}`)

@@ -165,7 +165,12 @@ const DriverPayrollExpensesTab = ({
 
     // used for autocomplete options for dialog form
     const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
-    const [shipmentExpenseList, setShipmentExpenseList] = useState<ShipmentExpense[]>([]);
+    const [shipmentExpenseWithReceiptList, setShipmentExpenseWithReceiptList] = useState<
+        ShipmentExpense[]
+    >([]);
+    const [shipmentExpenseNoReceiptList, setShipmentExpenseNoReceiptList] = useState<
+        ShipmentExpense[]
+    >([]);
 
     const [shipmentExpenseToEdit, setShipmentExpenseToEdit] = useState<ShipmentExpense | null>(
         null,
@@ -191,10 +196,12 @@ const DriverPayrollExpensesTab = ({
         }
 
         if (!isAxiosError(shipmentExpensesResp) && shipmentExpensesResp) {
-            setShipmentExpenseList(shipmentExpensesResp);
+            setShipmentExpenseWithReceiptList(shipmentExpensesResp.filter((item) => item.receipt));
+            setShipmentExpenseNoReceiptList(shipmentExpensesResp.filter((item) => !item.receipt));
         } else {
             showToastAxiosError(shipmentExpensesResp);
-            setShipmentExpenseList([]);
+            setShipmentExpenseWithReceiptList([]);
+            setShipmentExpenseNoReceiptList([]);
         }
 
         if (import.meta.env.VITE_DEBUG) {
@@ -254,10 +261,12 @@ const DriverPayrollExpensesTab = ({
                     <DriverPayrollShipmentExpenseDataTable
                         loading={loading}
                         loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
-                        expenseList={shipmentExpenseList.filter((item) => item.receipt)}
+                        expenseList={shipmentExpenseWithReceiptList}
                         setExpenseToEdit={setShipmentExpenseToEdit}
                         setEditFormDialogOpen={setEditFormDialogOpen}
                         showReceiptColumn={true}
+                        driverPayrollCode={driverPayrollCode}
+                        driverPayrollList={driverPayrollList}
                     />
                 </Box>
 
@@ -274,10 +283,12 @@ const DriverPayrollExpensesTab = ({
                     <DriverPayrollShipmentExpenseDataTable
                         loading={loading}
                         loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
-                        expenseList={shipmentExpenseList.filter((item) => !item.receipt)}
+                        expenseList={shipmentExpenseNoReceiptList}
                         setExpenseToEdit={setShipmentExpenseToEdit}
                         setEditFormDialogOpen={setEditFormDialogOpen}
                         showReceiptColumn={false}
+                        driverPayrollCode={driverPayrollCode}
+                        driverPayrollList={driverPayrollList}
                     />
                 </Box>
             </Box>

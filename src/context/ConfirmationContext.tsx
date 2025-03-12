@@ -71,11 +71,7 @@ export const ConfirmationProvider = ({ children }: ConfirmationProviderProps) =>
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">{dialogState.title}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        {dialogState.message}
-                    </DialogContentText>
-                </DialogContent>
+                <DialogContent id="alert-dialog-description">{dialogState.message}</DialogContent>
                 <DialogActions>
                     <Button onClick={closeConfirmDialog}>{dialogState.cancelText}</Button>
                     <Button onClick={handleConfirm} {...dialogState.confirmButtonProps} autoFocus>

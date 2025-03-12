@@ -1,15 +1,25 @@
-import { Box, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
+import {
+    Autocomplete,
+    Box,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import { DateTime } from "luxon";
-import { ShipmentExpense } from "../types";
+import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
+import { AutocompleteOption } from "@/types";
 
 const formatter = getGlobalizeNumberFormatter(0, 2);
 
@@ -69,6 +79,8 @@ type DriverPayrollShipmentExpenseDataTableProps = {
     setExpenseToEdit: React.Dispatch<React.SetStateAction<ShipmentExpense | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     showReceiptColumn: boolean;
+    driverPayrollCode: number;
+    driverPayrollList: DriverPayroll[];
 };
 
 export const DriverPayrollShipmentExpenseDataTable = ({
@@ -78,13 +90,26 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     setExpenseToEdit,
     setEditFormDialogOpen,
     showReceiptColumn,
+    driverPayrollCode,
+    driverPayrollList,
 }: DriverPayrollShipmentExpenseDataTableProps) => {
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
     // context
     const { openConfirmDialog } = useConfirmation();
-    const { showToastSuccess, showToastAxiosError } = useToast();
+    const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
+
+    // autocomplete options
+    // Memoized option lists for better performance
+    const driverPayrollOptionList: AutocompleteOption[] = useMemo(
+        () =>
+            driverPayrollList?.map((item) => ({
+                id: item.payroll_code?.toString() ?? "",
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+            })) ?? [],
+        [driverPayrollList],
+    );
 
     useEffect(() => {
         // on expense list rerender empty selection
@@ -156,6 +181,63 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                     return;
                 }
 
+                showToastSuccess(resp.message);
+
+                await loadDriverPayrollShipmentExpenseList();
+            },
+        });
+    };
+
+    const handleChangeShipmentExpenseListDriverPayroll = async () => {
+        // Variable to store the selected value
+        let selectedPayroll: number | null = null;
+
+        const currentDriverPayrollOption =
+            driverPayrollOptionList.find((item) => item.id === driverPayrollCode?.toString()) ??
+            null;
+
+        openConfirmDialog({
+            title: "Confirm Move Shipment Expenses",
+            message: (
+                <Box>
+                    <Box component="span">Move all shipment expenses to:</Box>
+                    <Stack>
+                        <Autocomplete
+                            options={driverPayrollOptionList}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Liquidación" fullWidth />
+                            )}
+                            onChange={(_, newValue) => {
+                                // Update the captured value in the closure
+                                selectedPayroll = parseInt(newValue?.id ?? "") || 0;
+                            }}
+                            defaultValue={currentDriverPayrollOption}
+                            fullWidth
+                        />
+                    </Stack>
+                </Box>
+            ),
+            confirmText: "Move",
+            confirmButtonProps: {
+                color: "primary",
+            },
+            onConfirm: async () => {
+                if (!selectedPayroll) {
+                    showToastError("No Driver Payroll was selected.");
+                    return;
+                }
+
+                const resp = await ShipmentExpenseApi.changeShipmentListDriverPayroll(
+                    selectedPayroll,
+                    selectedRows as number[],
+                );
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Moving Shipment Expense resp: ", { resp });
+                }
+                if (isAxiosError(resp) || !resp) {
+                    showToastAxiosError(resp);
+                    return;
+                }
                 showToastSuccess(resp.message);
 
                 await loadDriverPayrollShipmentExpenseList();
@@ -246,13 +328,14 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                 tableTitle="Payroll Expenses"
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
+                handleMove={handleChangeShipmentExpenseListDriverPayroll}
             />
             <Paper sx={{ width: "100%" }}>
                 <DataGrid
                     rows={expenseList}
                     columns={columns}
-                    initialState={{ pagination: { paginationModel } }}
                     columnVisibilityModel={columnVisibilityModel}
+                    initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[{ label: "All", value: -1 }]}
                     checkboxSelection
                     disableRowSelectionOnClick
