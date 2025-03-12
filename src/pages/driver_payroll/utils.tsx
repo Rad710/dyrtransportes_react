@@ -1,7 +1,12 @@
 import { AxiosError, AxiosResponse } from "axios";
 import { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
-import { DriverPayroll, ShipmentExpense, ShipmentExpenseApiResponse } from "./types";
+import {
+    DriverPayroll,
+    DriverPayrollApiResponse,
+    ShipmentExpense,
+    ShipmentExpenseApiResponse,
+} from "./types";
 import { Shipment } from "../shipment-payrolls/types";
 
 export const DriverPayrollApi = {
@@ -30,6 +35,27 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
+    postDriverPayroll: async (payload: DriverPayroll) =>
+        api
+            .post(`/driver-payroll`, payload)
+            .then((response: AxiosResponse<DriverPayrollApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    putDriverPayroll: async (code: number, payload: DriverPayroll) =>
+        api
+            .put(`/driver-payroll/${code}`, payload)
+            .then((response: AxiosResponse<DriverPayrollApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    // TODO: move to shipments endpoints
     changeShipmentListDriverPayroll: async (
         driverPayrollCode: number,
         shipmentCodeList: number[],
@@ -50,6 +76,28 @@ export const DriverPayrollApi = {
         api
             .patch(`/driver-payroll/${payroll.payroll_code ?? 0}/paid-status`, payroll)
             .then((response: AxiosResponse<DriverPayroll | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    deleteDriverPayroll: async (code: number) =>
+        api
+            .delete(`/driver-payroll/${code}`)
+            .then((response: AxiosResponse<ApiResponse | null>) => {
+                return response.data ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse ?? null;
+            }),
+
+    deleteDriverPayrollList: async (codeList: number[]) =>
+        api
+            .delete(`/driver-payrolls`, {
+                data: codeList,
+            })
+            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
