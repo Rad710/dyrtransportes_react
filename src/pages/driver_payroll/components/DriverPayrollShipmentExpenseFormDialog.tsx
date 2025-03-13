@@ -13,17 +13,15 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { DateTime } from "luxon";
-import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
+import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 
 // Utility functions for number formatting and parsing
-const parser = getGlobalizeParser();
-const floatFormatter = getGlobalizeNumberFormatter(2, 2);
 
 // Define schema for form validation
 const shipmentExpenseFormSchema = z.object({
@@ -51,7 +49,7 @@ const shipmentExpenseFormSchema = z.object({
                 });
             }
 
-            const val = parser(arg);
+            const val = globalizeParser(arg);
             if (!val) {
                 return ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
@@ -61,7 +59,7 @@ const shipmentExpenseFormSchema = z.object({
                 });
             }
         })
-        .transform((arg) => parser(arg).toFixed(2)),
+        .transform((arg) => globalizeParser(arg).toFixed(2)),
     reason: z.string({
         invalid_type_error: "Valor inválido.",
         required_error: "El campo Motivo es obligatorio.",
@@ -89,7 +87,7 @@ const expenseToFormSchema = (expense: ShipmentExpense): ShipmentExpenseFormSchem
     expense_code: expense?.expense_code ?? null,
     expense_date: DateTime.fromHTTP(expense.expense_date).toJSDate(),
     receipt: expense?.receipt ?? "",
-    amount: floatFormatter(parseFloat(expense?.amount ?? "0") || 0),
+    amount: globalizeFormatter(parseFloat(expense?.amount ?? "0") || 0),
     reason: expense?.reason ?? "",
     driver_payroll_code: expense?.driver_payroll_code ?? 0,
 });

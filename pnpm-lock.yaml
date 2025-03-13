@@ -107,6 +107,9 @@ importers:
       globalize:
         specifier: ^1.7.0
         version: 1.7.0
+      i18next:
+        specifier: ^24.2.2
+        version: 24.2.2(typescript@5.7.3)
       iana-tz-data:
         specifier: ^2019.1.0
         version: 2019.1.0
@@ -2401,6 +2404,14 @@ packages:
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
+
+  i18next@24.2.2:
+    resolution: {integrity: sha512-NE6i86lBCKRYZa5TaUDkU5S4HFgLIEJRLr3Whf2psgaxBleQ2LC1YW1Vc+SCgkAW7VEzndT6al6+CzegSUHcTQ==}
+    peerDependencies:
+      typescript: ^5
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   iana-tz-data@2019.1.0:
     resolution: {integrity: sha512-T7+26Skkyxqjp4mg20/O065j9J5qP39nWVQj/2ArxQ0gSPkL+T9lwerRmiOAzFRNsNXepX45QqchqTVENwNvig==}
@@ -5731,6 +5742,12 @@ snapshots:
   hoist-non-react-statics@3.3.2:
     dependencies:
       react-is: 16.13.1
+
+  i18next@24.2.2(typescript@5.7.3):
+    dependencies:
+      '@babel/runtime': 7.26.7
+    optionalDependencies:
+      typescript: 5.7.3
 
   iana-tz-data@2019.1.0: {}
 

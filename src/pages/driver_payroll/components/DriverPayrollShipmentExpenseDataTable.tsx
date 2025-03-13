@@ -15,13 +15,11 @@ import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { getGlobalizeNumberFormatter } from "@/utils/globalize";
+import { globalizeFormatter } from "@/utils/globalize";
 import { DateTime } from "luxon";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { AutocompleteOption } from "@/types";
-
-const formatter = getGlobalizeNumberFormatter(0, 2);
 
 const DriverPayrollShipmentExpenseDataTableFooter = ({
     expenseList,
@@ -65,7 +63,7 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
                         fontWeight: "bold",
                     }}
                 >
-                    {formatter(totalAmount)}
+                    {globalizeFormatter(totalAmount)}
                 </Typography>
             </Box>
         </Box>
@@ -159,7 +157,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
             message: (
                 <>
                     Are you sure you want to delete Expense: <strong>{row.receipt}</strong> -
-                    Amount: <strong>{formatter(parseFloat(row.amount))}</strong>?
+                    Amount: <strong>{globalizeFormatter(parseFloat(row.amount))}</strong>?
                 </>
             ),
             confirmText: "Delete",
@@ -287,7 +285,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         {
             field: "amount",
             headerName: "Amount",
-            renderCell: ({ row }) => formatter(parseFloat(row.amount)),
+            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.amount)),
             minWidth: 120,
             flex: 0.8,
             align: "right",

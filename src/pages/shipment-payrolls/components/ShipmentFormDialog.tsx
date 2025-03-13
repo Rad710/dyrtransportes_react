@@ -13,7 +13,6 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { DateTime } from "luxon";
-import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
 import { ShipmentApi } from "../utils";
@@ -23,9 +22,7 @@ import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";
 import { Driver } from "@/pages/driver/types";
 import { DriverPayroll } from "@/pages/driver_payroll/types";
-
-const parser = getGlobalizeParser();
-const floatFormatter = getGlobalizeNumberFormatter(2, 2);
+import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 
 const shipmentFormSchema = z.object({
     shipment_code: z.number().positive("Código Carga inválido").nullish(),
@@ -106,7 +103,7 @@ const shipmentFormSchema = z.object({
                 });
             }
 
-            const val = parser(arg);
+            const val = globalizeParser(arg);
             if (!val) {
                 return ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
@@ -116,7 +113,7 @@ const shipmentFormSchema = z.object({
                 });
             }
         })
-        .transform((arg) => parser(arg).toFixed(2)),
+        .transform((arg) => globalizeParser(arg).toFixed(2)),
     payroll_price: z.coerce
         .string({
             invalid_type_error: "Valor inválido.",
@@ -133,7 +130,7 @@ const shipmentFormSchema = z.object({
                 });
             }
 
-            const val = parser(arg);
+            const val = globalizeParser(arg);
             if (!val) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
@@ -143,7 +140,7 @@ const shipmentFormSchema = z.object({
                 });
             }
         })
-        .transform((arg) => parser(arg).toFixed(2)),
+        .transform((arg) => globalizeParser(arg).toFixed(2)),
 
     dispatch_code: z
         .string({
@@ -229,8 +226,8 @@ const shipmentToFormSchema = (shipment: Shipment, payrollCode: number): Shipment
     route_code: shipment?.route_code ?? 0,
     origin: shipment?.origin ?? "",
     destination: shipment?.destination ?? "",
-    price: floatFormatter(parseFloat(shipment?.price ?? "0") || 0),
-    payroll_price: floatFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
+    price: globalizeFormatter(parseFloat(shipment?.price ?? "0") || 0),
+    payroll_price: globalizeFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
 
     dispatch_code: shipment?.dispatch_code ?? "",
     receipt_code: shipment?.receipt_code ?? "",
@@ -616,11 +613,11 @@ const ShipmentFormDialogFields = ({
                                 form.setValue("route_code", selectedRoute?.route_code ?? 0);
                                 form.setValue(
                                     "price",
-                                    floatFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
+                                    globalizeFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
                                 );
                                 form.setValue(
                                     "payroll_price",
-                                    floatFormatter(
+                                    globalizeFormatter(
                                         parseFloat(selectedRoute?.payroll_price ?? "") || 0,
                                     ),
                                 );

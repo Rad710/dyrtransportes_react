@@ -12,7 +12,6 @@ import Checkbox from "@mui/material/Checkbox";
 import { Autocomplete, CircularProgress, Stack, TablePagination, TextField } from "@mui/material";
 
 import { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
-import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import React, { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
@@ -22,8 +21,7 @@ import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { AutocompleteOption } from "@/types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
-
-const formatter = getGlobalizeNumberFormatter(0, 2);
+import { globalizeFormatter } from "@/utils/globalize";
 
 type Column = {
     id: keyof Shipment | "diff" | "total" | "checkbox";
@@ -101,32 +99,33 @@ const columns: readonly Column[] = [
     {
         id: "origin_weight",
         label: "Origin Weight",
-        rowValue: (row) => formatter(parseInt(row.origin_weight)),
+        rowValue: (row) => globalizeFormatter(parseInt(row.origin_weight)),
         groupedRowValue: (groupedShipments) =>
-            formatter(parseInt(groupedShipments.subtotal_origin_weight)),
+            globalizeFormatter(parseInt(groupedShipments.subtotal_origin_weight)),
         align: "right",
     },
     {
         id: "destination_weight",
         label: "Destination Weight",
-        rowValue: (row) => formatter(parseInt(row.destination_weight)),
+        rowValue: (row) => globalizeFormatter(parseInt(row.destination_weight)),
         groupedRowValue: (groupedShipments) =>
-            formatter(parseInt(groupedShipments.subtotal_destination_weight)),
+            globalizeFormatter(parseInt(groupedShipments.subtotal_destination_weight)),
         align: "right",
     },
     {
         id: "price",
         label: "Price",
-        rowValue: (row) => formatter(parseFloat(row.price)),
+        rowValue: (row) => globalizeFormatter(parseFloat(row.price)),
         groupedRowValue: () => "",
         align: "right",
     },
     {
         id: "total",
         label: "Total",
-        rowValue: (row) => formatter(parseInt(row.destination_weight) * parseFloat(row.price)),
+        rowValue: (row) =>
+            globalizeFormatter(parseInt(row.destination_weight) * parseFloat(row.price)),
         groupedRowValue: (groupedShipments) =>
-            formatter(parseFloat(groupedShipments.subtotal_money)),
+            globalizeFormatter(parseFloat(groupedShipments.subtotal_money)),
         align: "right",
     },
 ];
@@ -322,7 +321,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {formatter(totals.totalOrigin)}
+                {globalizeFormatter(totals.totalOrigin)}
             </TableCell>
             <TableCell
                 align="right"
@@ -331,7 +330,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {formatter(totals.totalDestination)}
+                {globalizeFormatter(totals.totalDestination)}
             </TableCell>
             <TableCell></TableCell>
             <TableCell
@@ -341,7 +340,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {formatter(totals.totalMoney)}
+                {globalizeFormatter(totals.totalMoney)}
             </TableCell>
             <TableCell></TableCell>
         </TableRow>

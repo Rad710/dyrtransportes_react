@@ -15,15 +15,13 @@ import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { getGlobalizeNumberFormatter } from "@/utils/globalize";
 import { Shipment } from "@/pages/shipment-payrolls/types";
 import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
 import { DriverPayroll } from "../types";
 import { DriverPayrollApi } from "../utils";
-
-const formatter = getGlobalizeNumberFormatter(0, 2);
+import { globalizeFormatter } from "@/utils/globalize";
 
 const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
     const theme = useTheme();
@@ -78,7 +76,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {formatter(totals.totalOrigin)}
+                    {globalizeFormatter(totals.totalOrigin)}
                 </Typography>
             </Box>
 
@@ -101,7 +99,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {formatter(totals.totalDestination)}
+                    {globalizeFormatter(totals.totalDestination)}
                 </Typography>
             </Box>
 
@@ -124,7 +122,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {formatter(totals.totalDestination - totals.totalOrigin)}
+                    {globalizeFormatter(totals.totalDestination - totals.totalOrigin)}
                 </Typography>
             </Box>
 
@@ -147,7 +145,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {formatter(totals.totalMoney)}
+                    {globalizeFormatter(totals.totalMoney)}
                 </Typography>
             </Box>
         </Box>
@@ -386,7 +384,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "origin_weight",
             headerName: "Origin Weight",
-            renderCell: ({ row }) => formatter(parseInt(row.origin_weight)),
+            renderCell: ({ row }) => globalizeFormatter(parseInt(row.origin_weight)),
             minWidth: 100,
             flex: 0.8,
             align: "right",
@@ -394,7 +392,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "destination_weight",
             headerName: "Destination Weight",
-            renderCell: ({ row }) => formatter(parseInt(row.destination_weight)),
+            renderCell: ({ row }) => globalizeFormatter(parseInt(row.destination_weight)),
             minWidth: 100,
             flex: 0.8,
             align: "right",
@@ -402,7 +400,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "price",
             headerName: "Price",
-            renderCell: ({ row }) => formatter(parseFloat(row.price)),
+            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.price)),
             minWidth: 120,
             flex: 0.8,
             align: "right",
@@ -410,7 +408,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "payroll_price",
             headerName: "Payroll Price",
-            renderCell: ({ row }) => formatter(parseFloat(row.payroll_price)),
+            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
             align: "right",
@@ -419,7 +417,9 @@ export const DriverPayrollShipmentDataTable = ({
             field: "total",
             headerName: "Total",
             renderCell: ({ row }) =>
-                formatter(parseInt(row.destination_weight) * parseFloat(row.payroll_price)),
+                globalizeFormatter(
+                    parseInt(row.destination_weight) * parseFloat(row.payroll_price),
+                ),
             minWidth: 120,
             flex: 0.8,
             align: "right",

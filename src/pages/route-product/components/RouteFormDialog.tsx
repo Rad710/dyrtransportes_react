@@ -11,16 +11,13 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
-import { getGlobalizeNumberFormatter, getGlobalizeParser } from "@/utils/globalize";
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useState } from "react";
 import { Route } from "../types";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-
-const parser = getGlobalizeParser();
-const formatter = getGlobalizeNumberFormatter(2, 2);
+import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 
 // Create a reusable string validation for fields with similar requirements
 const createRequiredStringSchema = (fieldName: string) =>
@@ -51,7 +48,7 @@ const createPriceSchema = (fieldName: string) =>
                 });
             }
 
-            const val = parser(arg);
+            const val = globalizeParser(arg);
             if (!val) {
                 return ctx.addIssue({
                     code: z.ZodIssueCode.invalid_type,
@@ -61,7 +58,7 @@ const createPriceSchema = (fieldName: string) =>
                 });
             }
         })
-        .transform((arg) => parser(arg).toFixed(2));
+        .transform((arg) => globalizeParser(arg).toFixed(2));
 
 const routeFormSchema = z.object({
     route_code: z.number().positive("Código Ruta inválido").nullish(),
@@ -120,8 +117,10 @@ export const RouteFormDialog = ({
                 route_code: routeToEdit?.route_code ?? null,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                price: formatter(parseFloat(routeToEdit?.price ?? "") || 0),
-                payroll_price: formatter(parseFloat(routeToEdit?.payroll_price ?? "") || 0),
+                price: globalizeFormatter(parseFloat(routeToEdit?.price ?? "") || 0),
+                payroll_price: globalizeFormatter(
+                    parseFloat(routeToEdit?.payroll_price ?? "") || 0,
+                ),
             });
         } else {
             reset(ROUTE_FORM_DEFAULT_VALUE);
