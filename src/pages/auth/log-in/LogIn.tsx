@@ -15,39 +15,18 @@ import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
-import { AxiosError, AxiosResponse, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink } from "react-router";
-import { ApiResponse, AuthResponse, PageProps } from "@/types";
-import { api } from "@/utils/axios";
-import { useEffect, useState } from "react";
+import { PageProps } from "@/types";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-// Define login form schema with Zod
-const loginFormSchema = z.object({
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
-    remember_me: z.boolean().optional(),
-});
-
-// Type inference for our form data
-type LoginFormData = z.infer<typeof loginFormSchema>;
-
-const LogInApi = {
-    loginUser: (formData: FormData) =>
-        api
-            .post(`/auth/log-in`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            })
-            .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            }),
-};
+import { getLoginFormSchema, LogInApi, LoginFormData } from "./utils";
+import { useTranslation } from "react-i18next";
+import { loginTranslationNamespace } from "./translations";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -97,6 +76,12 @@ export const LogIn = ({ title }: PageProps) => {
     const setAuth = useAuthStore((state) => state.setAuth);
 
     // Initialize React Hook Form with Zod resolver
+    // Then within your component:
+    // Using default namespace
+    const { t } = useTranslation(loginTranslationNamespace);
+
+    const loginFormSchema = useMemo(() => getLoginFormSchema(t), [t]);
+
     const {
         register,
         handleSubmit,
@@ -141,7 +126,7 @@ export const LogIn = ({ title }: PageProps) => {
             // Store in Zustand
             setAuth(resp.token, resp.user, !!data.remember_me);
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Invalid email or password");
+            setFormErrorMessage(resp?.response?.data?.message ?? t("errors.invalidCredentials"));
         }
     };
 
@@ -155,7 +140,7 @@ export const LogIn = ({ title }: PageProps) => {
                     variant="h4"
                     sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
                 >
-                    Log in
+                    {t("title")}
                 </Typography>
                 {formErrorMessage && (
                     <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
@@ -176,11 +161,11 @@ export const LogIn = ({ title }: PageProps) => {
                     }}
                 >
                     <FormControl>
-                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormLabel htmlFor="email">{t("email")}</FormLabel>
                         <TextField
                             id="email"
                             type="email"
-                            placeholder="your@email.com"
+                            placeholder={t("emailPlaceholder")}
                             autoComplete="email"
                             autoFocus
                             fullWidth
@@ -191,11 +176,11 @@ export const LogIn = ({ title }: PageProps) => {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="password">Password</FormLabel>
+                        <FormLabel htmlFor="password">{t("password")}</FormLabel>
                         <TextField
                             id="password"
                             type={showPassword ? "text" : "password"}
-                            placeholder="••••••"
+                            placeholder={t("passwordPlaceholder")}
                             autoComplete="current-password"
                             fullWidth
                             variant="outlined"
@@ -225,23 +210,23 @@ export const LogIn = ({ title }: PageProps) => {
                     </FormControl>
                     <FormControlLabel
                         control={<Checkbox color="primary" {...register("remember_me")} />}
-                        label="Remember me"
+                        label={t("rememberMe")}
                     />
                     <Button type="submit" fullWidth variant="contained">
-                        Log in
+                        {t("loginButton")}
                     </Button>
                 </Box>
-                <Divider>or</Divider>
+                <Divider>{t("or")}</Divider>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <Typography sx={{ textAlign: "center" }}>
-                        Don&apos;t have an account?{" "}
+                        {t("noAccount")}{" "}
                         <MuiLink
                             to="/sign-up"
                             variant="body2"
                             sx={{ alignSelf: "center" }}
                             component={RouterLink}
                         >
-                            Sign up
+                            {t("signUp")}
                         </MuiLink>
                     </Typography>
                 </Box>
