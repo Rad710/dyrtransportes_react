@@ -3,7 +3,7 @@ import { Box, CircularProgress, CssBaseline, StyledEngineProvider } from "@mui/m
 
 import AppTheme from "./theme/AppTheme";
 import { LogIn } from "@/pages/auth/log-in/LogIn";
-import { SignUp } from "@/pages/auth/SignUp";
+import { SignUp } from "@/pages/auth/sign-up/SignUp";
 import { Home } from "@/pages/home/Home";
 import { ReactNode, useEffect, useState } from "react";
 import { hydrateAuth, useAuthStore } from "./stores/authStore";
@@ -20,7 +20,6 @@ import { DriverList } from "@/pages/driver_payroll/DriverList";
 import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
 import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";
 import { ShipmentPayroll } from "./pages/shipment-payrolls/ShipmentPayroll";
-import { hydratePreferences } from "./stores/preferenceStore";
 
 import "@/utils/i18n";
 
@@ -151,14 +150,6 @@ const router = createBrowserRouter([
 ]);
 
 export const App = () => {
-    useEffect(() => {
-        const initPreferences = async () => {
-            await hydratePreferences();
-        };
-
-        initPreferences();
-    }, []);
-
     return (
         <StyledEngineProvider injectFirst>
             <AppTheme disableCustomTheme={true}>

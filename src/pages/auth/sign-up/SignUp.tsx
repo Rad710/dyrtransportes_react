@@ -11,44 +11,17 @@ import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
-import { AxiosError, AxiosResponse, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { ApiResponse, AuthResponse, PageProps } from "@/types";
-import { useEffect, useState } from "react";
-import { api } from "@/utils/axios";
+import { PageProps } from "@/types";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-// Define signup form schema with Zod
-const signUpFormSchema = z.object({
-    name: z.string().min(1, { message: "Name is required." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z
-        .string()
-        .min(8, { message: "Password must be at least 8 characters long." })
-        .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/, {
-            message:
-                "Password must be at least 8 characters and include at least one number, one lowercase letter, and one uppercase letter",
-        }),
-});
-
-// Type inference for our form data
-type SignUpFormData = z.infer<typeof signUpFormSchema>;
-
-const SignUpApi = {
-    signUpUser: (formData: FormData) =>
-        api
-            .post(`/auth/sign-up`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            })
-            .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            }),
-};
+import { getSignUpFormSchema, SignUpApi, SignUpFormData } from "./utils";
+import { useTranslation } from "react-i18next";
+import { signUpTranslationNamespace } from "./translations";
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: "flex",
@@ -99,6 +72,11 @@ export const SignUp = ({ title }: PageProps) => {
     // store
     const setAuth = useAuthStore((state) => state.setAuth);
 
+    // Using translations
+    const { t } = useTranslation(signUpTranslationNamespace);
+
+    const signUpFormSchema = useMemo(() => getSignUpFormSchema(t), [t]);
+
     // Initialize React Hook Form with Zod resolver
     const {
         register,
@@ -142,7 +120,7 @@ export const SignUp = ({ title }: PageProps) => {
             // Store in Zustand
             setAuth(resp.token, resp.user);
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error creating account");
+            setFormErrorMessage(resp?.response?.data?.message ?? t("errors.creatingAccount"));
         }
     };
 
@@ -157,7 +135,7 @@ export const SignUp = ({ title }: PageProps) => {
                     variant="h4"
                     sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
                 >
-                    Sign up
+                    {t("title")}
                 </Typography>
                 {formErrorMessage && (
                     <Box component="span" sx={{ color: (theme) => theme.palette.error.main }}>
@@ -171,10 +149,10 @@ export const SignUp = ({ title }: PageProps) => {
                     sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                 >
                     <FormControl>
-                        <FormLabel htmlFor="name">Full name</FormLabel>
+                        <FormLabel htmlFor="name">{t("fullName")}</FormLabel>
                         <TextField
                             id="name"
-                            placeholder="Jon Snow"
+                            placeholder={t("fullNamePlaceholder")}
                             autoComplete="name"
                             fullWidth
                             variant="outlined"
@@ -184,10 +162,10 @@ export const SignUp = ({ title }: PageProps) => {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormLabel htmlFor="email">{t("email")}</FormLabel>
                         <TextField
                             id="email"
-                            placeholder="your@email.com"
+                            placeholder={t("emailPlaceholder")}
                             autoComplete="email"
                             fullWidth
                             variant="outlined"
@@ -197,11 +175,11 @@ export const SignUp = ({ title }: PageProps) => {
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="password">Password</FormLabel>
+                        <FormLabel htmlFor="password">{t("password")}</FormLabel>
                         <TextField
                             id="password"
                             type={showPassword ? "text" : "password"}
-                            placeholder="••••••"
+                            placeholder={t("passwordPlaceholder")}
                             autoComplete="new-password"
                             fullWidth
                             variant="outlined"
@@ -231,7 +209,7 @@ export const SignUp = ({ title }: PageProps) => {
                     </FormControl>
 
                     <Button type="submit" fullWidth variant="contained">
-                        Sign up
+                        {t("signUpButton")}
                     </Button>
                 </Box>
             </Card>
