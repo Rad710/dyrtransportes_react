@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useMatch } from "react-router";
 import { DateTime } from "luxon";
 import {
@@ -18,8 +19,12 @@ import { ShipmentPayrollApi } from "./utils";
 import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialog";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
+import { shipmentPayrollTranslationNamespace } from "./translations";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
+    // Translation
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
+
     const match = useMatch("/shipment-payrolls/:year");
     const year = parseInt(match?.params?.year ?? "") || 0;
 
@@ -53,15 +58,16 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
     useEffect(() => {
         document.title = title;
         loadShipmentPayrollList();
-    }, []);
+    }, [title]);
 
     const handleExport = () => {
         openConfirmDialog({
-            title: "Confirmar Exportación",
-            message: `Se exportarán todas las Cobranzas ${
-                selectedPayrollList.length > 0 ? "seleccionadas" : ""
-            }.`,
-            confirmText: "Exportar",
+            title: t("exportDialog.title"),
+            message:
+                selectedPayrollList.length > 0
+                    ? t("exportDialog.messageSelected")
+                    : t("exportDialog.message"),
+            confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
@@ -104,13 +110,13 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "lista_de_planillas.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla.");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -122,9 +128,9 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
         }
 
         openConfirmDialog({
-            title: "Confirmar Eliminación",
-            message: `Se eliminarán ${selectedPayrollList.length} planilla(s) seleccionada(s).`,
-            confirmText: "Eliminar",
+            title: t("deleteDialog.title"),
+            message: t("deleteDialog.message", { count: selectedPayrollList.length }),
+            confirmText: t("deleteDialog.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -197,8 +203,14 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
         } else {
             showToastAxiosError(payrollResp);
         }
+
         showToastSuccess(
-            `Planilla #${payroll.payroll_code ?? 0} marcada como ${collected ? "cobrada" : "no cobrada"}`,
+            t("notifications.collectionStatus", {
+                code: payroll.payroll_code ?? 0,
+                status: collected
+                    ? t("collectionStatus.collected")
+                    : t("collectionStatus.notCollected"),
+            }),
         );
     };
 
@@ -214,7 +226,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                 }}
             >
                 <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
-                    Lista de Planillas de {year}
+                    {t("yearList", { year: year })}
                 </Typography>
 
                 <Box
@@ -229,7 +241,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                         startIcon={<AddIcon />}
                         onClick={() => setAddFormDialogOpen(true)}
                     >
-                        Add
+                        {t("buttons.add")}
                     </Button>
                     <ShipmentPayrollFormDialog
                         open={addFormDialogOpen}
@@ -245,13 +257,13 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                         startIcon={<TableChartIcon />}
                         onClick={handleExport}
                     >
-                        Export
+                        {t("buttons.export")}
                     </Button>
 
                     <Tooltip
                         title={
                             selectedPayrollList.length === 0
-                                ? "Seleccione planillas para eliminar"
+                                ? t("tooltips.selectPayrollsToDelete")
                                 : ""
                         }
                     >
@@ -263,7 +275,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                 onClick={handleDelete}
                                 disabled={selectedPayrollList.length === 0}
                             >
-                                Delete
+                                {t("buttons.delete")}
                             </Button>
                         </Box>
                     </Tooltip>
@@ -327,7 +339,9 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                                     e.target.checked,
                                                 )
                                             }
-                                            inputProps={{ "aria-label": "Seleccionar planilla" }}
+                                            inputProps={{
+                                                "aria-label": t("accessibility.selectPayroll"),
+                                            }}
                                         />
                                         <Typography
                                             variant="body2"
@@ -335,7 +349,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                                 display: { xs: "inline", sm: "none" },
                                             }}
                                         >
-                                            Seleccionar
+                                            {t("select")}
                                         </Typography>
                                     </Box>
 
@@ -376,11 +390,11 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                         onChange={(e) =>
                                             handleCollectionToggle(payroll, e.target.checked)
                                         }
-                                        textChecked="Cobrado"
+                                        textChecked={t("switch.collected")}
                                         checkedDescription={
                                             collectionDate?.toFormat("dd/MM/yyyy") ?? ""
                                         }
-                                        textUnchecked="No cobrado"
+                                        textUnchecked={t("switch.uncollected")}
                                     />
                                 </Box>
                             </ListItem>

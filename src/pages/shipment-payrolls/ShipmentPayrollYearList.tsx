@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { DateTime } from "luxon";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
@@ -12,8 +13,12 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./utils";
 import { downloadFile } from "@/utils/file";
+import { shipmentPayrollTranslationNamespace } from "./translations";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
+    // Translations
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
+
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [yearList, setYearList] = useState<number[]>([]);
@@ -54,13 +59,13 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
     useEffect(() => {
         document.title = title;
         loadShipmentPayrollYearList();
-    }, []);
+    }, [title]);
 
     const handleAddYear = () => {
         openConfirmDialog({
-            title: "Confirmar Creación",
-            message: "Se creará una nueva planilla.",
-            confirmText: "Crear",
+            title: t("createDialog.title"),
+            message: t("createDialog.message"),
+            confirmText: t("createDialog.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
@@ -102,9 +107,9 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
 
     const handleExportList = () => {
         openConfirmDialog({
-            title: "Confirmar Exportación",
-            message: "Se exportarán todas las Cobranzas del año.",
-            confirmText: "Exportar",
+            title: t("exportDialog.title"),
+            message: t("exportDialog.message"),
+            confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
@@ -137,13 +142,13 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "lista_de_planillas.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla.");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -176,7 +181,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                 }}
             >
                 <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
-                    Lista de Planillas
+                    {t("subtitle")}
                 </Typography>
 
                 <Box
@@ -187,10 +192,10 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                     }}
                 >
                     <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddYear}>
-                        Add
+                        {t("buttons.add")}
                     </Button>
 
-                    <Tooltip title={!selectedYear ? "Seleccione planillas para exportar" : ""}>
+                    <Tooltip title={!selectedYear ? t("tooltips.selectPayrollToExport") : ""}>
                         <Box component="span">
                             <Button
                                 variant="contained"
@@ -199,7 +204,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                                 onClick={handleExportList}
                                 disabled={!selectedYear}
                             >
-                                Export
+                                {t("buttons.export")}
                             </Button>
                         </Box>
                     </Tooltip>
@@ -226,7 +231,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                                 <Checkbox
                                     checked={isChecked}
                                     onChange={(e) => handleToggleYear(year, e.target.checked)}
-                                    inputProps={{ "aria-label": "Seleccionar año" }}
+                                    inputProps={{ "aria-label": t("accessibility.selectYear") }}
                                     sx={{ mr: 2 }}
                                 />
 

@@ -12,29 +12,20 @@ import { styled } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShipmentPayroll } from "../types";
 import { ShipmentPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
+import { useTranslation } from "react-i18next";
+import { shipmentPayrollTranslationNamespace } from "../translations";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
     overflow: "visible", // Allow content to be visible outside the dialog
     paddingBottom: theme.spacing(2),
 }));
-
-const shipmentPayrollFormSchema = z.object({
-    payroll_code: z.number().positive("Código Planilla inválido").nullish(),
-    payroll_timestamp: z.date({
-        required_error: "Para crear la planilla se necesita de una fecha.",
-    }),
-    collected: z.boolean(),
-    deleted: z.boolean(),
-});
-
-type ShipmentPayrollFormSchema = z.infer<typeof shipmentPayrollFormSchema>;
 
 interface ShipmentPayrollDialogProps extends FormDialogProps {
     year: number;
@@ -53,6 +44,26 @@ export const ShipmentPayrollFormDialog = ({
     payrollToEdit,
     setPayrollToEdit,
 }: ShipmentPayrollDialogProps) => {
+    // Translation
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
+
+    // Create schema with translations
+    const shipmentPayrollFormSchema = useMemo(() => {
+        return z.object({
+            payroll_code: z
+                .number()
+                .positive(t("formDialog.validation.invalidPayrollCode"))
+                .nullish(),
+            payroll_timestamp: z.date({
+                required_error: t("formDialog.validation.dateRequired"),
+            }),
+            collected: z.boolean(),
+            deleted: z.boolean(),
+        });
+    }, [t]);
+
+    type ShipmentPayrollFormSchema = z.infer<typeof shipmentPayrollFormSchema>;
+
     // State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -106,7 +117,7 @@ export const ShipmentPayrollFormDialog = ({
         } else {
             reset(PAYROLL_FORM_DEFAULT_VALUE);
         }
-    }, [payrollToEdit]);
+    }, [payrollToEdit, reset]);
 
     // Event handlers
     const handleClose = () => {
@@ -124,7 +135,7 @@ export const ShipmentPayrollFormDialog = ({
 
     const postForm = async (formData: ShipmentPayroll) => {
         if (formData.payroll_code) {
-            setSubmitResult({ error: "Planilla ya existe" });
+            setSubmitResult({ error: t("formDialog.alreadyExists") });
             return;
         }
 
@@ -140,7 +151,7 @@ export const ShipmentPayrollFormDialog = ({
 
     const putForm = async (formData: ShipmentPayroll) => {
         if (!formData.payroll_code) {
-            setSubmitResult({ error: "Planilla no puede editarse" });
+            setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
         }
 
@@ -183,8 +194,8 @@ export const ShipmentPayrollFormDialog = ({
             return;
         }
 
-        setSubmitResult({ success: resp.message || "Operación exitosa" });
-        showToastSuccess(resp.message || "Operación exitosa");
+        setSubmitResult({ success: resp.message || t("notifications.operationSuccess") });
+        showToastSuccess(resp.message || t("notifications.operationSuccess"));
 
         setSelectedPayrollList([]);
 
@@ -211,8 +222,8 @@ export const ShipmentPayrollFormDialog = ({
             ) : (
                 <Box component="span">
                     {!getValues("payroll_code")
-                        ? "Seleccione una fecha para la nueva Planilla"
-                        : "Seleccione una fecha para la Planilla a editar"}
+                        ? t("formDialog.descriptionAdd")
+                        : t("formDialog.descriptionEdit")}
                 </Box>
             );
         }
@@ -225,7 +236,7 @@ export const ShipmentPayrollFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requerido
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
@@ -245,7 +256,7 @@ export const ShipmentPayrollFormDialog = ({
             }}
         >
             <DialogTitle>
-                {!getValues("payroll_code") ? "Agregar Planilla" : "Editar Planilla"}
+                {!getValues("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
             </DialogTitle>
             <StyledDialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
@@ -261,7 +272,7 @@ export const ShipmentPayrollFormDialog = ({
                         control={control}
                         render={({ field }) => (
                             <TextField
-                                label="Fecha de Planilla"
+                                label={t("formDialog.fields.date")}
                                 type="date"
                                 fullWidth
                                 value={
@@ -296,14 +307,14 @@ export const ShipmentPayrollFormDialog = ({
                 </Box>
             </StyledDialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting}
                     color={!getValues("payroll_code") ? "primary" : "info"}
                 >
-                    {!getValues("payroll_code") ? "Agregar Planilla" : "Editar Planilla"}
+                    {!getValues("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>
