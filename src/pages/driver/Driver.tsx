@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
@@ -12,12 +13,16 @@ import { TabPanel } from "@/components/TabPanel";
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
 import { PageProps } from "@/types";
-import { Driver as DriverType } from "./types";
+import type { Driver as DriverType } from "./types";
 import { DriverApi } from "./utils";
 import { DriverDataTable } from "./components/DriverDataTable";
 import { downloadFile } from "@/utils/file";
+import { driverTranslationNamespace } from "./translations";
 
 const ActiveDriverTabContent = () => {
+    // Translations
+    const { t } = useTranslation(driverTranslationNamespace);
+
     // STATE
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
@@ -55,9 +60,9 @@ const ActiveDriverTabContent = () => {
 
     const handleExportDriverList = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: "All active drivers will be exported.",
-            confirmText: "Export",
+            title: t("exportDialog.title"),
+            message: t("exportDialog.message"),
+            confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
@@ -73,13 +78,13 @@ const ActiveDriverTabContent = () => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "nomina_de_choferes.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla.");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -99,7 +104,7 @@ const ActiveDriverTabContent = () => {
                     startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
-                    Add
+                    {t("buttons.add")}
                 </Button>
 
                 <DriverFormDialog
@@ -122,7 +127,7 @@ const ActiveDriverTabContent = () => {
                     startIcon={<TableChartIcon />}
                     onClick={handleExportDriverList}
                 >
-                    Export
+                    {t("buttons.export")}
                 </Button>
             </Box>
 
@@ -187,9 +192,12 @@ const DeactivatedDriverTabContent = () => {
 };
 
 export const Driver = ({ title }: Readonly<PageProps>) => {
+    // Translations
+    const { t } = useTranslation(driverTranslationNamespace);
+
     useEffect(() => {
         document.title = title;
-    }, []);
+    }, [title]);
 
     const [value, setValue] = useState(0);
 
@@ -200,12 +208,16 @@ export const Driver = ({ title }: Readonly<PageProps>) => {
     return (
         <>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="Nómina" id="simple-tab-0" aria-controls="simple-tabpanel-0" />
+                <Tabs value={value} onChange={handleChange} aria-label="driver tabs">
                     <Tab
-                        label="Deshabilitados"
-                        id="simple-tab-1"
-                        aria-controls="simple-tabpanel-1"
+                        label={t("tabs.active")}
+                        id="driver-tab-0"
+                        aria-controls="driver-tabpanel-0"
+                    />
+                    <Tab
+                        label={t("tabs.deactivated")}
+                        id="driver-tab-1"
+                        aria-controls="driver-tabpanel-1"
                     />
                 </Tabs>
             </Box>

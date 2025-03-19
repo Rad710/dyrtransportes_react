@@ -9,6 +9,8 @@ import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { globalizeFormatter } from "@/utils/globalize";
+import { useTranslation } from "react-i18next";
+import { routeTranslationNamespace } from "../translations";
 
 type RouteDataTableProps = {
     loading: boolean;
@@ -25,6 +27,9 @@ export const RouteDataTable = ({
     setRouteToEdit,
     setEditFormDialogOpen,
 }: RouteDataTableProps) => {
+    // Translation
+    const { t } = useTranslation(routeTranslationNamespace);
+
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -46,9 +51,9 @@ export const RouteDataTable = ({
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Routes?`,
-            confirmText: "Delete",
+            title: t("dataTable.confirmDelete.title"),
+            message: t("dataTable.confirmDelete.messageMany"),
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -76,14 +81,14 @@ export const RouteDataTable = ({
 
     const handleDeleteRouteItem = (row: Route) => {
         openConfirmDialog({
-            title: "Confirm Delete",
+            title: t("dataTable.confirmDelete.title"),
             message: (
                 <>
-                    Are you sure you want to delete Route: <strong>{row.origin}</strong> -{" "}
+                    {t("dataTable.confirmDelete.messageSingle")} <strong>{row.origin}</strong> -{" "}
                     <strong>{row.destination}</strong>?
                 </>
             ),
-            confirmText: "Delete",
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -112,45 +117,45 @@ export const RouteDataTable = ({
     const columns: GridColDef<Route>[] = [
         {
             field: "route_code",
-            headerName: "Code",
+            headerName: t("dataTable.columns.code"),
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
             field: "origin",
-            headerName: "Origin",
+            headerName: t("dataTable.columns.origin"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "destination",
-            headerName: "Destination",
+            headerName: t("dataTable.columns.destination"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "price",
-            headerName: "Price",
+            headerName: t("dataTable.columns.price"),
             renderCell: ({ row }) => globalizeFormatter(parseFloat(row.price)),
             minWidth: 100,
             flex: 0.8,
         },
         {
             field: "payroll_price",
-            headerName: "Payroll Price",
+            headerName: t("dataTable.columns.payrollPrice"),
             renderCell: ({ row }) => globalizeFormatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
         },
         {
             field: "modification_user",
-            headerName: "Modified by",
+            headerName: t("dataTable.columns.modifiedBy"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "action",
-            headerName: "Actions",
+            headerName: t("dataTable.columns.actions"),
             sortable: false,
             minWidth: 100,
             flex: 0.5,
@@ -158,11 +163,11 @@ export const RouteDataTable = ({
                 <ActionsMenu
                     menuItems={[
                         {
-                            text: "Edit",
+                            text: t("dataTable.actions.edit"),
                             handleClick: () => handleEditRoute(params.row),
                         },
                         {
-                            text: "Delete",
+                            text: t("dataTable.actions.delete"),
                             handleClick: () => handleDeleteRouteItem(params.row),
                         },
                     ]}
@@ -174,7 +179,7 @@ export const RouteDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Routes"
+                tableTitle={t("dataTable.tableTitle")}
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />

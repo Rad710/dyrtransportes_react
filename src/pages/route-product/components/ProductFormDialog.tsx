@@ -12,40 +12,19 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Product } from "../types";
 import { ProductApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-
-// Create a reusable string validation for fields with similar requirements
-const createRequiredStringSchema = (fieldName: string) =>
-    z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: `El campo ${fieldName} es obligatorio.`,
-        })
-        .min(1, {
-            message: `El campo ${fieldName.toLowerCase()} no puede estar vacío.`,
-        });
-
-const productFormSchema = z.object({
-    product_code: z.number().positive("Código Producto inválido").nullish(),
-    product_name: createRequiredStringSchema("Nombre del Producto"),
-});
-
-type ProductFormSchema = z.infer<typeof productFormSchema>;
+import { useTranslation } from "react-i18next";
+import { productTranslationNamespace } from "../translations";
 
 interface ProductFormDialogProps extends FormDialogProps {
     loadProductList: () => Promise<void>;
     productToEdit?: Product | null;
     setProductToEdit?: React.Dispatch<React.SetStateAction<Product | null>>;
 }
-
-const PRODUCT_FORM_DEFAULT_VALUE: ProductFormSchema = {
-    product_code: null,
-    product_name: "",
-};
 
 export const ProductFormDialog = ({
     open,
@@ -54,6 +33,40 @@ export const ProductFormDialog = ({
     productToEdit,
     setProductToEdit,
 }: ProductFormDialogProps) => {
+    // Translation
+    const { t } = useTranslation(productTranslationNamespace);
+
+    // Create schema with translations
+    const productFormSchema = useMemo(() => {
+        // Create a reusable string validation for fields with similar requirements
+        const createRequiredStringSchema = (fieldName: string) =>
+            z
+                .string({
+                    invalid_type_error: t("formDialog.validation.invalidValue"),
+                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                })
+                .min(1, {
+                    message: t("formDialog.validation.fieldEmpty", {
+                        field: fieldName.toLowerCase(),
+                    }),
+                });
+
+        return z.object({
+            product_code: z
+                .number()
+                .positive(t("formDialog.validation.invalidProductCode"))
+                .nullish(),
+            product_name: createRequiredStringSchema(t("formDialog.fields.productName")),
+        });
+    }, [t]);
+
+    type ProductFormSchema = z.infer<typeof productFormSchema>;
+
+    const PRODUCT_FORM_DEFAULT_VALUE: ProductFormSchema = {
+        product_code: null,
+        product_name: "",
+    };
+
     // state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -82,7 +95,7 @@ export const ProductFormDialog = ({
         } else {
             reset(PRODUCT_FORM_DEFAULT_VALUE);
         }
-    }, [productToEdit]);
+    }, [productToEdit, reset]);
 
     // event handlers
     const handleClose = () => {
@@ -111,7 +124,7 @@ export const ProductFormDialog = ({
 
     const putForm = async (formData: Product) => {
         if (!formData.product_code) {
-            setSubmitResult({ error: "Producto no puede editarse" });
+            setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
         }
 
@@ -164,7 +177,7 @@ export const ProductFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>Completar datos del Producto</span>
+                <span>{t("formDialog.description")}</span>
             );
         }
 
@@ -176,7 +189,7 @@ export const ProductFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requerido
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
@@ -195,14 +208,14 @@ export const ProductFormDialog = ({
                 },
             }}
         >
-            <DialogTitle>{!productToEdit ? "Agregar Producto" : "Editar Producto"}</DialogTitle>
+            <DialogTitle>{!productToEdit ? t("formDialog.add") : t("formDialog.edit")}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
                     <Stack spacing={2}>
                         <TextField
                             {...register("product_name")}
-                            label="Nombre del Producto"
+                            label={t("formDialog.fields.productName")}
                             fullWidth
                             error={!!errors.product_name}
                             helperText={errors.product_name?.message}
@@ -211,9 +224,9 @@ export const ProductFormDialog = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {!productToEdit ? "Agregar Producto" : "Editar Producto"}
+                    {!productToEdit ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>

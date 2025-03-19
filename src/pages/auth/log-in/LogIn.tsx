@@ -24,7 +24,7 @@ import { PageProps } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getLoginFormSchema, LogInApi, LoginFormData } from "./utils";
+import { getLoginFormSchema, LogInApi, type LoginFormData } from "./utils";
 import { useTranslation } from "react-i18next";
 import { loginTranslationNamespace } from "./translations";
 

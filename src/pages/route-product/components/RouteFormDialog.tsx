@@ -12,77 +12,20 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Route } from "../types";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
-
-// Create a reusable string validation for fields with similar requirements
-const createRequiredStringSchema = (fieldName: string) =>
-    z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: `El campo ${fieldName} es obligatorio.`,
-        })
-        .min(1, {
-            message: `El campo ${fieldName.toLowerCase()} no puede estar vacío.`,
-        });
-
-// Create a reusable number validation schema for price fields
-const createPriceSchema = (fieldName: string) =>
-    z.coerce
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: `El campo ${fieldName} es obligatorio.`,
-        })
-        .superRefine((arg, ctx) => {
-            if (arg.length <= 0) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 1,
-                    type: "string",
-                    inclusive: true,
-                    message: `${fieldName} no puede estar vacío.`,
-                });
-            }
-
-            const val = globalizeParser(arg);
-            if (!val) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.invalid_type,
-                    message: "Número inválido",
-                    expected: "number",
-                    received: "unknown",
-                });
-            }
-        })
-        .transform((arg) => globalizeParser(arg).toFixed(2));
-
-const routeFormSchema = z.object({
-    route_code: z.number().positive("Código Ruta inválido").nullish(),
-    origin: createRequiredStringSchema("Origen"),
-    destination: createRequiredStringSchema("Destino"),
-    price: createPriceSchema("Precio"),
-    payroll_price: createPriceSchema("Precio Liquidación"),
-});
-
-type RouteFormSchema = z.infer<typeof routeFormSchema>;
+import { useTranslation } from "react-i18next";
+import { routeTranslationNamespace } from "../translations";
 
 interface RouteFormDialogProps extends FormDialogProps {
     loadRouteList: () => Promise<void>;
     routeToEdit?: Route | null;
     setRouteToEdit?: React.Dispatch<React.SetStateAction<Route | null>>;
 }
-
-const ROUTE_FORM_DEFAULT_VALUE: RouteFormSchema = {
-    route_code: null,
-    origin: "",
-    destination: "",
-    price: "",
-    payroll_price: "",
-};
 
 export const RouteFormDialog = ({
     open,
@@ -91,9 +34,75 @@ export const RouteFormDialog = ({
     routeToEdit,
     setRouteToEdit,
 }: RouteFormDialogProps) => {
+    // Translation
+    const { t } = useTranslation(routeTranslationNamespace);
+
+    // Create schema with translations
+    const routeFormSchema = useMemo(() => {
+        // Create a reusable string validation for fields with similar requirements
+        const createRequiredStringSchema = (fieldName: string) =>
+            z
+                .string({
+                    invalid_type_error: t("formDialog.validation.invalidValue"),
+                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                })
+                .min(1, {
+                    message: t("formDialog.validation.fieldEmpty", {
+                        field: fieldName.toLowerCase(),
+                    }),
+                });
+
+        // Create a reusable number validation schema for price fields
+        const createPriceSchema = (fieldName: string) =>
+            z.coerce
+                .string({
+                    invalid_type_error: t("formDialog.validation.invalidValue"),
+                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                })
+                .superRefine((arg, ctx) => {
+                    if (arg.length <= 0) {
+                        return ctx.addIssue({
+                            code: z.ZodIssueCode.too_small,
+                            minimum: 1,
+                            type: "string",
+                            inclusive: true,
+                            message: t("formDialog.validation.fieldEmpty", { field: fieldName }),
+                        });
+                    }
+
+                    const val = globalizeParser(arg);
+                    if (!val) {
+                        return ctx.addIssue({
+                            code: z.ZodIssueCode.invalid_type,
+                            message: t("formDialog.validation.invalidNumber"),
+                            expected: "number",
+                            received: "unknown",
+                        });
+                    }
+                })
+                .transform((arg) => globalizeParser(arg).toFixed(2));
+
+        return z.object({
+            route_code: z.number().positive(t("formDialog.validation.invalidRouteCode")).nullish(),
+            origin: createRequiredStringSchema(t("formDialog.fields.origin")),
+            destination: createRequiredStringSchema(t("formDialog.fields.destination")),
+            price: createPriceSchema(t("formDialog.fields.price")),
+            payroll_price: createPriceSchema(t("formDialog.fields.payrollPrice")),
+        });
+    }, [t]);
+
+    type RouteFormSchema = z.infer<typeof routeFormSchema>;
+
+    const ROUTE_FORM_DEFAULT_VALUE: RouteFormSchema = {
+        route_code: null,
+        origin: "",
+        destination: "",
+        price: "",
+        payroll_price: "",
+    };
+
     // state
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
 
     // context
@@ -125,7 +134,7 @@ export const RouteFormDialog = ({
         } else {
             reset(ROUTE_FORM_DEFAULT_VALUE);
         }
-    }, [routeToEdit]);
+    }, [routeToEdit, reset]);
 
     // event handlers
     const handleClose = () => {
@@ -154,7 +163,7 @@ export const RouteFormDialog = ({
 
     const putForm = async (formData: Route) => {
         if (!formData.route_code) {
-            setSubmitResult({ error: "Ruta no puede editarse" });
+            setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
         }
 
@@ -207,7 +216,7 @@ export const RouteFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>Completar datos de la Ruta</span>
+                <span>{t("formDialog.description")}</span>
             );
         }
 
@@ -219,10 +228,11 @@ export const RouteFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requerido
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
+
     return (
         <Dialog
             open={open}
@@ -237,7 +247,7 @@ export const RouteFormDialog = ({
                 },
             }}
         >
-            <DialogTitle>{!routeToEdit ? "Agregar Ruta" : "Editar Ruta"}</DialogTitle>
+            <DialogTitle>{!routeToEdit ? t("formDialog.add") : t("formDialog.edit")}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
@@ -245,14 +255,14 @@ export const RouteFormDialog = ({
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                             <TextField
                                 {...register("origin")}
-                                label="Origen"
+                                label={t("formDialog.fields.origin")}
                                 fullWidth
                                 error={!!errors.origin}
                                 helperText={errors.origin?.message}
                             />
                             <TextField
                                 {...register("destination")}
-                                label="Destino"
+                                label={t("formDialog.fields.destination")}
                                 fullWidth
                                 error={!!errors.destination}
                                 helperText={errors.destination?.message}
@@ -261,7 +271,7 @@ export const RouteFormDialog = ({
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                             <TextField
                                 {...register("price")}
-                                label="Precio"
+                                label={t("formDialog.fields.price")}
                                 fullWidth
                                 type="text"
                                 error={!!errors.price}
@@ -269,7 +279,7 @@ export const RouteFormDialog = ({
                             />
                             <TextField
                                 {...register("payroll_price")}
-                                label="Precio Liquidación"
+                                label={t("formDialog.fields.payrollPrice")}
                                 fullWidth
                                 type="text"
                                 error={!!errors.payroll_price}
@@ -280,9 +290,9 @@ export const RouteFormDialog = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {!routeToEdit ? "Agregar Ruta" : "Editar Ruta"}
+                    {!routeToEdit ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>

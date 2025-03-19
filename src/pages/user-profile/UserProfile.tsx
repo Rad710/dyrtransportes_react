@@ -13,7 +13,7 @@ import ColorModeSelect from "@/theme/ColorModeSelect";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiResponse, AuthResponse, PageProps } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useForm, Controller } from "react-hook-form";
@@ -21,6 +21,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/utils/axios";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "react-i18next";
+import { userProfileTranslationNamespace } from "./translations";
 
 const UserProfileEditApi = {
     putUserProfile: async (formData: FormData) =>
@@ -72,42 +74,46 @@ const UserProfileContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
-// Define schema with Zod
-const userProfileFormSchema = z
-    .object({
-        name: z.string().min(1, { message: "Name is required" }),
-        email: z.string().email({ message: "Please enter a valid email address" }),
-        current_password: z.string().optional(),
-        new_password: z.string().optional(),
-    })
-    .refine(
-        (data) => {
-            // If new password is provided, current password must also be provided
-            return !data.new_password || !!data.current_password;
-        },
-        {
-            message: "Current password is required to set a new password",
-            path: ["current_password"],
-        },
-    )
-    .refine(
-        (data) => {
-            // If new password is provided, it must meet complexity requirements
-            if (!data.new_password) return true;
-
-            const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-            return passwordRegex.test(data.new_password);
-        },
-        {
-            message:
-                "Password must be at least 8 characters and include at least one number, one lowercase letter, and one uppercase letter",
-            path: ["new_password"],
-        },
-    );
-
-type UserProfileFormSchema = z.infer<typeof userProfileFormSchema>;
-
 export const UserProfile = ({ title }: PageProps) => {
+    // Translation
+    const { t } = useTranslation(userProfileTranslationNamespace);
+
+    // Define schema with Zod and translations
+    const userProfileFormSchema = useMemo(() => {
+        return z
+            .object({
+                name: z.string().min(1, { message: t("validation.nameRequired") }),
+                email: z.string().email({ message: t("validation.emailInvalid") }),
+                current_password: z.string().optional(),
+                new_password: z.string().optional(),
+            })
+            .refine(
+                (data) => {
+                    // If new password is provided, current password must also be provided
+                    return !data.new_password || !!data.current_password;
+                },
+                {
+                    message: t("validation.currentPasswordRequired"),
+                    path: ["current_password"],
+                },
+            )
+            .refine(
+                (data) => {
+                    // If new password is provided, it must meet complexity requirements
+                    if (!data.new_password) return true;
+
+                    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+                    return passwordRegex.test(data.new_password);
+                },
+                {
+                    message: t("validation.passwordComplexity"),
+                    path: ["new_password"],
+                },
+            );
+    }, [t]);
+
+    type UserProfileFormSchema = z.infer<typeof userProfileFormSchema>;
+
     //STATE
     const [formErrorMessage, setFormErrorMessage] = useState("");
     // Password visibility states
@@ -174,7 +180,7 @@ export const UserProfile = ({ title }: PageProps) => {
                 new_password: "",
             });
         } else {
-            setFormErrorMessage(resp?.response?.data?.message ?? "Error");
+            setFormErrorMessage(resp?.response?.data?.message ?? t("errors.generic"));
             showToastAxiosError(resp);
         }
     };
@@ -207,7 +213,7 @@ export const UserProfile = ({ title }: PageProps) => {
                         textAlign: "left",
                     }}
                 >
-                    Edit Profile
+                    {t("title")}
                 </Typography>
 
                 {formErrorMessage && (
@@ -221,7 +227,7 @@ export const UserProfile = ({ title }: PageProps) => {
                     sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
                 >
                     <FormControl fullWidth>
-                        <FormLabel htmlFor="name">Full name</FormLabel>
+                        <FormLabel htmlFor="name">{t("fields.name.label")}</FormLabel>
                         <Controller
                             name="name"
                             control={control}
@@ -232,7 +238,7 @@ export const UserProfile = ({ title }: PageProps) => {
                                     required
                                     fullWidth
                                     id="name"
-                                    placeholder="Jon Snow"
+                                    placeholder={t("fields.name.placeholder")}
                                     error={!!errors.name}
                                     helperText={errors.name?.message}
                                     color={errors.name ? "error" : "primary"}
@@ -242,7 +248,7 @@ export const UserProfile = ({ title }: PageProps) => {
                     </FormControl>
 
                     <FormControl fullWidth>
-                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormLabel htmlFor="email">{t("fields.email.label")}</FormLabel>
                         <Controller
                             name="email"
                             control={control}
@@ -252,7 +258,7 @@ export const UserProfile = ({ title }: PageProps) => {
                                     required
                                     fullWidth
                                     id="email"
-                                    placeholder="your@email.com"
+                                    placeholder={t("fields.email.placeholder")}
                                     autoComplete="email"
                                     variant="outlined"
                                     error={!!errors.email}
@@ -264,11 +270,13 @@ export const UserProfile = ({ title }: PageProps) => {
                     </FormControl>
 
                     <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
-                        Leave password fields blank if you don&apos;t want to change your password.
+                        {t("passwordNote")}
                     </Typography>
 
                     <FormControl fullWidth>
-                        <FormLabel htmlFor="current_password">Current Password</FormLabel>
+                        <FormLabel htmlFor="current_password">
+                            {t("fields.currentPassword.label")}
+                        </FormLabel>
                         <Controller
                             name="current_password"
                             control={control}
@@ -276,7 +284,7 @@ export const UserProfile = ({ title }: PageProps) => {
                                 <TextField
                                     {...field}
                                     fullWidth
-                                    placeholder="••••••"
+                                    placeholder={t("fields.currentPassword.placeholder")}
                                     type={showCurrentPassword ? "text" : "password"}
                                     id="current_password"
                                     autoComplete="current-password"
@@ -309,7 +317,9 @@ export const UserProfile = ({ title }: PageProps) => {
                     </FormControl>
 
                     <FormControl fullWidth>
-                        <FormLabel htmlFor="new_password">New Password</FormLabel>
+                        <FormLabel htmlFor="new_password">
+                            {t("fields.newPassword.label")}
+                        </FormLabel>
                         <Controller
                             name="new_password"
                             control={control}
@@ -317,7 +327,7 @@ export const UserProfile = ({ title }: PageProps) => {
                                 <TextField
                                     {...field}
                                     fullWidth
-                                    placeholder="••••••"
+                                    placeholder={t("fields.newPassword.placeholder")}
                                     type={showNewPassword ? "text" : "password"}
                                     id="new_password"
                                     autoComplete="new-password"
@@ -351,7 +361,7 @@ export const UserProfile = ({ title }: PageProps) => {
 
                     <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                         <Button type="submit" fullWidth variant="contained">
-                            Save Changes
+                            {t("buttons.save")}
                         </Button>
                     </Stack>
                 </Box>

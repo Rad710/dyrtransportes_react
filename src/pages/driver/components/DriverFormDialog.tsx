@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
@@ -12,48 +11,19 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Driver } from "../types";
-import { DriverApi } from "../utils";
+import { DriverApi, getDriverFormSchema, type DriverFormSchema } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-
-// Create a reusable string validation for fields with similar requirements
-const createRequiredStringSchema = (fieldName: string) =>
-    z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: `El campo ${fieldName} es obligatorio.`,
-        })
-        .min(1, {
-            message: `El campo ${fieldName.toLowerCase()} no puede estar vacío.`,
-        });
-
-const driverFormSchema = z.object({
-    driver_code: z.number().positive("Código Chofer inválido").nullish(),
-    driver_id: createRequiredStringSchema("Cédula"),
-    driver_name: createRequiredStringSchema("Nombre"),
-    driver_surname: createRequiredStringSchema("Apellido"),
-    truck_plate: createRequiredStringSchema("Placa Camión"),
-    trailer_plate: createRequiredStringSchema("Placa Remolque"),
-});
-
-type DriverFormSchema = z.infer<typeof driverFormSchema>;
+import { useTranslation } from "react-i18next";
+import { driverTranslationNamespace } from "../translations";
 
 interface DriverFormDialogProps extends FormDialogProps {
     loadDriverList: () => Promise<void>;
     driverToEdit?: Driver | null;
     setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
 }
-
-const DRIVER_FORM_DEFAULT_VALUE: DriverFormSchema = {
-    driver_code: null,
-    driver_id: "",
-    driver_name: "",
-    driver_surname: "",
-    truck_plate: "",
-    trailer_plate: "",
-};
 
 export const DriverFormDialog = ({
     open,
@@ -62,6 +32,21 @@ export const DriverFormDialog = ({
     driverToEdit,
     setDriverToEdit,
 }: DriverFormDialogProps) => {
+    // Translation
+    const { t } = useTranslation(driverTranslationNamespace);
+
+    // Create schema with translations
+    const driverFormSchema = useMemo(() => getDriverFormSchema(t), [t]);
+
+    const DRIVER_FORM_DEFAULT_VALUE: DriverFormSchema = {
+        driver_code: null,
+        driver_id: "",
+        driver_name: "",
+        driver_surname: "",
+        truck_plate: "",
+        trailer_plate: "",
+    };
+
     // state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -123,7 +108,7 @@ export const DriverFormDialog = ({
 
     const putForm = async (formData: Driver) => {
         if (!formData.driver_code) {
-            setSubmitResult({ error: "Chofer no puede editarse" });
+            setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
         }
 
@@ -175,7 +160,7 @@ export const DriverFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>Completar datos del Chofer</span>
+                <span>{t("formDialog.description")}</span>
             );
         }
 
@@ -187,10 +172,11 @@ export const DriverFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requeridos
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
+
     return (
         <Dialog
             open={open}
@@ -205,7 +191,7 @@ export const DriverFormDialog = ({
                 },
             }}
         >
-            <DialogTitle>{!driverToEdit ? "Agregar Chofer" : "Editar Chofer"}</DialogTitle>
+            <DialogTitle>{!driverToEdit ? t("formDialog.add") : t("formDialog.edit")}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
@@ -213,7 +199,7 @@ export const DriverFormDialog = ({
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                             <TextField
                                 {...register("driver_id")}
-                                label="Cédula"
+                                label={t("formDialog.fields.driverId")}
                                 fullWidth
                                 error={!!errors.driver_id}
                                 helperText={errors.driver_id?.message}
@@ -222,14 +208,14 @@ export const DriverFormDialog = ({
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                             <TextField
                                 {...register("driver_name")}
-                                label="Nombre"
+                                label={t("formDialog.fields.name")}
                                 fullWidth
                                 error={!!errors.driver_name}
                                 helperText={errors.driver_name?.message}
                             />
                             <TextField
                                 {...register("driver_surname")}
-                                label="Apellido"
+                                label={t("formDialog.fields.surname")}
                                 fullWidth
                                 error={!!errors.driver_surname}
                                 helperText={errors.driver_surname?.message}
@@ -238,14 +224,14 @@ export const DriverFormDialog = ({
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                             <TextField
                                 {...register("truck_plate")}
-                                label="Placa Camión"
+                                label={t("formDialog.fields.truckPlate")}
                                 fullWidth
                                 error={!!errors.truck_plate}
                                 helperText={errors.truck_plate?.message}
                             />
                             <TextField
                                 {...register("trailer_plate")}
-                                label="Placa Remolque"
+                                label={t("formDialog.fields.trailerPlate")}
                                 fullWidth
                                 error={!!errors.trailer_plate}
                                 helperText={errors.trailer_plate?.message}
@@ -255,9 +241,9 @@ export const DriverFormDialog = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {!driverToEdit ? "Agregar Chofer" : "Editar Chofer"}
+                    {!driverToEdit ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { ProductApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "react-i18next";
+import { productTranslationNamespace } from "../translations";
 
 type ProductDataTableProps = {
     loading: boolean;
@@ -24,6 +26,9 @@ export const ProductDataTable = ({
     setProductToEdit,
     setEditFormDialogOpen,
 }: ProductDataTableProps) => {
+    // Translation
+    const { t } = useTranslation(productTranslationNamespace);
+
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -45,9 +50,9 @@ export const ProductDataTable = ({
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Products?`,
-            confirmText: "Delete",
+            title: t("dataTable.confirmDelete.title"),
+            message: t("dataTable.confirmDelete.messageMany"),
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -75,13 +80,14 @@ export const ProductDataTable = ({
 
     const handleDeleteProductItem = (row: Product) => {
         openConfirmDialog({
-            title: "Confirm Delete",
+            title: t("dataTable.confirmDelete.title"),
             message: (
                 <>
-                    Are you sure you want to delete Product: <strong>{row.product_name}</strong>?
+                    {t("dataTable.confirmDelete.messageSingle")} <strong>{row.product_name}</strong>
+                    ?
                 </>
             ),
-            confirmText: "Delete",
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -110,25 +116,25 @@ export const ProductDataTable = ({
     const columns: GridColDef<Product>[] = [
         {
             field: "product_code",
-            headerName: "Code",
+            headerName: t("dataTable.columns.code"),
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
             field: "product_name",
-            headerName: "Product Name",
+            headerName: t("dataTable.columns.productName"),
             minWidth: 200,
             flex: 1.5,
         },
         {
             field: "modification_user",
-            headerName: "Modified by",
+            headerName: t("dataTable.columns.modifiedBy"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "action",
-            headerName: "Actions",
+            headerName: t("dataTable.columns.actions"),
             sortable: false,
             minWidth: 100,
             flex: 0.5,
@@ -136,11 +142,11 @@ export const ProductDataTable = ({
                 <ActionsMenu
                     menuItems={[
                         {
-                            text: "Edit",
+                            text: t("dataTable.actions.edit"),
                             handleClick: () => handleEditProduct(params.row),
                         },
                         {
-                            text: "Delete",
+                            text: t("dataTable.actions.delete"),
                             handleClick: () => handleDeleteProductItem(params.row),
                         },
                     ]}
@@ -152,7 +158,7 @@ export const ProductDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Products"
+                tableTitle={t("dataTable.tableTitle")}
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
             />

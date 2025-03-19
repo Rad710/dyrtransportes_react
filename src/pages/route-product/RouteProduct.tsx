@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Box, Button, Tab, Tabs } from "@mui/material";
 import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
@@ -17,9 +18,13 @@ import { ProductApi, RouteApi } from "./utils";
 import { ProductDataTable } from "./components/ProductDataTable";
 import { ProductFormDialog } from "./components/ProductFormDialog";
 import { downloadFile } from "@/utils/file";
+import { routeTranslationNamespace, productTranslationNamespace } from "./translations";
 
 const RouteTabContent = () => {
-    // //STATE
+    // Route-specific translations
+    const { t } = useTranslation(routeTranslationNamespace);
+
+    // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
@@ -55,9 +60,9 @@ const RouteTabContent = () => {
 
     const handleExportRouteList = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: "All Routes will be exported.",
-            confirmText: "Export",
+            title: t("exportDialog.title"),
+            message: t("exportDialog.message"),
+            confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
@@ -73,13 +78,13 @@ const RouteTabContent = () => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "lista_de_precios.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -99,7 +104,7 @@ const RouteTabContent = () => {
                     startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
-                    Add
+                    {t("buttons.add")}
                 </Button>
 
                 <RouteFormDialog
@@ -122,7 +127,7 @@ const RouteTabContent = () => {
                     startIcon={<TableChartIcon />}
                     onClick={handleExportRouteList}
                 >
-                    Export
+                    {t("buttons.export")}
                 </Button>
             </Box>
 
@@ -138,7 +143,10 @@ const RouteTabContent = () => {
 };
 
 const ProductTabContent = () => {
-    // //STATE
+    // Product-specific translations
+    const { t } = useTranslation(productTranslationNamespace);
+
+    // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
@@ -174,9 +182,9 @@ const ProductTabContent = () => {
 
     const handleExportProductList = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: "All products will be exported.",
-            confirmText: "Export",
+            title: t("exportDialog.title"),
+            message: t("exportDialog.message"),
+            confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
@@ -192,13 +200,13 @@ const ProductTabContent = () => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "lista_de_productos.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla.");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -218,7 +226,7 @@ const ProductTabContent = () => {
                     startIcon={<AddIcon />}
                     onClick={() => setAddFormDialogOpen(true)}
                 >
-                    Add
+                    {t("buttons.add")}
                 </Button>
 
                 <ProductFormDialog
@@ -241,7 +249,7 @@ const ProductTabContent = () => {
                     startIcon={<TableChartIcon />}
                     onClick={handleExportProductList}
                 >
-                    Export
+                    {t("buttons.export")}
                 </Button>
             </Box>
 
@@ -257,9 +265,12 @@ const ProductTabContent = () => {
 };
 
 export const RouteProduct = ({ title }: Readonly<PageProps>) => {
+    // Use route namespace for tabs (since it contains the tab translations)
+    const { t } = useTranslation(routeTranslationNamespace);
+
     useEffect(() => {
         document.title = title;
-    }, []);
+    }, [title]);
 
     const [value, setValue] = useState(0);
 
@@ -270,9 +281,17 @@ export const RouteProduct = ({ title }: Readonly<PageProps>) => {
     return (
         <>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="Prices" id="simple-tab-0" aria-controls="simple-tabpanel-0" />
-                    <Tab label="Products" id="simple-tab-1" aria-controls="simple-tabpanel-1" />
+                <Tabs value={value} onChange={handleChange} aria-label="route-product-tabs">
+                    <Tab
+                        label={t("tabs.routes")}
+                        id="route-tab-0"
+                        aria-controls="route-tabpanel-0"
+                    />
+                    <Tab
+                        label={t("tabs.products")}
+                        id="product-tab-1"
+                        aria-controls="product-tabpanel-1"
+                    />
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>

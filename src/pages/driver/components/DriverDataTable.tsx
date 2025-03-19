@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { DriverApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "react-i18next";
+import { driverTranslationNamespace } from "../translations";
 
 type DriverTableMode = "active" | "deactivated";
 
@@ -28,6 +30,9 @@ export const DriverDataTable = ({
     setDriverToEdit,
     setEditFormDialogOpen,
 }: DriverDataTableProps) => {
+    // Translations
+    const { t } = useTranslation(driverTranslationNamespace);
+
     //state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -51,9 +56,9 @@ export const DriverDataTable = ({
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Drivers?`,
-            confirmText: "Delete",
+            title: t("dataTable.confirmDelete.title"),
+            message: t("dataTable.confirmDelete.messageMany"),
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -78,16 +83,17 @@ export const DriverDataTable = ({
             },
         });
     };
+
     const handleDeleteDriverItem = (row: Driver) => {
         openConfirmDialog({
-            title: "Confirm Delete",
+            title: t("dataTable.confirmDelete.title"),
             message: (
                 <>
-                    Are you sure you want to delete Driver: <strong>{row.driver_name}</strong>{" "}
+                    {t("dataTable.confirmDelete.messageSingle")} <strong>{row.driver_name}</strong>{" "}
                     <strong>{row.driver_surname}</strong>?
                 </>
             ),
-            confirmText: "Delete",
+            confirmText: t("dataTable.confirmDelete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -115,14 +121,14 @@ export const DriverDataTable = ({
 
     const handleRestoreDriverItem = (row: Driver) => {
         openConfirmDialog({
-            title: "Confirm Restore",
+            title: t("dataTable.confirmRestore.title"),
             message: (
                 <>
-                    Are you sure you want to restore Driver: <strong>{row.driver_name}</strong>{" "}
+                    {t("dataTable.confirmRestore.message")} <strong>{row.driver_name}</strong>{" "}
                     <strong>{row.driver_surname}</strong>?
                 </>
             ),
-            confirmText: "Restore",
+            confirmText: t("dataTable.confirmRestore.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
@@ -152,18 +158,18 @@ export const DriverDataTable = ({
         if (mode === "active") {
             return [
                 {
-                    text: "Edit",
+                    text: t("dataTable.actions.edit"),
                     handleClick: () => handleEditDriver(row),
                 },
                 {
-                    text: "Delete",
+                    text: t("dataTable.actions.delete"),
                     handleClick: () => handleDeleteDriverItem(row),
                 },
             ];
         } else {
             return [
                 {
-                    text: "Restore",
+                    text: t("dataTable.actions.restore"),
                     handleClick: () => handleRestoreDriverItem(row),
                 },
             ];
@@ -173,49 +179,49 @@ export const DriverDataTable = ({
     const columns: GridColDef<Driver>[] = [
         {
             field: "driver_code",
-            headerName: "Code",
+            headerName: t("dataTable.columns.code"),
             minWidth: 70,
             flex: 0.5,
         },
         {
             field: "driver_id",
-            headerName: "ID",
+            headerName: t("dataTable.columns.id"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "driver_name",
-            headerName: "Name",
+            headerName: t("dataTable.columns.name"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "driver_surname",
-            headerName: "Surname",
+            headerName: t("dataTable.columns.surname"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "truck_plate",
-            headerName: "Truck Plate",
+            headerName: t("dataTable.columns.truckPlate"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "trailer_plate",
-            headerName: "Trailer Plate",
+            headerName: t("dataTable.columns.trailerPlate"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "modification_user",
-            headerName: "Modified by",
+            headerName: t("dataTable.columns.modifiedBy"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "action",
-            headerName: "Actions",
+            headerName: t("dataTable.columns.actions"),
             sortable: false,
             minWidth: 100,
             flex: 0.5,
@@ -226,7 +232,7 @@ export const DriverDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Drivers"
+                tableTitle={t("dataTable.tableTitle")}
                 numSelected={selectedRows.length}
                 handleDelete={mode === "active" ? handleDeleteSelected : undefined}
             />
