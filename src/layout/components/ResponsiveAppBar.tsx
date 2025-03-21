@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link as RouterLink, useLocation } from "react-router";
+import { useTranslation } from "react-i18next";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -15,15 +16,20 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 
 import { useAuthStore } from "@/stores/authStore";
-import { DyRTransportesIcon } from "./DyRTransportesIcon";
+import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
+import { appBarTranslationNamespace } from "../translations";
 
 interface AppMenuLink {
     name: string;
     url: string;
+    translationKey: string;
     onClick?: () => void;
 }
 
 export const ResponsiveAppBar = () => {
+    // Translation
+    const { t } = useTranslation(appBarTranslationNamespace);
+
     // STATE
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -60,31 +66,37 @@ export const ResponsiveAppBar = () => {
     // pages urls
     const pages: AppMenuLink[] = [
         {
-            name: "Shipment Payrolls",
+            name: t("navigation.shipmentPayrolls"),
             url: "/shipment-payrolls",
+            translationKey: "navigation.shipmentPayrolls",
         },
         {
-            name: "Driver Payrolls",
+            name: t("navigation.driverPayrolls"),
             url: "/driver-payrolls",
+            translationKey: "navigation.driverPayrolls",
         },
         {
-            name: "Routes",
+            name: t("navigation.routes"),
             url: "/routes",
+            translationKey: "navigation.routes",
         },
         {
-            name: "Drivers",
+            name: t("navigation.drivers"),
             url: "/drivers",
+            translationKey: "navigation.drivers",
         },
     ];
 
     const settings: AppMenuLink[] = [
         {
-            name: "Profile",
+            name: t("userMenu.profile"),
             url: "/profile",
+            translationKey: "userMenu.profile",
         },
         {
-            name: "Logout",
+            name: t("userMenu.logout"),
             url: "/log-out",
+            translationKey: "userMenu.logout",
             onClick: handleLogout,
         },
     ];
@@ -141,7 +153,7 @@ export const ResponsiveAppBar = () => {
                             sx={{ display: { xs: "block", md: "none" } }}
                         >
                             {pages.map((page) => (
-                                <MenuItem key={page.name} onClick={handleCloseNavMenu}>
+                                <MenuItem key={page.translationKey} onClick={handleCloseNavMenu}>
                                     <Typography
                                         to={page.url}
                                         sx={{
@@ -185,7 +197,7 @@ export const ResponsiveAppBar = () => {
                         {pages.map((page) => (
                             <Button
                                 to={page.url}
-                                key={page.name}
+                                key={page.translationKey}
                                 onClick={handleCloseNavMenu}
                                 sx={{
                                     my: 2,
@@ -204,7 +216,7 @@ export const ResponsiveAppBar = () => {
                         ))}
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
+                        <Tooltip title={t("userMenu.openSettings")}>
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
                             </IconButton>
@@ -226,10 +238,12 @@ export const ResponsiveAppBar = () => {
                             onClose={handleCloseUserMenu}
                         >
                             {settings.map((setting) => (
-                                <MenuItem key={setting.name} onClick={handleCloseUserMenu}>
+                                <MenuItem
+                                    key={setting.translationKey}
+                                    onClick={handleCloseUserMenu}
+                                >
                                     <Typography
                                         to={setting.url}
-                                        key={setting.name}
                                         component={RouterLink}
                                         sx={{
                                             textAlign: "center",

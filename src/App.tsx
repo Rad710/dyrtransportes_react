@@ -7,7 +7,7 @@ import { SignUp } from "@/pages/auth/sign-up/SignUp";
 import { Home } from "@/pages/home/Home";
 import { ReactNode, useEffect, useState } from "react";
 import { hydrateAuth, useAuthStore } from "./stores/authStore";
-import { Layout } from "./components/Layout";
+import { Layout } from "./layout/Layout";
 import { ErrorPage } from "./components/ErrorPage";
 import { RouteProduct } from "./pages/route-product/RouteProduct";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
