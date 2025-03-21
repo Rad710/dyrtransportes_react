@@ -20,8 +20,11 @@ import { Driver } from "../driver/types";
 import { DateTime } from "luxon";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
+import { useTranslation } from "react-i18next";
+import { shipmentTranslationNamespace } from "./translations"; // Adjust path as needed
 
 export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
+    const { t } = useTranslation(shipmentTranslationNamespace);
     const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
     const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
 
@@ -105,9 +108,9 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
 
     const handleExportShipmentList = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: "The shipment data will be exported.",
-            confirmText: "Export",
+            title: t("shipmentPayroll.exportDialog.title"),
+            message: t("shipmentPayroll.exportDialog.message"),
+            confirmText: t("shipmentPayroll.exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
@@ -127,9 +130,9 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("shipmentPayroll.exportDialog.successMessage"));
                 } else {
-                    showToastError("Error al exportar planilla.");
+                    showToastError(t("shipmentPayroll.exportDialog.errorMessage"));
                 }
             },
         });
@@ -161,9 +164,11 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
         } else {
             showToastAxiosError(payrollResp);
         }
-        showToastSuccess(
-            `Planilla #${payroll.payroll_code ?? 0} marcada como ${collected ? "cobrada" : "no cobrada"}`,
-        );
+
+        const messageKey = collected
+            ? "shipmentPayroll.notification.markedAsCollected"
+            : "shipmentPayroll.notification.markedAsNotCollected";
+        showToastSuccess(t(messageKey, { code: payroll.payroll_code ?? 0 }));
     };
 
     const currentShipmentPayroll =
@@ -184,9 +189,12 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                 }}
             >
                 <Typography variant="h5" component="h2">
-                    Lista de Cargas
+                    {t("shipmentPayroll.title")}
                     {shipmentPayrollDateString.isValid
-                        ? " del " + shipmentPayrollDateString.toFormat("dd/MM/yy")
+                        ? " " +
+                          t("shipmentPayroll.datePrefix") +
+                          " " +
+                          shipmentPayrollDateString.toFormat("dd/MM/yy")
                         : ""}
                 </Typography>
 
@@ -208,7 +216,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                                       )
                                 : undefined
                         }
-                        textChecked="Cobrado"
+                        textChecked={t("shipmentPayroll.collectionStatus.collected")}
                         checkedDescription={
                             currentShipmentPayroll?.collection_timestamp
                                 ? DateTime.fromHTTP(
@@ -216,7 +224,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                                   ).toFormat("dd/MM/yyyy")
                                 : ""
                         }
-                        textUnchecked="No cobrado"
+                        textUnchecked={t("shipmentPayroll.collectionStatus.notCollected")}
                         sx={{
                             mr: 2,
                         }}
@@ -227,7 +235,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         startIcon={<AddIcon />}
                         onClick={() => setAddFormDialogOpen(true)}
                     >
-                        Add
+                        {t("shipmentPayroll.buttons.add")}
                     </Button>
 
                     <ShipmentFormDialog
@@ -259,7 +267,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         startIcon={<TableChartIcon />}
                         onClick={handleExportShipmentList}
                     >
-                        Export
+                        {t("shipmentPayroll.buttons.export")}
                     </Button>
                 </Box>
             </Box>

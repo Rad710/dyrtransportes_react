@@ -1,6 +1,6 @@
 import i18n, { appLanguages } from "@/utils/i18n";
 
-const resources = {
+const shipmentPayrollListResources = {
     en: {
         translation: {
             // ShipmentPayrollYearList translations
@@ -147,15 +147,237 @@ const resources = {
     },
 };
 
-const shipmentPayrollTranslationNamespace = "shipmentPayroll";
+const shipmentResources = {
+    en: {
+        translation: {
+            title: "Shipments",
+            shipmentPayroll: {
+                title: "Shipments List",
+                datePrefix: "from",
+                collectionStatus: {
+                    collected: "Collected",
+                    notCollected: "Not collected",
+                },
+                buttons: {
+                    add: "Add",
+                    export: "Export",
+                },
+                exportDialog: {
+                    title: "Confirm Export",
+                    message: "The shipment data will be exported.",
+                    confirmText: "Export",
+                    successMessage: "Spreadsheet exported successfully.",
+                    errorMessage: "Error exporting spreadsheet.",
+                },
+                notification: {
+                    markedAsCollected: "Payroll #{{code}} marked as collected",
+                    markedAsNotCollected: "Payroll #{{code}} marked as not collected",
+                },
+            },
+            dataTable: {
+                tableTitle: "Shipments",
+                columns: {
+                    shipment_date: "Date",
+                    driver_name: "Driver",
+                    truck_plate: "Truck Plate",
+                    product_name: "Product",
+                    origin: "Origin",
+                    destination: "Destination",
+                    dispatch_code: "Dispatch",
+                    receipt_code: "Receipt",
+                    origin_weight: "Origin Weight",
+                    destination_weight: "Destination Weight",
+                    price: "Price",
+                    total: "Total",
+                    actions: "Actions",
+                },
+                actions: {
+                    edit: "Edit",
+                    delete: "Delete",
+                    move: "Move",
+                },
+                confirmDelete: {
+                    title: "Confirm Delete",
+                    messageMany: "Are you sure you want to delete all selected Shipments?",
+                    messageSingle: "Are you sure you want to delete Shipment:",
+                },
+                subtotal: "Subtotal",
+                total: "TOTAL",
+                noDataFound: "No data found.",
+            },
+            moveDialog: {
+                title: "Confirm Move Shipments",
+                message: "Move all shipments to:",
+                confirmText: "Move",
+                payrollLabel: "Payroll",
+            },
+            notifications: {
+                moveSuccess: "Shipments moved successfully.",
+                moveError: "No Shipment Payroll was selected.",
+                deleteSuccess: "Shipment deleted successfully.",
+            },
+            formDialog: {
+                add: "Add Shipment",
+                edit: "Edit Shipment",
+                close: "Close",
+                description: "Complete shipment information",
+                reviewFields: "Please review required fields",
+                cannotEdit: "Shipment cannot be edited",
+                successMessage: "Operation successful",
+                fields: {
+                    shipment_date: "Date",
+                    driver: "Driver",
+                    truck_plate: "Truck Plate",
+                    payroll: "Payroll",
+                    driver_payroll: "Driver Payroll",
+                    product: "Product",
+                    origin: "Origin",
+                    destination: "Destination",
+                    dispatch_code: "Dispatch",
+                    receipt_code: "Receipt",
+                    price: "Price",
+                    payroll_price: "Payroll Price",
+                    origin_weight: "Origin Weight",
+                    destination_weight: "Destination Weight",
+                },
+                validation: {
+                    invalidValue: "Invalid value.",
+                    fieldRequired: "The {{field}} field is required.",
+                    fieldEmpty: "The {{field}} field cannot be empty.",
+                    invalidNumber: "Invalid number",
+                    invalidShipmentCode: "Invalid Shipment Code",
+                    invalidPayrollCode: "Invalid Payroll Code",
+                    noDecimals: "The {{field}} field cannot have decimal numbers.",
+                },
+            },
+        },
+    },
+    es: {
+        translation: {
+            title: "Envíos",
+            shipmentPayroll: {
+                title: "Lista de Cargas",
+                datePrefix: "del",
+                collectionStatus: {
+                    collected: "Cobrado",
+                    notCollected: "No cobrado",
+                },
+                buttons: {
+                    add: "Agregar",
+                    export: "Exportar",
+                },
+                exportDialog: {
+                    title: "Confirmar Exportación",
+                    message: "Se exportarán los datos de envío.",
+                    confirmText: "Exportar",
+                    successMessage: "Planilla exportada exitosamente.",
+                    errorMessage: "Error al exportar planilla.",
+                },
+                notification: {
+                    markedAsCollected: "Planilla #{{code}} marcada como cobrada",
+                    markedAsNotCollected: "Planilla #{{code}} marcada como no cobrada",
+                },
+            },
+            dataTable: {
+                tableTitle: "Envíos",
+                columns: {
+                    shipment_date: "Fecha",
+                    driver_name: "Chofer",
+                    truck_plate: "Placa del Camión",
+                    product_name: "Producto",
+                    origin: "Origen",
+                    destination: "Destino",
+                    dispatch_code: "Despacho",
+                    receipt_code: "Recibo",
+                    origin_weight: "Peso de Origen",
+                    destination_weight: "Peso de Destino",
+                    price: "Precio",
+                    total: "Total",
+                    actions: "Acciones",
+                },
+                actions: {
+                    edit: "Editar",
+                    delete: "Eliminar",
+                    move: "Mover",
+                },
+                confirmDelete: {
+                    title: "Confirmar Eliminación",
+                    messageMany: "¿Está seguro que desea eliminar todos los Envíos seleccionados?",
+                    messageSingle: "¿Está seguro que desea eliminar el Envío:",
+                },
+                subtotal: "Subtotal",
+                total: "TOTAL",
+                noDataFound: "No se encontraron datos.",
+            },
+            moveDialog: {
+                title: "Confirmar Traslado de Envíos",
+                message: "Mover todos los envíos a:",
+                confirmText: "Mover",
+                payrollLabel: "Planilla",
+            },
+            notifications: {
+                moveSuccess: "Envíos movidos exitosamente.",
+                moveError: "No se seleccionó ninguna Planilla de Envío.",
+                deleteSuccess: "Envío eliminado exitosamente.",
+            },
+            formDialog: {
+                add: "Agregar Carga",
+                edit: "Editar Carga",
+                close: "Cerrar",
+                description: "Completar datos de la Carga",
+                reviewFields: "Revise los campos requeridos",
+                cannotEdit: "Carga no puede editarse",
+                successMessage: "Operación exitosa",
+                fields: {
+                    shipment_date: "Fecha",
+                    driver: "Chofer",
+                    truck_plate: "Chapa",
+                    payroll: "Planilla",
+                    driver_payroll: "Liquidación",
+                    product: "Producto",
+                    origin: "Origen",
+                    destination: "Destino",
+                    dispatch_code: "Remisión",
+                    receipt_code: "Recepción",
+                    price: "Precio",
+                    payroll_price: "Precio Liquidación",
+                    origin_weight: "Kg. Origen",
+                    destination_weight: "Kg. Destino",
+                },
+                validation: {
+                    invalidValue: "Valor inválido.",
+                    fieldRequired: "El campo {{field}} es obligatorio.",
+                    fieldEmpty: "El campo {{field}} no puede estar vacío.",
+                    invalidNumber: "Número inválido",
+                    invalidShipmentCode: "Código Carga inválido",
+                    invalidPayrollCode: "Código Liquidación inválido",
+                    noDecimals: "El campo {{field}} no puede tener números decimales.",
+                },
+            },
+        },
+    },
+};
+
+const shipmentPayrollListTranslationNamespace = "shipmentPayrollList";
 appLanguages.forEach((lang) => {
-    if (!i18n.hasResourceBundle(lang, shipmentPayrollTranslationNamespace)) {
+    if (!i18n.hasResourceBundle(lang, shipmentPayrollListTranslationNamespace)) {
         i18n.addResourceBundle(
             lang,
-            shipmentPayrollTranslationNamespace,
-            resources[lang].translation,
+            shipmentPayrollListTranslationNamespace,
+            shipmentPayrollListResources[lang].translation,
         );
     }
 });
 
-export { shipmentPayrollTranslationNamespace };
+const shipmentTranslationNamespace = "shipment";
+appLanguages.forEach((lang) => {
+    if (!i18n.hasResourceBundle(lang, shipmentTranslationNamespace)) {
+        i18n.addResourceBundle(
+            lang,
+            shipmentTranslationNamespace,
+            shipmentResources[lang].translation,
+        );
+    }
+});
+
+export { shipmentPayrollListTranslationNamespace, shipmentTranslationNamespace };

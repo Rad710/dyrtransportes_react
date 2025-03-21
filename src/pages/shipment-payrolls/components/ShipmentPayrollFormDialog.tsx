@@ -19,7 +19,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { useTranslation } from "react-i18next";
-import { shipmentPayrollTranslationNamespace } from "../translations";
+import { shipmentPayrollListTranslationNamespace } from "../translations";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
@@ -45,7 +45,7 @@ export const ShipmentPayrollFormDialog = ({
     setPayrollToEdit,
 }: ShipmentPayrollDialogProps) => {
     // Translation
-    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
+    const { t } = useTranslation(shipmentPayrollListTranslationNamespace);
 
     // Create schema with translations
     const shipmentPayrollFormSchema = useMemo(() => {

@@ -23,170 +23,260 @@ import { Autocomplete } from "@mui/material";
 import { Driver } from "@/pages/driver/types";
 import { DriverPayroll } from "@/pages/driver_payroll/types";
 import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
+import { useTranslation } from "react-i18next";
+import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
+import type { TFunction } from "i18next";
 
-const shipmentFormSchema = z.object({
-    shipment_code: z.number().positive("Código Carga inválido").nullish(),
-    shipment_date: z.coerce.date({
-        required_error: "El campo Fecha es obligatorio.",
-    }),
-
-    driver_name: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Chofer es obligatorio.",
-        })
-        .min(1, "El campo Chofer no puede estar vacío"),
-    truck_plate: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Chapa Camión es obligatorio.",
-        })
-        .min(1, "El campo Chapa no puede estar vacío"),
-    trailer_plate: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Chapa Camión es obligatorio.",
-        })
-        .nullish(),
-    driver_code: z.coerce
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Chofer es obligatorio.",
-        })
-        .min(1, "El campo Chofer no puede estar vacío"),
-
-    product_code: z.coerce
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Producto es obligatorio.",
-        })
-        .min(1, "El campo Producto no puede estar vacío"),
-    product_name: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Producto es obligatorio.",
-        })
-        .min(1, "El campo Producto no puede estar vacío"),
-
-    route_code: z.coerce
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Ruta es obligatorio.",
-        })
-        .min(1, "El campo Ruta no puede estar vacío"),
-    origin: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Origen es obligatorio.",
-        })
-        .min(1, "El campo Origen no puede estar vacío"),
-    destination: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Destino es obligatorio.",
-        })
-        .min(1, "El campo Destino no puede estar vacío"),
-
-    price: z.coerce
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Precio es obligatorio.",
-        })
-        .superRefine((arg, ctx) => {
-            if (arg.length <= 0) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 1,
-                    type: "string",
-                    inclusive: true,
-                    message: "Precio no puede estar vacío.",
-                });
-            }
-
-            const val = globalizeParser(arg);
-            if (!val) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.invalid_type,
-                    message: "Número inválido",
-                    expected: "number",
-                    received: "unknown",
-                });
-            }
-        })
-        .transform((arg) => globalizeParser(arg).toFixed(2)),
-    payroll_price: z.coerce
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Precio Liquidación es obligatorio.",
-        })
-        .superRefine((arg, ctx) => {
-            if (arg.length <= 0) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 1,
-                    type: "string",
-                    inclusive: true,
-                    message: "Precio Liquidación no puede estar vacío.",
-                });
-            }
-
-            const val = globalizeParser(arg);
-            if (!val) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.invalid_type,
-                    message: "Número inválido",
-                    expected: "number",
-                    received: "unknown",
-                });
-            }
-        })
-        .transform((arg) => globalizeParser(arg).toFixed(2)),
-
-    dispatch_code: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Remisión es obligatorio.",
-        })
-        .min(1, {
-            message: "El campo remisión no puede estar vacío.",
+const createShipmentFormSchema = (t: TFunction) =>
+    z.object({
+        shipment_code: z
+            .number()
+            .positive(t("formDialog.validation.invalidShipmentCode"))
+            .nullish(),
+        shipment_date: z.coerce.date({
+            required_error: t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.shipment_date"),
+            }),
         }),
-    receipt_code: z
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Recepción es obligatorio.",
-        })
-        .min(1, {
-            message: "El campo Recepción no puede estar vacío.",
-        }),
-    origin_weight: z.coerce
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Kg. Origen es obligatorio.",
-        })
-        .int("El campo Kg. Origen no puede tener números decimales.")
-        .min(1, {
-            message: "El campo Kg. Origen no puede estar vacío.",
-        }),
-    destination_weight: z.coerce
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Kg. Destino es obligatorio.",
-        })
-        .int("El campo Kg. Destino no puede tener números decimales.")
-        .min(1, {
-            message: "El campo Kg. Destino no puede estar vacío.",
-        }),
-    shipment_payroll_code: z
-        .number({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El Planilla es obligatorio.",
-        })
-        .min(1, {
-            message: "El campo Planilla no puede estar vacío.",
-        }),
-    driver_payroll_code: z.number().positive("Código Liquidación inválido").nullish(),
-});
-type ShipmentFormSchema = z.infer<typeof shipmentFormSchema>;
+
+        driver_name: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.driver"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") }),
+            ),
+        truck_plate: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.truck_plate"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.truck_plate"),
+                }),
+            ),
+        trailer_plate: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.truck_plate"),
+                }),
+            })
+            .nullish(),
+        driver_code: z.coerce
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.driver"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") }),
+            ),
+
+        product_code: z.coerce
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.product"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") }),
+            ),
+        product_name: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.product"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") }),
+            ),
+
+        route_code: z.coerce
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", { field: "Route" }),
+            })
+            .min(1, t("formDialog.validation.fieldEmpty", { field: "Route" })),
+        origin: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.origin"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.origin") }),
+            ),
+        destination: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.destination"),
+                }),
+            })
+            .min(
+                1,
+                t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.destination"),
+                }),
+            ),
+
+        price: z.coerce
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.price"),
+                }),
+            })
+            .superRefine((arg, ctx) => {
+                if (arg.length <= 0) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.too_small,
+                        minimum: 1,
+                        type: "string",
+                        inclusive: true,
+                        message: t("formDialog.validation.fieldEmpty", {
+                            field: t("formDialog.fields.price"),
+                        }),
+                    });
+                }
+
+                const val = globalizeParser(arg);
+                if (!val) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.invalid_type,
+                        message: t("formDialog.validation.invalidNumber"),
+                        expected: "number",
+                        received: "unknown",
+                    });
+                }
+            })
+            .transform((arg) => globalizeParser(arg).toFixed(2)),
+        payroll_price: z.coerce
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.payroll_price"),
+                }),
+            })
+            .superRefine((arg, ctx) => {
+                if (arg.length <= 0) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.too_small,
+                        minimum: 1,
+                        type: "string",
+                        inclusive: true,
+                        message: t("formDialog.validation.fieldEmpty", {
+                            field: t("formDialog.fields.payroll_price"),
+                        }),
+                    });
+                }
+
+                const val = globalizeParser(arg);
+                if (!val) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.invalid_type,
+                        message: t("formDialog.validation.invalidNumber"),
+                        expected: "number",
+                        received: "unknown",
+                    });
+                }
+            })
+            .transform((arg) => globalizeParser(arg).toFixed(2)),
+
+        dispatch_code: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.dispatch_code"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.dispatch_code"),
+                }),
+            }),
+        receipt_code: z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.receipt_code"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.receipt_code"),
+                }),
+            }),
+        origin_weight: z.coerce
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.origin_weight"),
+                }),
+            })
+            .int(
+                t("formDialog.validation.noDecimals", {
+                    field: t("formDialog.fields.origin_weight"),
+                }),
+            )
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.origin_weight"),
+                }),
+            }),
+        destination_weight: z.coerce
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.destination_weight"),
+                }),
+            })
+            .int(
+                t("formDialog.validation.noDecimals", {
+                    field: t("formDialog.fields.destination_weight"),
+                }),
+            )
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.destination_weight"),
+                }),
+            }),
+        shipment_payroll_code: z
+            .number({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.payroll"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.payroll"),
+                }),
+            }),
+        driver_payroll_code: z
+            .number()
+            .positive(t("formDialog.validation.invalidPayrollCode"))
+            .nullish(),
+    });
+
+type ShipmentFormSchema = z.infer<ReturnType<typeof createShipmentFormSchema>>;
 
 const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentFormSchema => ({
     shipment_code: null,
@@ -212,6 +302,7 @@ const SHIPMENT_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentFormSchema =>
     shipment_payroll_code: payrollCode,
     driver_payroll_code: null,
 });
+
 const shipmentToFormSchema = (shipment: Shipment, payrollCode: number): ShipmentFormSchema => ({
     shipment_code: shipment?.shipment_code ?? null,
     shipment_date: DateTime.fromHTTP(shipment.shipment_date).toJSDate(),
@@ -236,6 +327,7 @@ const shipmentToFormSchema = (shipment: Shipment, payrollCode: number): Shipment
     shipment_payroll_code: shipment?.shipment_payroll_code ?? payrollCode,
     driver_payroll_code: shipment?.driver_payroll_code ?? null,
 });
+
 const formSchemaToShipment = (formSchema: ShipmentFormSchema): Shipment => ({
     shipment_code: formSchema.shipment_code,
     shipment_date: DateTime.fromJSDate(formSchema.shipment_date).toHTTP() ?? "",
@@ -271,6 +363,7 @@ interface ShipmentFormDialogFields {
     shipmentPayrollList?: ShipmentPayroll[];
     driverPayrollList?: DriverPayroll[];
 }
+
 const ShipmentFormDialogFields = ({
     form,
     productList,
@@ -279,6 +372,8 @@ const ShipmentFormDialogFields = ({
     shipmentPayrollList,
     driverPayrollList,
 }: Readonly<ShipmentFormDialogFields>) => {
+    const { t } = useTranslation(shipmentTranslationNamespace);
+
     // Watch origin field for dependent fields
     const watchedOrigin = form.watch("origin");
 
@@ -362,7 +457,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             fullWidth
-                            label="Fecha"
+                            label={t("formDialog.fields.shipment_date")}
                             type="date"
                             error={!!form.formState.errors.shipment_date}
                             helperText={form.formState.errors.shipment_date?.message}
@@ -404,7 +499,7 @@ const ShipmentFormDialogFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Chofer"
+                                    label={t("formDialog.fields.driver")}
                                     error={
                                         !!form.formState.errors.driver_code ||
                                         !!form.formState.errors.driver_name
@@ -437,7 +532,7 @@ const ShipmentFormDialogFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Chapa"
+                                    label={t("formDialog.fields.truck_plate")}
                                     error={!!form.formState.errors.truck_plate}
                                     helperText={form.formState.errors.truck_plate?.message}
                                     fullWidth
@@ -466,7 +561,7 @@ const ShipmentFormDialogFields = ({
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Planilla"
+                                        label={t("formDialog.fields.payroll")}
                                         error={!!form.formState.errors.shipment_payroll_code}
                                         helperText={
                                             form.formState.errors.shipment_payroll_code?.message
@@ -498,7 +593,7 @@ const ShipmentFormDialogFields = ({
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Liquidación"
+                                        label={t("formDialog.fields.driver_payroll")}
                                         error={!!form.formState.errors.driver_payroll_code}
                                         helperText={
                                             form.formState.errors.driver_payroll_code?.message
@@ -533,7 +628,7 @@ const ShipmentFormDialogFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Producto"
+                                    label={t("formDialog.fields.product")}
                                     error={
                                         !!form.formState.errors.product_code ||
                                         !!form.formState.errors.product_name
@@ -571,7 +666,7 @@ const ShipmentFormDialogFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Origen"
+                                    label={t("formDialog.fields.origin")}
                                     error={
                                         !!form.formState.errors.origin ||
                                         !!form.formState.errors.route_code
@@ -626,7 +721,7 @@ const ShipmentFormDialogFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Destino"
+                                    label={t("formDialog.fields.destination")}
                                     error={
                                         !!form.formState.errors.destination ||
                                         !!form.formState.errors.route_code
@@ -652,7 +747,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Remisión"
+                            label={t("formDialog.fields.dispatch_code")}
                             fullWidth
                             error={!!form.formState.errors.dispatch_code}
                             helperText={form.formState.errors.dispatch_code?.message}
@@ -666,7 +761,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Recepción"
+                            label={t("formDialog.fields.receipt_code")}
                             fullWidth
                             error={!!form.formState.errors.receipt_code}
                             helperText={form.formState.errors.receipt_code?.message}
@@ -680,7 +775,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Precio"
+                            label={t("formDialog.fields.price")}
                             fullWidth
                             error={!!form.formState.errors.price}
                             helperText={form.formState.errors.price?.message}
@@ -697,7 +792,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Precio Liquidación"
+                            label={t("formDialog.fields.payroll_price")}
                             fullWidth
                             error={!!form.formState.errors.payroll_price}
                             helperText={form.formState.errors.payroll_price?.message}
@@ -711,7 +806,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Kg. Origen"
+                            label={t("formDialog.fields.origin_weight")}
                             type="number"
                             fullWidth
                             error={!!form.formState.errors.origin_weight}
@@ -726,7 +821,7 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Kg. Destino"
+                            label={t("formDialog.fields.destination_weight")}
                             type="number"
                             fullWidth
                             error={!!form.formState.errors.destination_weight}
@@ -750,6 +845,7 @@ interface ShipmentFormDialogProps extends FormDialogProps {
     shipmentPayrollList?: ShipmentPayroll[];
     driverPayrollList?: DriverPayroll[];
 }
+
 export const ShipmentFormDialog = ({
     payrollCode,
     loadShipmentList,
@@ -763,6 +859,11 @@ export const ShipmentFormDialog = ({
     shipmentPayrollList,
     driverPayrollList,
 }: Readonly<ShipmentFormDialogProps>) => {
+    const { t } = useTranslation(shipmentTranslationNamespace);
+
+    // Create schema with translations
+    const shipmentFormSchema = useMemo(() => createShipmentFormSchema(t), [t]);
+
     // STATE
     // React form hook setup
     const form = useForm<ShipmentFormSchema>({
@@ -786,7 +887,7 @@ export const ShipmentFormDialog = ({
         } else {
             form.reset(shipmentToFormSchema(shipmentToEdit, payrollCode));
         }
-    }, [shipmentToEdit, form.reset, payrollCode]);
+    }, [shipmentToEdit, form, payrollCode]);
 
     // EVENT HANDLERS
     const handleClose = () => {
@@ -813,7 +914,7 @@ export const ShipmentFormDialog = ({
     };
     const putShipment = async (formData: Shipment) => {
         if (!formData.shipment_code) {
-            setSubmitResult({ error: "Carga no puede editarse" });
+            setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
         }
 
@@ -850,8 +951,8 @@ export const ShipmentFormDialog = ({
             return;
         }
 
-        setSubmitResult({ success: resp.message ?? "Operación exitosa" });
-        showToastSuccess(resp.message ?? "Operación exitosa");
+        setSubmitResult({ success: resp.message ?? t("formDialog.successMessage") });
+        showToastSuccess(resp.message ?? t("formDialog.successMessage"));
 
         await loadShipmentList();
 
@@ -873,7 +974,7 @@ export const ShipmentFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>Completar datos de la Carga</span>
+                <span>{t("formDialog.description")}</span>
             );
         }
 
@@ -885,7 +986,7 @@ export const ShipmentFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requeridos
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
@@ -904,7 +1005,9 @@ export const ShipmentFormDialog = ({
                 },
             }}
         >
-            <DialogTitle>{!shipmentToEdit ? "Agregar Carga" : "Editar Carga"}</DialogTitle>
+            <DialogTitle>
+                {!shipmentToEdit ? t("formDialog.add") : t("formDialog.edit")}
+            </DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
@@ -919,9 +1022,9 @@ export const ShipmentFormDialog = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {!shipmentToEdit ? "Agregar Carga" : "Editar Carga"}
+                    {!shipmentToEdit ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>
