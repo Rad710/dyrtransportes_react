@@ -16,7 +16,7 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipmentDataTable";
-import { ShipmentFormDialog } from "../shipment-payrolls/payroll/components/ShipmentFormDialog";
+import { ShipmentFormDialog } from "../shipment-payrolls/components/ShipmentFormDialog";
 import { ProductApi, RouteApi } from "../route-product/utils";
 import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";

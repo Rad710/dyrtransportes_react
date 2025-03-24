@@ -19,7 +19,7 @@ import { UserProfile } from "@/pages/user-profile/UserProfile";
 import { DriverList } from "@/pages/driver_payroll/DriverList";
 import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
 import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";
-import { ShipmentPayroll } from "./pages/shipment-payrolls/payroll/ShipmentPayroll";
+import { ShipmentPayroll } from "./pages/shipment-payrolls/ShipmentPayroll";
 
 import "@/utils/i18n";
 

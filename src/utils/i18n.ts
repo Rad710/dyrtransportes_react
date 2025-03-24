@@ -18,7 +18,7 @@ export const i18nChangeLanguage = (language: string) => {
     i18n.changeLanguage(language);
 };
 
-i18n.changeLanguage("en");
+i18n.changeLanguage("es");
 
 type LanguageOptions = "en" | "es";
 export const appLanguages: LanguageOptions[] = ["en", "es"];

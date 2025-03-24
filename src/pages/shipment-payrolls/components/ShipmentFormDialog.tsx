@@ -21,10 +21,9 @@ import { Driver } from "@/pages/driver/types";
 import { DriverPayroll } from "@/pages/driver_payroll/types";
 import { globalizeFormatter } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
-import { shipmentTranslationNamespace } from "../../translations"; // Adjust path as needed
+import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
+import type { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
 import { ShipmentApi, ShipmentUtils, type ShipmentFormSchema } from "../utils";
-import type { ShipmentPayroll } from "../../types";
-import type { AutocompleteOptionDriver, Shipment } from "../types";
 
 interface ShipmentFormDialogFields {
     form: UseFormReturn<ShipmentFormSchema>;

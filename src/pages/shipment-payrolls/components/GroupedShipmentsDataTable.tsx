@@ -21,9 +21,8 @@ import { AutocompleteOption } from "@/types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { globalizeFormatter } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
-import { shipmentTranslationNamespace } from "../../translations"; // Adjust path as needed
-import type { GroupedShipments, Shipment } from "../types";
-import type { ShipmentPayroll } from "../../types";
+import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
+import type { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
 import { ShipmentApi } from "../utils";
 
 type Column = {
