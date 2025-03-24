@@ -92,6 +92,8 @@ const driverPayrollListResources = {
                 errors: {
                     alreadyExists: "Payroll already exists",
                     cannotEdit: "Payroll cannot be edited",
+                    invalidCode: "Invalid Payroll Code",
+                    dateRequired: "A date is required to create the payroll.",
                 },
             },
         },
@@ -147,6 +149,8 @@ const driverPayrollListResources = {
                 errors: {
                     alreadyExists: "La Liquidación ya existe",
                     cannotEdit: "La Liquidación no puede ser editada",
+                    invalidCode: "Código de Liquidación inválido",
+                    dateRequired: "Se requiere una fecha para crear la liquidación.",
                 },
             },
         },

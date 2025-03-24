@@ -13,13 +13,14 @@ import { styled } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DriverPayroll } from "../types";
 import { DriverPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { driverPayrollListTranslationNamespace } from "../translations";
+import type { TFunction } from "i18next";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
@@ -27,16 +28,17 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
     paddingBottom: theme.spacing(2),
 }));
 
-const driverPayrollFormSchema = z.object({
-    payroll_code: z.number().positive("Invalid Payroll Code").nullish(),
-    payroll_timestamp: z.date({
-        required_error: "A date is required to create the payroll.",
-    }),
-    paid: z.boolean(),
-    deleted: z.boolean(),
-});
-
-type DriverPayrollFormSchema = z.infer<typeof driverPayrollFormSchema>;
+// Create a dynamic schema that uses translations
+const getDriverPayrollFormSchema = (t: TFunction) =>
+    z.object({
+        payroll_code: z.number().positive(t("formDialog.errors.invalidCode")).nullish(),
+        payroll_timestamp: z.date({
+            required_error: t("formDialog.errors.dateRequired"),
+        }),
+        paid: z.boolean(),
+        deleted: z.boolean(),
+    });
+type DriverPayrollFormSchema = z.infer<ReturnType<typeof getDriverPayrollFormSchema>>;
 
 interface DriverPayrollDialogProps extends FormDialogProps {
     driverCode: number;
@@ -57,6 +59,8 @@ export const DriverPayrollFormDialog = ({
 }: DriverPayrollDialogProps) => {
     // i18n
     const { t } = useTranslation(driverPayrollListTranslationNamespace);
+
+    const driverPayrollFormSchema = useMemo(() => getDriverPayrollFormSchema(t), [t]);
 
     // State
     const [isSubmitting, setIsSubmitting] = useState(false);
