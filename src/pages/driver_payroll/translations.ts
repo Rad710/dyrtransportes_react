@@ -37,22 +37,8 @@ const driverResources = {
         },
     },
 };
-
 // Add resources to i18n
 const driverListTranslationNamespace = "driverList";
-
-appLanguages.forEach((lang) => {
-    // Add driver translations
-    if (!i18n.hasResourceBundle(lang, driverListTranslationNamespace)) {
-        i18n.addResourceBundle(
-            lang,
-            driverListTranslationNamespace,
-            driverResources[lang].translation,
-        );
-    }
-});
-
-export { driverListTranslationNamespace };
 
 // Driver Payroll translations
 const driverPayrollListResources = {
@@ -166,25 +152,11 @@ const driverPayrollListResources = {
         },
     },
 };
-
 // Add resources to i18n
 const driverPayrollListTranslationNamespace = "driverPayrollList";
 
-appLanguages.forEach((lang) => {
-    // Add driver payroll translations
-    if (!i18n.hasResourceBundle(lang, driverPayrollListTranslationNamespace)) {
-        i18n.addResourceBundle(
-            lang,
-            driverPayrollListTranslationNamespace,
-            driverPayrollListResources[lang].translation,
-        );
-    }
-});
-
-export { driverPayrollListTranslationNamespace };
-
 // Driver Payroll Detail translations
-const driverPayrollDetailResources = {
+const driverPayrollResources = {
     en: {
         translation: {
             title: "Driver Payroll",
@@ -474,19 +446,40 @@ const driverPayrollDetailResources = {
         },
     },
 };
-
 // Add resources to i18n
-const driverPayrollDetailTranslationNamespace = "driverPayrollDetail";
+const driverPayrollTranslationNamespace = "driverPayroll";
 
 appLanguages.forEach((lang) => {
-    // Add driver payroll detail translations
-    if (!i18n.hasResourceBundle(lang, driverPayrollDetailTranslationNamespace)) {
+    // Add driver translations
+    if (!i18n.hasResourceBundle(lang, driverListTranslationNamespace)) {
         i18n.addResourceBundle(
             lang,
-            driverPayrollDetailTranslationNamespace,
-            driverPayrollDetailResources[lang].translation,
+            driverListTranslationNamespace,
+            driverResources[lang].translation,
+        );
+    }
+
+    // Add driver payroll translations
+    if (!i18n.hasResourceBundle(lang, driverPayrollListTranslationNamespace)) {
+        i18n.addResourceBundle(
+            lang,
+            driverPayrollListTranslationNamespace,
+            driverPayrollListResources[lang].translation,
+        );
+    }
+
+    // Add driver payroll detail translations
+    if (!i18n.hasResourceBundle(lang, driverPayrollTranslationNamespace)) {
+        i18n.addResourceBundle(
+            lang,
+            driverPayrollTranslationNamespace,
+            driverPayrollResources[lang].translation,
         );
     }
 });
 
-export { driverPayrollDetailTranslationNamespace };
+export {
+    driverListTranslationNamespace,
+    driverPayrollListTranslationNamespace,
+    driverPayrollTranslationNamespace,
+};

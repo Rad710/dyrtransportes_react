@@ -23,10 +23,10 @@ import { DriverPayrollApi } from "../utils";
 import { globalizeFormatter } from "@/utils/globalize";
 import type { Shipment } from "@/pages/shipment-payrolls/types";
 import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
-import { driverPayrollDetailTranslationNamespace } from "../translations";
+import { driverPayrollTranslationNamespace } from "../translations";
 
 const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -174,7 +174,7 @@ export const DriverPayrollShipmentDataTable = ({
     driverPayrollCode,
     driverPayrollList,
 }: DriverPayrollShipmentDataTableProps) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);

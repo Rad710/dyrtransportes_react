@@ -21,7 +21,7 @@ import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
 import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
-import { driverPayrollDetailTranslationNamespace } from "../translations";
+import { driverPayrollTranslationNamespace } from "../translations";
 import type { TFunction } from "i18next";
 
 // Define schema for form validation
@@ -114,7 +114,7 @@ const ShipmentExpenseFormDialogFields = ({
     form,
     driverPayrollList,
 }: Readonly<ShipmentExpenseFormDialogFields>) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     const driverPayrollOptionList: AutocompleteOption[] = useMemo(
         () =>
@@ -257,7 +257,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
     setExpenseToEdit,
     driverPayrollList,
 }: Readonly<DriverPayrollShipmentExpenseFormDialogProps>) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // Create schema with translations
     const shipmentExpenseFormSchema = useMemo(() => getShipmentExpenseFormSchema(t), [t]);

@@ -23,7 +23,7 @@ import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 import { downloadFile } from "@/utils/file";
-import { driverPayrollDetailTranslationNamespace } from "./translations";
+import { driverPayrollTranslationNamespace } from "./translations";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
@@ -161,7 +161,7 @@ const DriverPayrollExpensesTab = ({
     setAddExpenseFormDialogOpen,
 }: DriverPayrollExpensesTabProps) => {
     // i18n
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // //STATE
     const [loading, setLoading] = useState<boolean>(true);
@@ -303,7 +303,7 @@ const DriverPayrollExpensesTab = ({
 
 export const DriverPayroll = ({ title }: PageProps) => {
     // i18n
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     const match = useMatch("/driver-payrolls/:driver_code/payroll/:driver_payroll_code");
     const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;

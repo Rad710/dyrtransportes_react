@@ -21,14 +21,14 @@ import { DateTime } from "luxon";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { AutocompleteOption } from "@/types";
-import { driverPayrollDetailTranslationNamespace } from "../translations";
+import { driverPayrollTranslationNamespace } from "../translations";
 
 const DriverPayrollShipmentExpenseDataTableFooter = ({
     expenseList,
 }: {
     expenseList: ShipmentExpense[];
 }) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -94,7 +94,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     driverPayrollCode,
     driverPayrollList,
 }: DriverPayrollShipmentExpenseDataTableProps) => {
-    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+    const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
