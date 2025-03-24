@@ -18,7 +18,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { useTranslation } from "react-i18next";
-import { shipmentPayrollListTranslationNamespace } from "../translations";
+import { shipmentPayrollTranslationNamespace } from "../translations";
 import type { TFunction } from "i18next";
 
 const getShipmentPayrollFormSchema = (t: TFunction) => {
@@ -51,7 +51,7 @@ export const ShipmentPayrollFormDialog = ({
     setPayrollToEdit,
 }: ShipmentPayrollDialogProps) => {
     // Translation
-    const { t } = useTranslation(shipmentPayrollListTranslationNamespace);
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
 
     // Create schema with translations
     const shipmentPayrollFormSchema = useMemo(() => getShipmentPayrollFormSchema(t), [t]);

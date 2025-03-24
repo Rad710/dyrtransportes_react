@@ -1,6 +1,6 @@
 import i18n, { appLanguages } from "@/utils/i18n";
 
-const shipmentPayrollListResources = {
+const shipmentPayrollResources = {
     en: {
         translation: {
             // ShipmentPayrollYearList translations
@@ -358,14 +358,14 @@ const shipmentResources = {
     },
 };
 
-const shipmentPayrollListTranslationNamespace = "shipmentPayrollList";
+const shipmentPayrollTranslationNamespace = "shipmentPayroll";
 const shipmentTranslationNamespace = "shipment";
 appLanguages.forEach((lang) => {
-    if (!i18n.hasResourceBundle(lang, shipmentPayrollListTranslationNamespace)) {
+    if (!i18n.hasResourceBundle(lang, shipmentPayrollTranslationNamespace)) {
         i18n.addResourceBundle(
             lang,
-            shipmentPayrollListTranslationNamespace,
-            shipmentPayrollListResources[lang].translation,
+            shipmentPayrollTranslationNamespace,
+            shipmentPayrollResources[lang].translation,
         );
     }
 
@@ -378,4 +378,4 @@ appLanguages.forEach((lang) => {
     }
 });
 
-export { shipmentPayrollListTranslationNamespace, shipmentTranslationNamespace };
+export { shipmentPayrollTranslationNamespace, shipmentTranslationNamespace };

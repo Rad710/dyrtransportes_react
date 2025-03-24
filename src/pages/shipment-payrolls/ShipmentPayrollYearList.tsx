@@ -13,11 +13,11 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ShipmentPayrollApi } from "./utils";
 import { downloadFile } from "@/utils/file";
-import { shipmentPayrollListTranslationNamespace } from "./translations";
+import { shipmentPayrollTranslationNamespace } from "./translations";
 
 export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
     // Translations
-    const { t } = useTranslation(shipmentPayrollListTranslationNamespace);
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
 
     // STATE
     const [loading, setLoading] = useState<boolean>(true);

@@ -19,11 +19,11 @@ import { ShipmentPayrollApi } from "./utils";
 import { ShipmentPayrollFormDialog } from "./components/ShipmentPayrollFormDialog";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
-import { shipmentPayrollListTranslationNamespace } from "./translations";
+import { shipmentPayrollTranslationNamespace } from "./translations";
 
 export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
     // Translation
-    const { t } = useTranslation(shipmentPayrollListTranslationNamespace);
+    const { t } = useTranslation(shipmentPayrollTranslationNamespace);
 
     const match = useMatch("/shipment-payrolls/:year");
     const year = parseInt(match?.params?.year ?? "") || 0;
