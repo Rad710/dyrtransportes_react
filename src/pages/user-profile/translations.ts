@@ -7,7 +7,7 @@ const resources = {
             fields: {
                 name: {
                     label: "Full name",
-                    placeholder: "Jon Snow",
+                    placeholder: "Name Surname",
                 },
                 email: {
                     label: "Email",
@@ -44,7 +44,7 @@ const resources = {
             fields: {
                 name: {
                     label: "Nombre completo",
-                    placeholder: "Jon Snow",
+                    placeholder: "Nombre Apellido",
                 },
                 email: {
                     label: "Correo electrónico",

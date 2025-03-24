@@ -254,7 +254,7 @@ const shipmentResources = {
     },
     es: {
         translation: {
-            title: "Envíos",
+            title: "Cargas",
             shipmentPayroll: {
                 title: "Lista de Cargas",
                 datePrefix: "del",
@@ -268,7 +268,7 @@ const shipmentResources = {
                 },
                 exportDialog: {
                     title: "Confirmar Exportación",
-                    message: "Se exportarán los datos de envío.",
+                    message: "Se exportarán los datos de carga.",
                     confirmText: "Exportar",
                     successMessage: "Planilla exportada exitosamente.",
                     errorMessage: "Error al exportar planilla.",
@@ -279,7 +279,7 @@ const shipmentResources = {
                 },
             },
             dataTable: {
-                tableTitle: "Envíos",
+                tableTitle: "Cargas",
                 columns: {
                     shipment_date: "Fecha",
                     driver_name: "Chofer",
@@ -302,23 +302,23 @@ const shipmentResources = {
                 },
                 confirmDelete: {
                     title: "Confirmar Eliminación",
-                    messageMany: "¿Está seguro que desea eliminar todos los Envíos seleccionados?",
-                    messageSingle: "¿Está seguro que desea eliminar el Envío:",
+                    messageMany: "¿Está seguro que desea eliminar todos las Cargas seleccionados?",
+                    messageSingle: "¿Está seguro que desea eliminar la Carga:",
                 },
                 subtotal: "Subtotal",
                 total: "TOTAL",
                 noDataFound: "No se encontraron datos.",
             },
             moveDialog: {
-                title: "Confirmar Traslado de Envíos",
-                message: "Mover todos los envíos a:",
+                title: "Confirmar Traslado de Cargas",
+                message: "Mover todos las cargas a:",
                 confirmText: "Mover",
                 payrollLabel: "Planilla",
             },
             notifications: {
-                moveSuccess: "Envíos movidos exitosamente.",
-                moveError: "No se seleccionó ninguna Planilla de Envío.",
-                deleteSuccess: "Envío eliminado exitosamente.",
+                moveSuccess: "Cargas movidas exitosamente.",
+                moveError: "No se seleccionó ninguna Planilla de Cargas.",
+                deleteSuccess: "Carga eliminado exitosamente.",
             },
             formDialog: {
                 add: "Agregar Carga",

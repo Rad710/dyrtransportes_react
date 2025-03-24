@@ -21,10 +21,10 @@ const driverResources = {
     },
     es: {
         translation: {
-            title: "Conductores",
-            listTitle: "Lista de Conductores",
-            searchPlaceholder: "Buscar conductores...",
-            noDriversFound: "No se encontraron conductores que coincidan con tu búsqueda.",
+            title: "Choferes",
+            listTitle: "Lista de Choferes",
+            searchPlaceholder: "Buscar choferes...",
+            noDriversFound: "No se encontraron choferes que coincidan con tu búsqueda.",
             driver: {
                 status: {
                     active: "Activo",
@@ -32,7 +32,7 @@ const driverResources = {
                 },
             },
             notifications: {
-                statusChanged: "Conductor {{name}} marcado como {{status}}",
+                statusChanged: "Chofer {{name}} marcado como {{status}}",
             },
         },
     },
@@ -102,7 +102,7 @@ const driverPayrollListResources = {
         translation: {
             title: "Liquidaciones",
             listTitle: "Lista de Liquidaciones de {{driverName}}",
-            noPayrolls: "No hay liquidaciones de conductor",
+            noPayrolls: "No hay liquidaciones del chofer",
             buttons: {
                 add: "Agregar",
                 export: "Exportar",
@@ -125,7 +125,7 @@ const driverPayrollListResources = {
                 export: {
                     title: "Confirmar Exportación",
                     message:
-                        "Todas{{selectedCount}} las liquidaciones del conductor serán exportadas.",
+                        "Todas {{selectedCount}} las liquidaciones del chofer serán exportadas.",
                     confirmText: "Exportar",
                 },
                 delete: {
@@ -135,13 +135,13 @@ const driverPayrollListResources = {
                 },
             },
             notifications: {
-                statusChanged: "Liquidación de conductor #{{code}} marcada como {{status}}",
-                exportSuccess: "Liquidaciones de conductor exportadas exitosamente.",
-                exportError: "Error al exportar liquidaciones de conductor.",
+                statusChanged: "Liquidación de chofer #{{code}} marcada como {{status}}",
+                exportSuccess: "Liquidaciones de chofer exportadas exitosamente.",
+                exportError: "Error al exportar liquidaciones de chofer.",
             },
             formDialog: {
-                addTitle: "Agregar Liquidación de Conductor",
-                editTitle: "Editar Liquidación de Conductor",
+                addTitle: "Agregar Liquidación de Chofer",
+                editTitle: "Editar Liquidación de Chofer",
                 selectNewDate: "Seleccione una fecha para la nueva Liquidación",
                 selectEditDate: "Seleccione una fecha para la Liquidación a editar",
                 reviewFields: "Por favor revise los campos requeridos",
@@ -306,9 +306,9 @@ const driverPayrollResources = {
     },
     es: {
         translation: {
-            title: "Liquidación de Conductor",
+            title: "Liquidación de Chofer",
             tabs: {
-                shipments: "Envíos",
+                shipments: "Cargas",
                 expenses: "Gastos",
             },
             buttons: {
@@ -391,7 +391,7 @@ const driverPayrollResources = {
                 },
             },
             shipments: {
-                tableTitle: "Envíos de Liquidación",
+                tableTitle: "Cargas de Liquidación",
                 columns: {
                     payrollCode: "Liquidación #",
                     date: "Fecha",
@@ -415,23 +415,23 @@ const driverPayrollResources = {
                 },
                 dialogs: {
                     moveShipments: {
-                        title: "Confirmar Mover Envíos",
-                        message: "Mover todos los envíos a:",
+                        title: "Confirmar Mover Cargas",
+                        message: "Mover todos las cargas a:",
                         confirmText: "Mover",
                         payrollLabel: "Liquidación",
                     },
                     delete: {
                         title: "Confirmar Eliminación",
                         messageMany:
-                            "¿Está seguro que desea eliminar todos los Envíos seleccionados?",
+                            "¿Está seguro que desea eliminar todos las Cargas seleccionados?",
                         messageSingle:
-                            "¿Está seguro que desea eliminar el Envío: {{dispatch}} - {{receipt}}?",
+                            "¿Está seguro que desea eliminar la Carga: {{dispatch}} - {{receipt}}?",
                         confirmText: "Eliminar",
                     },
                 },
                 notifications: {
-                    moveSuccess: "Envíos movidos exitosamente.",
-                    moveError: "No se seleccionó ninguna Liquidación de Envío.",
+                    moveSuccess: "Cargas movidos exitosamente.",
+                    moveError: "No se seleccionó ninguna Liquidación de Carga.",
                 },
             },
             confirmations: {
@@ -442,7 +442,7 @@ const driverPayrollResources = {
                 },
             },
             notifications: {
-                statusChanged: "Liquidación de conductor #{{code}} marcada como {{status}}",
+                statusChanged: "Liquidación de Chofer #{{code}} marcada como {{status}}",
                 exportSuccess: "Planilla exportada exitosamente.",
                 exportError: "Error al exportar planilla",
             },

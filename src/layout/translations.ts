@@ -19,9 +19,9 @@ const resources = {
     es: {
         translation: {
             navigation: {
-                shipmentPayrolls: "Planillas de Envíos",
-                driverPayrolls: "Planillas de Choferes",
-                routes: "Rutas",
+                shipmentPayrolls: "Cobranzas",
+                driverPayrolls: "Liquidaciones",
+                routes: "Precios y Productos",
                 drivers: "Choferes",
             },
             userMenu: {

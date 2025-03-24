@@ -103,7 +103,7 @@ const resources = {
                     name: "Nombre",
                     surname: "Apellido",
                     truckPlate: "Placa del Camión",
-                    trailerPlate: "Placa del Tráiler",
+                    trailerPlate: "Placa de la Carreta",
                     modifiedBy: "Modificado por",
                     actions: "Acciones",
                 },
@@ -115,8 +115,8 @@ const resources = {
                 confirmDelete: {
                     title: "Confirmar Eliminación",
                     messageMany:
-                        "¿Está seguro que desea eliminar todos los Choferes seleccionados?",
-                    messageSingle: "¿Está seguro que desea eliminar al Chofer:",
+                        "¿Está seguro que desea desactivar todos los Choferes seleccionados?",
+                    messageSingle: "¿Está seguro que desea desactivar al Chofer:",
                     confirmText: "Eliminar",
                 },
                 confirmRestore: {
@@ -137,7 +137,7 @@ const resources = {
                     name: "Nombre",
                     surname: "Apellido",
                     truckPlate: "Placa Camión",
-                    trailerPlate: "Placa Remolque",
+                    trailerPlate: "Placa Carreta",
                 },
                 validation: {
                     invalidValue: "Valor inválido.",
