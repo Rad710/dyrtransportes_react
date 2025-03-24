@@ -32,7 +32,6 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    // Calculate totals with useMemo inside the component
     const totalAmount = expenseList.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
     return (

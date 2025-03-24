@@ -18,7 +18,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";
 import { Driver } from "@/pages/driver/types";
-import { DriverPayroll } from "@/pages/driver_payroll/types";
+import { DriverPayroll } from "@/pages/driver-payrolls/types";
 import { globalizeFormatter } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed

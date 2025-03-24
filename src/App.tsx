@@ -16,9 +16,9 @@ import { Driver } from "@/pages/driver/Driver";
 import { ShipmentPayrollYearList } from "@/pages/shipment-payrolls/ShipmentPayrollYearList";
 import { ShipmentPayrollList } from "@/pages/shipment-payrolls/ShipmentPayrollList";
 import { UserProfile } from "@/pages/user-profile/UserProfile";
-import { DriverList } from "@/pages/driver_payroll/DriverList";
-import { DriverPayrollList } from "@/pages/driver_payroll/DriverPayrollList";
-import { DriverPayroll } from "@/pages/driver_payroll/DriverPayroll";
+import { DriverList } from "@/pages/driver-payrolls/DriverList";
+import { DriverPayrollList } from "@/pages/driver-payrolls/DriverPayrollList";
+import { DriverPayroll } from "@/pages/driver-payrolls/DriverPayroll";
 import { ShipmentPayroll } from "./pages/shipment-payrolls/ShipmentPayroll";
 
 import "@/utils/i18n";
