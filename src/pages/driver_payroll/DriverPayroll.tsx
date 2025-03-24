@@ -1,6 +1,7 @@
 import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { useMatch } from "react-router";
+import { useTranslation } from "react-i18next";
 import { DriverApi } from "../driver/utils";
 import { DriverPayrollApi, ShipmentExpenseApi } from "./utils";
 import { isAxiosError } from "axios";
@@ -22,6 +23,7 @@ import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 import { downloadFile } from "@/utils/file";
+import { driverPayrollDetailTranslationNamespace } from "./translations";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
@@ -158,6 +160,9 @@ const DriverPayrollExpensesTab = ({
     addExpenseFormDialogOpen,
     setAddExpenseFormDialogOpen,
 }: DriverPayrollExpensesTabProps) => {
+    // i18n
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
     // //STATE
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -255,7 +260,7 @@ const DriverPayrollExpensesTab = ({
                     }}
                 >
                     <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
-                        Con Boleta
+                        {t("expenses.sections.withReceipt")}
                     </Typography>
 
                     <DriverPayrollShipmentExpenseDataTable
@@ -277,7 +282,7 @@ const DriverPayrollExpensesTab = ({
                     }}
                 >
                     <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
-                        Sin Boleta
+                        {t("expenses.sections.withoutReceipt")}
                     </Typography>
 
                     <DriverPayrollShipmentExpenseDataTable
@@ -297,6 +302,9 @@ const DriverPayrollExpensesTab = ({
 };
 
 export const DriverPayroll = ({ title }: PageProps) => {
+    // i18n
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
     const match = useMatch("/driver-payrolls/:driver_code/payroll/:driver_payroll_code");
     const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
     const driverPayrollCode = parseInt(match?.params?.driver_payroll_code ?? "") || 0;
@@ -375,14 +383,18 @@ export const DriverPayroll = ({ title }: PageProps) => {
         }
 
         showToastSuccess(
-            `Driver Payroll #${payroll.payroll_code ?? 0} marked as ${paid ? "paid" : "unpaid"}`,
+            t("notifications.statusChanged", {
+                code: payroll.payroll_code ?? 0,
+                status: paid ? t("payroll.status.paid") : t("payroll.status.unpaid"),
+            }),
         );
     };
+
     const handleExportDriverPayroll = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: "All Routes will be exported.",
-            confirmText: "Export",
+            title: t("confirmations.export.title"),
+            message: t("confirmations.export.message"),
+            confirmText: t("confirmations.export.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
@@ -398,13 +410,13 @@ export const DriverPayroll = ({ title }: PageProps) => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        "liquidacion.xlsx",
+                        t("fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Planilla exportada exitosamente.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error al exportar planilla");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -450,7 +462,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
                                     ? (e) => handlePaidToggle(driverPayroll, e.target.checked)
                                     : undefined
                             }
-                            textChecked="Paid"
+                            textChecked={t("payroll.status.paid")}
                             checkedDescription={
                                 driverPayroll?.paid_timestamp
                                     ? DateTime.fromHTTP(driverPayroll.paid_timestamp).toFormat(
@@ -458,7 +470,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
                                       )
                                     : ""
                             }
-                            textUnchecked="Unpaid"
+                            textUnchecked={t("payroll.status.unpaid")}
                             sx={{
                                 mr: 2,
                             }}
@@ -476,7 +488,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
                                 visibility: tabValue === tabShipments ? "hidden" : "visible",
                             }}
                         >
-                            Add
+                            {t("buttons.add")}
                         </Button>
 
                         <Button
@@ -485,14 +497,22 @@ export const DriverPayroll = ({ title }: PageProps) => {
                             startIcon={<TableChartIcon />}
                             onClick={handleExportDriverPayroll}
                         >
-                            Export
+                            {t("buttons.export")}
                         </Button>
                     </Box>
                 </Box>
 
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example">
-                    <Tab label="Shipments" id="simple-tab-0" aria-controls="simple-tabpanel-0" />
-                    <Tab label="Expenses" id="simple-tab-1" aria-controls="simple-tabpanel-1" />
+                    <Tab
+                        label={t("tabs.shipments")}
+                        id="simple-tab-0"
+                        aria-controls="simple-tabpanel-0"
+                    />
+                    <Tab
+                        label={t("tabs.expenses")}
+                        id="simple-tab-1"
+                        aria-controls="simple-tabpanel-1"
+                    />
                 </Tabs>
             </Box>
             <TabPanel value={tabValue} index={tabShipments}>

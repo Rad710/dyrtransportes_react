@@ -15,6 +15,7 @@ import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
 import { DriverPayroll } from "../types";
@@ -22,8 +23,10 @@ import { DriverPayrollApi } from "../utils";
 import { globalizeFormatter } from "@/utils/globalize";
 import type { Shipment } from "@/pages/shipment-payrolls/types";
 import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
+import { driverPayrollDetailTranslationNamespace } from "../translations";
 
 const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -65,7 +68,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                 }}
             >
                 <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
-                    Origin:
+                    {t("shipments.summary.origin")}
                 </Typography>
                 <Typography
                     variant="body1"
@@ -88,7 +91,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                 }}
             >
                 <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
-                    Destination:
+                    {t("shipments.summary.destination")}
                 </Typography>
                 <Typography
                     variant="body1"
@@ -111,7 +114,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                 }}
             >
                 <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
-                    Diff:
+                    {t("shipments.summary.diff")}
                 </Typography>
                 <Typography
                     variant="body1"
@@ -134,7 +137,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                 }}
             >
                 <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
-                    Total:
+                    {t("shipments.summary.total")}
                 </Typography>
                 <Typography
                     variant="body1"
@@ -171,6 +174,8 @@ export const DriverPayrollShipmentDataTable = ({
     driverPayrollCode,
     driverPayrollList,
 }: DriverPayrollShipmentDataTableProps) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -201,9 +206,9 @@ export const DriverPayrollShipmentDataTable = ({
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Shipments?`,
-            confirmText: "Delete",
+            title: t("shipments.dialogs.delete.title"),
+            message: t("shipments.dialogs.delete.messageMany"),
+            confirmText: t("shipments.dialogs.delete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -231,14 +236,12 @@ export const DriverPayrollShipmentDataTable = ({
 
     const handleDeleteShipmentItem = (row: Shipment) => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: (
-                <>
-                    Are you sure you want to delete Shipment: <strong>{row.dispatch_code}</strong> -{" "}
-                    <strong>{row.receipt_code}</strong>?
-                </>
-            ),
-            confirmText: "Delete",
+            title: t("shipments.dialogs.delete.title"),
+            message: t("shipments.dialogs.delete.messageSingle", {
+                dispatch: row.dispatch_code,
+                receipt: row.receipt_code,
+            }),
+            confirmText: t("shipments.dialogs.delete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -273,15 +276,19 @@ export const DriverPayrollShipmentDataTable = ({
             null;
 
         openConfirmDialog({
-            title: "Confirm Move Shipments",
+            title: t("shipments.dialogs.moveShipments.title"),
             message: (
                 <Box>
-                    <Box component="span">Move all shipments to:</Box>
+                    <Box component="span">{t("shipments.dialogs.moveShipments.message")}</Box>
                     <Stack>
                         <Autocomplete
                             options={driverPayrollOptionList}
                             renderInput={(params) => (
-                                <TextField {...params} label="Planilla" fullWidth />
+                                <TextField
+                                    {...params}
+                                    label={t("shipments.dialogs.moveShipments.payrollLabel")}
+                                    fullWidth
+                                />
                             )}
                             onChange={(_, newValue) => {
                                 // Update the captured value in the closure
@@ -293,13 +300,13 @@ export const DriverPayrollShipmentDataTable = ({
                     </Stack>
                 </Box>
             ),
-            confirmText: "Move",
+            confirmText: t("shipments.dialogs.moveShipments.confirmText"),
             confirmButtonProps: {
                 color: "primary",
             },
             onConfirm: async () => {
                 if (!selectedPayroll) {
-                    showToastError("No Shipment Payroll was selected.");
+                    showToastError(t("shipments.notifications.moveError"));
                     return;
                 }
 
@@ -314,7 +321,7 @@ export const DriverPayrollShipmentDataTable = ({
                     showToastAxiosError(resp);
                     return;
                 }
-                showToastSuccess(resp.message);
+                showToastSuccess(t("shipments.notifications.moveSuccess"));
 
                 await loadDriverPayrollShipmentList();
             },
@@ -324,13 +331,13 @@ export const DriverPayrollShipmentDataTable = ({
     const columns: GridColDef<Shipment>[] = [
         {
             field: "shipment_payroll_code",
-            headerName: "Payroll #",
+            headerName: t("shipments.columns.payrollCode"),
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
             field: "shipment_date",
-            headerName: "Date",
+            headerName: t("shipments.columns.date"),
             renderCell: ({ row }) =>
                 DateTime.fromHTTP(row.shipment_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
             minWidth: 70,
@@ -350,40 +357,40 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "dispatch_code",
-            headerName: "Dispatch",
+            headerName: t("shipments.columns.dispatch"),
             minWidth: 130,
             flex: 1,
             align: "right",
         },
         {
             field: "receipt_code",
-            headerName: "Receipt",
+            headerName: t("shipments.columns.receipt"),
             minWidth: 130,
             flex: 1,
             align: "right",
         },
         {
             field: "product_name",
-            headerName: "Product",
+            headerName: t("shipments.columns.product"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "origin",
-            headerName: "Origin",
+            headerName: t("shipments.columns.origin"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "destination",
-            headerName: "Destination",
+            headerName: t("shipments.columns.destination"),
             minWidth: 130,
             flex: 1,
         },
 
         {
             field: "origin_weight",
-            headerName: "Origin Weight",
+            headerName: t("shipments.columns.originWeight"),
             renderCell: ({ row }) => globalizeFormatter(parseInt(row.origin_weight)),
             minWidth: 100,
             flex: 0.8,
@@ -391,7 +398,7 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "destination_weight",
-            headerName: "Destination Weight",
+            headerName: t("shipments.columns.destinationWeight"),
             renderCell: ({ row }) => globalizeFormatter(parseInt(row.destination_weight)),
             minWidth: 100,
             flex: 0.8,
@@ -399,7 +406,7 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "price",
-            headerName: "Price",
+            headerName: t("shipments.columns.price"),
             renderCell: ({ row }) => globalizeFormatter(parseFloat(row.price)),
             minWidth: 120,
             flex: 0.8,
@@ -407,7 +414,7 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "payroll_price",
-            headerName: "Payroll Price",
+            headerName: t("shipments.columns.payrollPrice"),
             renderCell: ({ row }) => globalizeFormatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
@@ -415,7 +422,7 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "total",
-            headerName: "Total",
+            headerName: t("shipments.columns.total"),
             renderCell: ({ row }) =>
                 globalizeFormatter(
                     parseInt(row.destination_weight) * parseFloat(row.payroll_price),
@@ -426,7 +433,7 @@ export const DriverPayrollShipmentDataTable = ({
         },
         {
             field: "action",
-            headerName: "Actions",
+            headerName: t("shipments.columns.actions"),
             sortable: false,
             minWidth: 100,
             flex: 0.5,
@@ -434,11 +441,11 @@ export const DriverPayrollShipmentDataTable = ({
                 <ActionsMenu
                     menuItems={[
                         {
-                            text: "Edit",
+                            text: t("buttons.edit"),
                             handleClick: () => handleEditShipment(params.row),
                         },
                         {
-                            text: "Delete",
+                            text: t("buttons.delete"),
                             handleClick: () => handleDeleteShipmentItem(params.row),
                         },
                     ]}
@@ -457,7 +464,7 @@ export const DriverPayrollShipmentDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Payroll Shipments"
+                tableTitle={t("shipments.tableTitle")}
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
                 handleMove={handleChangeShipmentListDriverPayroll}

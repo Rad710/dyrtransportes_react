@@ -15,17 +15,20 @@ import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "react-i18next";
 import { globalizeFormatter } from "@/utils/globalize";
 import { DateTime } from "luxon";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { AutocompleteOption } from "@/types";
+import { driverPayrollDetailTranslationNamespace } from "../translations";
 
 const DriverPayrollShipmentExpenseDataTableFooter = ({
     expenseList,
 }: {
     expenseList: ShipmentExpense[];
 }) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -52,7 +55,7 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
                 }}
             >
                 <Typography variant="body1" sx={{ mr: 1, fontWeight: "bold" }}>
-                    Total:
+                    {t("expenses.summary.total")}
                 </Typography>
                 <Typography
                     variant="body1"
@@ -91,6 +94,8 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     driverPayrollCode,
     driverPayrollList,
 }: DriverPayrollShipmentExpenseDataTableProps) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
     // state
     const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
 
@@ -121,9 +126,9 @@ export const DriverPayrollShipmentExpenseDataTable = ({
 
     const handleDeleteSelected = () => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: `Are you sure you want to delete all selected Expenses?`,
-            confirmText: "Delete",
+            title: t("expenses.dialogs.delete.title"),
+            message: t("expenses.dialogs.delete.messageMany"),
+            confirmText: t("expenses.dialogs.delete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -153,14 +158,12 @@ export const DriverPayrollShipmentExpenseDataTable = ({
 
     const handleDeleteExpenseItem = (row: ShipmentExpense) => {
         openConfirmDialog({
-            title: "Confirm Delete",
-            message: (
-                <>
-                    Are you sure you want to delete Expense: <strong>{row.receipt}</strong> -
-                    Amount: <strong>{globalizeFormatter(parseFloat(row.amount))}</strong>?
-                </>
-            ),
-            confirmText: "Delete",
+            title: t("expenses.dialogs.delete.title"),
+            message: t("expenses.dialogs.delete.messageSingle", {
+                receipt: row.receipt,
+                amount: globalizeFormatter(parseFloat(row.amount)),
+            }),
+            confirmText: t("expenses.dialogs.delete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -195,15 +198,19 @@ export const DriverPayrollShipmentExpenseDataTable = ({
             null;
 
         openConfirmDialog({
-            title: "Confirm Move Shipment Expenses",
+            title: t("expenses.dialogs.moveExpenses.title"),
             message: (
                 <Box>
-                    <Box component="span">Move all shipment expenses to:</Box>
+                    <Box component="span">{t("expenses.dialogs.moveExpenses.message")}</Box>
                     <Stack>
                         <Autocomplete
                             options={driverPayrollOptionList}
                             renderInput={(params) => (
-                                <TextField {...params} label="Liquidación" fullWidth />
+                                <TextField
+                                    {...params}
+                                    label={t("expenses.dialogs.moveExpenses.payrollLabel")}
+                                    fullWidth
+                                />
                             )}
                             onChange={(_, newValue) => {
                                 // Update the captured value in the closure
@@ -215,13 +222,13 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                     </Stack>
                 </Box>
             ),
-            confirmText: "Move",
+            confirmText: t("expenses.dialogs.moveExpenses.confirmText"),
             confirmButtonProps: {
                 color: "primary",
             },
             onConfirm: async () => {
                 if (!selectedPayroll) {
-                    showToastError("No Driver Payroll was selected.");
+                    showToastError(t("expenses.notifications.moveError"));
                     return;
                 }
 
@@ -236,7 +243,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                     showToastAxiosError(resp);
                     return;
                 }
-                showToastSuccess(resp.message);
+                showToastSuccess(t("expenses.notifications.moveSuccess"));
 
                 await loadDriverPayrollShipmentExpenseList();
             },
@@ -246,13 +253,13 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     const columns: GridColDef<ShipmentExpense>[] = [
         {
             field: "expense_code",
-            headerName: "Expense #",
+            headerName: t("expenses.columns.expenseCode"),
             minWidth: 70,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
             field: "expense_date",
-            headerName: "Date",
+            headerName: t("expenses.columns.date"),
             renderCell: ({ row }) =>
                 DateTime.fromHTTP(row.expense_date, { zone: "local" }).toFormat("dd/MM/yyyy"),
             minWidth: 100,
@@ -272,19 +279,19 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         },
         {
             field: "receipt",
-            headerName: "Receipt",
+            headerName: t("expenses.columns.receipt"),
             minWidth: 130,
             flex: 1,
         },
         {
             field: "reason",
-            headerName: "Reason",
+            headerName: t("expenses.columns.reason"),
             minWidth: 100,
             flex: 1.5,
         },
         {
             field: "amount",
-            headerName: "Amount",
+            headerName: t("expenses.columns.amount"),
             renderCell: ({ row }) => globalizeFormatter(parseFloat(row.amount)),
             minWidth: 120,
             flex: 0.8,
@@ -292,7 +299,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         },
         {
             field: "action",
-            headerName: "Actions",
+            headerName: t("expenses.columns.actions"),
             sortable: false,
             minWidth: 100,
             flex: 0.5,
@@ -300,11 +307,11 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                 <ActionsMenu
                     menuItems={[
                         {
-                            text: "Edit",
+                            text: t("buttons.edit"),
                             handleClick: () => handleEditExpense(params.row),
                         },
                         {
-                            text: "Delete",
+                            text: t("buttons.delete"),
                             handleClick: () => handleDeleteExpenseItem(params.row),
                         },
                     ]}
@@ -323,7 +330,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle="Payroll Expenses"
+                tableTitle={t("expenses.tableTitle")}
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
                 handleMove={handleChangeShipmentExpenseListDriverPayroll}

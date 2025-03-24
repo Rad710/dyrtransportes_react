@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
     Box,
     Button,
@@ -19,8 +20,12 @@ import { useToast } from "@/context/ToastContext";
 import { Driver } from "../driver/types";
 import { DriverApi } from "../driver/utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
+import { driverListTranslationNamespace } from "./translations";
 
 export const DriverList = ({ title }: Readonly<PageProps>) => {
+    // i18n
+    const { t } = useTranslation(driverListTranslationNamespace);
+
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
     const [driverList, setDriverList] = useState<Driver[]>([]);
@@ -99,7 +104,10 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
         }
         const driverName = `${driver.driver_name ?? ""} ${driver.driver_surname ?? ""}`;
         showToastSuccess(
-            `Driver ${driverName.trim()} marked as ${active ? "active" : "deactivated"}`,
+            t("notifications.statusChanged", {
+                name: driverName.trim(),
+                status: active ? t("driver.status.active") : t("driver.status.deactivated"),
+            }),
         );
     };
 
@@ -115,11 +123,11 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
                 }}
             >
                 <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
-                    Lista de Conductores
+                    {t("listTitle")}
                 </Typography>
 
                 <TextField
-                    placeholder="Search drivers..."
+                    placeholder={t("searchPlaceholder")}
                     onChange={handleSearchChange}
                     variant="outlined"
                     size="small"
@@ -143,9 +151,7 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
                 <List sx={{ width: "100%" }}>
                     {filteredDriverList.length === 0 ? (
                         <Box sx={{ textAlign: "center", my: 3 }}>
-                            <Typography variant="body1">
-                                No drivers found matching your search.
-                            </Typography>
+                            <Typography variant="body1">{t("noDriversFound")}</Typography>
                         </Box>
                     ) : (
                         filteredDriverList.map((driver) => (
@@ -227,8 +233,8 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
                                             onChange={(e) =>
                                                 handleActiveToggle(driver, e.target.checked)
                                             }
-                                            textChecked="Active"
-                                            textUnchecked="Deactivated"
+                                            textChecked={t("driver.status.active")}
+                                            textUnchecked={t("driver.status.deactivated")}
                                         />
                                     </Box>
                                 </Box>

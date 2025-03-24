@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -18,6 +19,7 @@ import { DriverPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
+import { driverPayrollListTranslationNamespace } from "../translations";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
@@ -53,6 +55,9 @@ export const DriverPayrollFormDialog = ({
     payrollToEdit,
     setPayrollToEdit,
 }: DriverPayrollDialogProps) => {
+    // i18n
+    const { t } = useTranslation(driverPayrollListTranslationNamespace);
+
     // State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -125,7 +130,7 @@ export const DriverPayrollFormDialog = ({
 
     const postForm = async (formData: DriverPayroll) => {
         if (formData.payroll_code) {
-            setSubmitResult({ error: "Payroll already exists" });
+            setSubmitResult({ error: t("formDialog.errors.alreadyExists") });
             return;
         }
 
@@ -141,7 +146,7 @@ export const DriverPayrollFormDialog = ({
 
     const putForm = async (formData: DriverPayroll) => {
         if (!formData.payroll_code) {
-            setSubmitResult({ error: "Payroll cannot be edited" });
+            setSubmitResult({ error: t("formDialog.errors.cannotEdit") });
             return;
         }
 
@@ -213,8 +218,8 @@ export const DriverPayrollFormDialog = ({
             ) : (
                 <Box component="span">
                     {!getValues("payroll_code")
-                        ? "Select a date for the new Driver Payroll"
-                        : "Select a date for the Driver Payroll to edit"}
+                        ? t("formDialog.selectNewDate")
+                        : t("formDialog.selectEditDate")}
                 </Box>
             );
         }
@@ -227,7 +232,7 @@ export const DriverPayrollFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Please review the required fields
+                {t("formDialog.reviewFields")}
             </Box>
         );
     };
@@ -247,7 +252,7 @@ export const DriverPayrollFormDialog = ({
             }}
         >
             <DialogTitle>
-                {!getValues("payroll_code") ? "Add Driver Payroll" : "Edit Driver Payroll"}
+                {!getValues("payroll_code") ? t("formDialog.addTitle") : t("formDialog.editTitle")}
             </DialogTitle>
             <StyledDialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
@@ -263,7 +268,7 @@ export const DriverPayrollFormDialog = ({
                         control={control}
                         render={({ field }) => (
                             <TextField
-                                label="Payroll Date"
+                                label={t("formDialog.dateLabel")}
                                 type="date"
                                 fullWidth
                                 value={
@@ -294,14 +299,16 @@ export const DriverPayrollFormDialog = ({
                 </Box>
             </StyledDialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
+                <Button onClick={handleClose}>{t("buttons.close")}</Button>
                 <Button
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting}
                     color={!getValues("payroll_code") ? "primary" : "info"}
                 >
-                    {!getValues("payroll_code") ? "Add Payroll" : "Edit Payroll"}
+                    {!getValues("payroll_code")
+                        ? t("buttons.addPayroll")
+                        : t("buttons.editPayroll")}
                 </Button>
             </DialogActions>
         </Dialog>

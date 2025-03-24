@@ -1,6 +1,7 @@
 import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { Link, useMatch } from "react-router";
+import { useTranslation } from "react-i18next";
 import { DriverPayroll } from "./types";
 import { DriverPayrollApi } from "./utils";
 import { isAxiosError } from "axios";
@@ -18,8 +19,12 @@ import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 import { downloadFile } from "@/utils/file";
 import { DriverPayrollFormDialog } from "./components/DriverPayrollFormDialog";
+import { driverPayrollListTranslationNamespace } from "./translations";
 
 export const DriverPayrollList = ({ title }: PageProps) => {
+    // i18n
+    const { t } = useTranslation(driverPayrollListTranslationNamespace);
+
     const match = useMatch("/driver-payrolls/:driver_code/");
     const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
 
@@ -95,7 +100,10 @@ export const DriverPayrollList = ({ title }: PageProps) => {
         }
 
         showToastSuccess(
-            `Driver Payroll #${payroll.payroll_code ?? 0} marked as ${paid ? "paid" : "unpaid"}`,
+            t("notifications.statusChanged", {
+                code: payroll.payroll_code ?? 0,
+                status: paid ? t("payroll.status.paid") : t("payroll.status.unpaid"),
+            }),
         );
     };
 
@@ -121,9 +129,11 @@ export const DriverPayrollList = ({ title }: PageProps) => {
 
     const handleExport = () => {
         openConfirmDialog({
-            title: "Confirm Export",
-            message: `All${selectedPayrollList.length > 0 ? " selected" : ""} driver payrolls will be exported.`,
-            confirmText: "Export",
+            title: t("confirmations.export.title"),
+            message: t("confirmations.export.message", {
+                selectedCount: selectedPayrollList.length > 0 ? " selected" : "",
+            }),
+            confirmText: t("confirmations.export.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
@@ -174,9 +184,9 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess("Driver payrolls exported successfully.");
+                    showToastSuccess(t("notifications.exportSuccess"));
                 } else {
-                    showToastError("Error exporting driver payrolls.");
+                    showToastError(t("notifications.exportError"));
                 }
             },
         });
@@ -188,9 +198,9 @@ export const DriverPayrollList = ({ title }: PageProps) => {
         }
 
         openConfirmDialog({
-            title: "Confirm Deletion",
-            message: `${selectedPayrollList.length} selected payroll(s) will be deleted.`,
-            confirmText: "Delete",
+            title: t("confirmations.delete.title"),
+            message: t("confirmations.delete.message", { count: selectedPayrollList.length }),
+            confirmText: t("confirmations.delete.confirmText"),
             confirmButtonProps: {
                 color: "error",
             },
@@ -216,6 +226,8 @@ export const DriverPayrollList = ({ title }: PageProps) => {
         });
     };
 
+    const driverName = ((driver?.driver_name ?? "") + " " + (driver?.driver_surname ?? "")).trim();
+
     return (
         <Box>
             <Box
@@ -228,8 +240,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                 }}
             >
                 <Typography variant="h5" component="h2" sx={{ mb: { xs: 2, md: 0 } }}>
-                    Lista de Liquidaciones de{" "}
-                    {((driver?.driver_name ?? "") + " " + (driver?.driver_surname ?? "")).trim()}
+                    {t("listTitle", { driverName })}
                 </Typography>
 
                 <Box
@@ -244,7 +255,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                         startIcon={<AddIcon />}
                         onClick={() => setAddFormDialogOpen(true)}
                     >
-                        Add
+                        {t("buttons.add")}
                     </Button>
                     {/* Assuming you have a DriverPayrollFormDialog component */}
                     {addFormDialogOpen && (
@@ -263,11 +274,11 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                         startIcon={<TableChartIcon />}
                         onClick={handleExport}
                     >
-                        Export
+                        {t("buttons.export")}
                     </Button>
 
                     <Tooltip
-                        title={selectedPayrollList.length === 0 ? "Select payrolls to delete" : ""}
+                        title={selectedPayrollList.length === 0 ? t("tooltips.selectToDelete") : ""}
                     >
                         <Box component="span">
                             <Button
@@ -277,7 +288,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                 onClick={handleDelete}
                                 disabled={selectedPayrollList.length === 0}
                             >
-                                Delete
+                                {t("buttons.delete")}
                             </Button>
                         </Box>
                     </Tooltip>
@@ -288,7 +299,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                 <List sx={{ width: "100%" }}>
                     {driverPayrollList.length === 0 ? (
                         <Box sx={{ textAlign: "center", my: 3 }}>
-                            <Typography variant="body1">No driver Payrolls</Typography>
+                            <Typography variant="body1">{t("noPayrolls")}</Typography>
                         </Box>
                     ) : (
                         driverPayrollList.map((payroll) => {
@@ -342,7 +353,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                                     display: { xs: "inline", sm: "none" },
                                                 }}
                                             >
-                                                Select
+                                                {t("select")}
                                             </Typography>
                                         </Box>
 
@@ -422,8 +433,8 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                                 onChange={(e) =>
                                                     handlePaidToggle(payroll, e.target.checked)
                                                 }
-                                                textChecked="Paid"
-                                                textUnchecked="Unpaid"
+                                                textChecked={t("payroll.status.paid")}
+                                                textUnchecked={t("payroll.status.unpaid")}
                                             />
                                         </Box>
                                     </Box>

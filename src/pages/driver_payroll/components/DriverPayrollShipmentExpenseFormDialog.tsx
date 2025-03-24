@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -20,57 +21,58 @@ import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
 import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
-
-// Utility functions for number formatting and parsing
+import { driverPayrollDetailTranslationNamespace } from "../translations";
+import type { TFunction } from "i18next";
 
 // Define schema for form validation
-const shipmentExpenseFormSchema = z.object({
-    expense_code: z.number().nullable(),
-    expense_date: z.coerce.date({
-        required_error: "El campo Fecha es obligatorio.",
-    }),
-    receipt: z.string({
-        invalid_type_error: "Valor inválido.",
-        required_error: "El campo Recibo es obligatorio.",
-    }),
-    amount: z.coerce
-        .string({
-            invalid_type_error: "Valor inválido.",
-            required_error: "El campo Monto es obligatorio.",
-        })
-        .superRefine((arg, ctx) => {
-            if (arg.length <= 0) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.too_small,
-                    minimum: 1,
-                    type: "string",
-                    inclusive: true,
-                    message: "Monto no puede estar vacío.",
-                });
-            }
+const getShipmentExpenseFormSchema = (t: TFunction) =>
+    z.object({
+        expense_code: z.number().nullable(),
+        expense_date: z.coerce.date({
+            required_error: t("expenses.dialogs.form.errors.dateRequired"),
+        }),
+        receipt: z.string({
+            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
+            required_error: t("expenses.dialogs.form.errors.receiptRequired"),
+        }),
+        amount: z.coerce
+            .string({
+                invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
+                required_error: t("expenses.dialogs.form.errors.amountRequired"),
+            })
+            .superRefine((arg, ctx) => {
+                if (arg.length <= 0) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.too_small,
+                        minimum: 1,
+                        type: "string",
+                        inclusive: true,
+                        message: t("expenses.dialogs.form.errors.amountEmpty"),
+                    });
+                }
 
-            const val = globalizeParser(arg);
-            if (!val) {
-                return ctx.addIssue({
-                    code: z.ZodIssueCode.invalid_type,
-                    message: "Número inválido",
-                    expected: "number",
-                    received: "unknown",
-                });
-            }
-        })
-        .transform((arg) => globalizeParser(arg).toFixed(2)),
-    reason: z.string({
-        invalid_type_error: "Valor inválido.",
-        required_error: "El campo Motivo es obligatorio.",
-    }),
-    driver_payroll_code: z.number({
-        invalid_type_error: "Valor inválido.",
-        required_error: "El código de Liquidación es obligatorio.",
-    }),
-});
+                const val = globalizeParser(arg);
+                if (!val) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.invalid_type,
+                        message: t("expenses.dialogs.form.errors.invalidNumber"),
+                        expected: "number",
+                        received: "unknown",
+                    });
+                }
+            })
+            .transform((arg) => globalizeParser(arg).toFixed(2)),
+        reason: z.string({
+            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
+            required_error: t("expenses.dialogs.form.errors.reasonRequired"),
+        }),
+        driver_payroll_code: z.number({
+            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
+            required_error: t("expenses.dialogs.form.errors.payrollCodeRequired"),
+        }),
+    });
 
-type ShipmentExpenseFormSchema = z.infer<typeof shipmentExpenseFormSchema>;
+type ShipmentExpenseFormSchema = z.infer<ReturnType<typeof getShipmentExpenseFormSchema>>;
 
 // Default values for the form
 const EXPENSE_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentExpenseFormSchema => ({
@@ -112,6 +114,8 @@ const ShipmentExpenseFormDialogFields = ({
     form,
     driverPayrollList,
 }: Readonly<ShipmentExpenseFormDialogFields>) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
     const driverPayrollOptionList: AutocompleteOption[] = useMemo(
         () =>
             driverPayrollList?.map((item) => ({
@@ -131,7 +135,7 @@ const ShipmentExpenseFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             fullWidth
-                            label="Fecha"
+                            label={t("expenses.dialogs.form.fields.date")}
                             type="date"
                             error={!!form.formState.errors.expense_date}
                             helperText={form.formState.errors.expense_date?.message}
@@ -160,7 +164,7 @@ const ShipmentExpenseFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Recibo"
+                            label={t("expenses.dialogs.form.fields.receipt")}
                             fullWidth
                             error={!!form.formState.errors.receipt}
                             helperText={form.formState.errors.receipt?.message}
@@ -186,7 +190,7 @@ const ShipmentExpenseFormDialogFields = ({
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Liquidación"
+                                        label={t("expenses.dialogs.form.fields.payroll")}
                                         error={!!form.formState.errors.driver_payroll_code}
                                         helperText={
                                             form.formState.errors.driver_payroll_code?.message
@@ -209,7 +213,7 @@ const ShipmentExpenseFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Monto"
+                            label={t("expenses.dialogs.form.fields.amount")}
                             fullWidth
                             error={!!form.formState.errors.amount}
                             helperText={form.formState.errors.amount?.message}
@@ -223,7 +227,7 @@ const ShipmentExpenseFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label="Motivo"
+                            label={t("expenses.dialogs.form.fields.reason")}
                             fullWidth
                             error={!!form.formState.errors.reason}
                             helperText={form.formState.errors.reason?.message}
@@ -253,6 +257,11 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
     setExpenseToEdit,
     driverPayrollList,
 }: Readonly<DriverPayrollShipmentExpenseFormDialogProps>) => {
+    const { t } = useTranslation(driverPayrollDetailTranslationNamespace);
+
+    // Create schema with translations
+    const shipmentExpenseFormSchema = useMemo(() => getShipmentExpenseFormSchema(t), [t]);
+
     // STATE
     // React form hook setup
     const form = useForm<ShipmentExpenseFormSchema>({
@@ -305,7 +314,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
 
     const putExpense = async (formData: ShipmentExpense) => {
         if (!formData.expense_code) {
-            setSubmitResult({ error: "Gasto no puede editarse" });
+            setSubmitResult({ error: t("expenses.dialogs.form.errors.cannotEdit") });
             return;
         }
 
@@ -343,8 +352,8 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
             return;
         }
 
-        setSubmitResult({ success: resp.message ?? "Operación exitosa" });
-        showToastSuccess(resp.message ?? "Operación exitosa");
+        setSubmitResult({ success: resp.message ?? t("expenses.dialogs.form.defaultSuccess") });
+        showToastSuccess(resp.message ?? t("expenses.dialogs.form.defaultSuccess"));
 
         await loadExpenseList();
 
@@ -366,7 +375,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
                     {submitResult.success || submitResult.error}
                 </Box>
             ) : (
-                <span>Completar datos del Gasto</span>
+                <span>{t("expenses.dialogs.form.description")}</span>
             );
         }
 
@@ -378,7 +387,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
                     fontWeight: "bold",
                 }}
             >
-                Revise los campos requeridos
+                {t("expenses.dialogs.form.reviewFields")}
             </Box>
         );
     };
@@ -397,7 +406,11 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
                 },
             }}
         >
-            <DialogTitle>{!expenseToEdit ? "Agregar Gasto" : "Editar Gasto"}</DialogTitle>
+            <DialogTitle>
+                {!expenseToEdit
+                    ? t("expenses.dialogs.form.addTitle")
+                    : t("expenses.dialogs.form.editTitle")}
+            </DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
@@ -408,9 +421,9 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cerrar</Button>
+                <Button onClick={handleClose}>{t("buttons.close")}</Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {!expenseToEdit ? "Agregar Gasto" : "Editar Gasto"}
+                    {!expenseToEdit ? t("buttons.addExpense") : t("buttons.editExpense")}
                 </Button>
             </DialogActions>
         </Dialog>
