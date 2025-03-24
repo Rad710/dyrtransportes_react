@@ -20,9 +20,9 @@ import { useToast } from "@/context/ToastContext";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
-import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 import { driverPayrollTranslationNamespace } from "../translations";
 import type { TFunction } from "i18next";
+import { numberFormatter, numberParser } from "@/utils/i18n";
 
 // Define schema for form validation
 const getShipmentExpenseFormSchema = (t: TFunction) =>
@@ -51,7 +51,7 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
                     });
                 }
 
-                const val = globalizeParser(arg);
+                const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
                         code: z.ZodIssueCode.invalid_type,
@@ -61,7 +61,7 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
                     });
                 }
             })
-            .transform((arg) => globalizeParser(arg).toFixed(2)),
+            .transform((arg) => numberParser(arg).toFixed(2)),
         reason: z.string({
             invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
             required_error: t("expenses.dialogs.form.errors.reasonRequired"),
@@ -89,7 +89,7 @@ const expenseToFormSchema = (expense: ShipmentExpense): ShipmentExpenseFormSchem
     expense_code: expense?.expense_code ?? null,
     expense_date: DateTime.fromHTTP(expense.expense_date).toJSDate(),
     receipt: expense?.receipt ?? "",
-    amount: globalizeFormatter(parseFloat(expense?.amount ?? "0") || 0),
+    amount: numberFormatter(parseFloat(expense?.amount ?? "0") || 0),
     reason: expense?.reason ?? "",
     driver_payroll_code: expense?.driver_payroll_code ?? 0,
 });

@@ -7,7 +7,7 @@ import { api } from "@/utils/axios";
 import { Shipment, ShipmentApiResponse, GroupedShipments } from "./types";
 import type { TFunction } from "i18next";
 import { z } from "zod";
-import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
+import { numberFormatter, numberParser } from "@/utils/i18n";
 
 export type ShipmentPayrollApiResponse = ShipmentPayroll & ApiResponse;
 
@@ -329,7 +329,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                     });
                 }
 
-                const val = globalizeParser(arg);
+                const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
                         code: z.ZodIssueCode.invalid_type,
@@ -339,7 +339,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                     });
                 }
             })
-            .transform((arg) => globalizeParser(arg).toFixed(2)),
+            .transform((arg) => numberParser(arg).toFixed(2)),
         payroll_price: z.coerce
             .string({
                 invalid_type_error: t("formDialog.validation.invalidValue"),
@@ -360,7 +360,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                     });
                 }
 
-                const val = globalizeParser(arg);
+                const val = numberParser(arg);
                 if (!val) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.invalid_type,
@@ -370,7 +370,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                     });
                 }
             })
-            .transform((arg) => globalizeParser(arg).toFixed(2)),
+            .transform((arg) => numberParser(arg).toFixed(2)),
 
         dispatch_code: z
             .string({
@@ -491,8 +491,8 @@ export const ShipmentUtils = {
         route_code: shipment?.route_code ?? 0,
         origin: shipment?.origin ?? "",
         destination: shipment?.destination ?? "",
-        price: globalizeFormatter(parseFloat(shipment?.price ?? "0") || 0),
-        payroll_price: globalizeFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
+        price: numberFormatter(parseFloat(shipment?.price ?? "0") || 0),
+        payroll_price: numberFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
 
         dispatch_code: shipment?.dispatch_code ?? "",
         receipt_code: shipment?.receipt_code ?? "",

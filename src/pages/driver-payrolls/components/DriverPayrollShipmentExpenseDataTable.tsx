@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
-import { globalizeFormatter } from "@/utils/globalize";
+import { numberFormatter } from "@/utils/i18n";
 import { DateTime } from "luxon";
 import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
@@ -65,7 +65,7 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
                         fontWeight: "bold",
                     }}
                 >
-                    {globalizeFormatter(totalAmount)}
+                    {numberFormatter(totalAmount)}
                 </Typography>
             </Box>
         </Box>
@@ -160,7 +160,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
             title: t("expenses.dialogs.delete.title"),
             message: t("expenses.dialogs.delete.messageSingle", {
                 receipt: row.receipt,
-                amount: globalizeFormatter(parseFloat(row.amount)),
+                amount: numberFormatter(parseFloat(row.amount)),
             }),
             confirmText: t("expenses.dialogs.delete.confirmText"),
             confirmButtonProps: {
@@ -291,7 +291,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         {
             field: "amount",
             headerName: t("expenses.columns.amount"),
-            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.amount)),
+            renderCell: ({ row }) => numberFormatter(parseFloat(row.amount)),
             minWidth: 120,
             flex: 0.8,
             align: "right",

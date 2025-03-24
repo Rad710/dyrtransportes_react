@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { globalizeFormatter } from "@/utils/globalize";
+import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { routeTranslationNamespace } from "../translations";
 
@@ -136,14 +136,14 @@ export const RouteDataTable = ({
         {
             field: "price",
             headerName: t("dataTable.columns.price"),
-            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.price)),
+            renderCell: ({ row }) => numberFormatter(parseFloat(row.price)),
             minWidth: 100,
             flex: 0.8,
         },
         {
             field: "payroll_price",
             headerName: t("dataTable.columns.payrollPrice"),
-            renderCell: ({ row }) => globalizeFormatter(parseFloat(row.payroll_price)),
+            renderCell: ({ row }) => numberFormatter(parseFloat(row.payroll_price)),
             minWidth: 120,
             flex: 0.8,
         },

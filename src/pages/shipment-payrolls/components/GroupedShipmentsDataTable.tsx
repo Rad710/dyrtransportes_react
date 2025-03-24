@@ -19,7 +19,7 @@ import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { AutocompleteOption } from "@/types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
-import { globalizeFormatter } from "@/utils/globalize";
+import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
 import type { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
@@ -243,7 +243,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {globalizeFormatter(totals.totalOrigin)}
+                {numberFormatter(totals.totalOrigin)}
             </TableCell>
             <TableCell
                 align="right"
@@ -252,7 +252,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {globalizeFormatter(totals.totalDestination)}
+                {numberFormatter(totals.totalDestination)}
             </TableCell>
             <TableCell></TableCell>
             <TableCell
@@ -262,7 +262,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {globalizeFormatter(totals.totalMoney)}
+                {numberFormatter(totals.totalMoney)}
             </TableCell>
             <TableCell></TableCell>
         </TableRow>
@@ -358,23 +358,23 @@ export function GroupedShipmentsDataTable({
         {
             id: "origin_weight",
             label: t("dataTable.columns.origin_weight"),
-            rowValue: (row) => globalizeFormatter(parseInt(row.origin_weight)),
+            rowValue: (row) => numberFormatter(parseInt(row.origin_weight)),
             groupedRowValue: (groupedShipments) =>
-                globalizeFormatter(parseInt(groupedShipments.subtotal_origin_weight)),
+                numberFormatter(parseInt(groupedShipments.subtotal_origin_weight)),
             align: "right",
         },
         {
             id: "destination_weight",
             label: t("dataTable.columns.destination_weight"),
-            rowValue: (row) => globalizeFormatter(parseInt(row.destination_weight)),
+            rowValue: (row) => numberFormatter(parseInt(row.destination_weight)),
             groupedRowValue: (groupedShipments) =>
-                globalizeFormatter(parseInt(groupedShipments.subtotal_destination_weight)),
+                numberFormatter(parseInt(groupedShipments.subtotal_destination_weight)),
             align: "right",
         },
         {
             id: "price",
             label: t("dataTable.columns.price"),
-            rowValue: (row) => globalizeFormatter(parseFloat(row.price)),
+            rowValue: (row) => numberFormatter(parseFloat(row.price)),
             groupedRowValue: () => "",
             align: "right",
         },
@@ -382,9 +382,9 @@ export function GroupedShipmentsDataTable({
             id: "total",
             label: t("dataTable.columns.total"),
             rowValue: (row) =>
-                globalizeFormatter(parseInt(row.destination_weight) * parseFloat(row.price)),
+                numberFormatter(parseInt(row.destination_weight) * parseFloat(row.price)),
             groupedRowValue: (groupedShipments) =>
-                globalizeFormatter(parseFloat(groupedShipments.subtotal_money)),
+                numberFormatter(parseFloat(groupedShipments.subtotal_money)),
             align: "right",
         },
     ];

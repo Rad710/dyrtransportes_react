@@ -17,10 +17,10 @@ import { Route } from "../types";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
 import { routeTranslationNamespace } from "../translations";
 import type { TFunction } from "i18next";
+import { numberFormatter, numberParser } from "@/utils/i18n";
 
 const getRouteFormSchema = (t: TFunction) => {
     const createRequiredStringSchema = (fieldName: string) =>
@@ -53,7 +53,7 @@ const getRouteFormSchema = (t: TFunction) => {
                     });
                 }
 
-                const val = globalizeParser(arg);
+                const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
                         code: z.ZodIssueCode.invalid_type,
@@ -63,7 +63,7 @@ const getRouteFormSchema = (t: TFunction) => {
                     });
                 }
             })
-            .transform((arg) => globalizeParser(arg).toFixed(2));
+            .transform((arg) => numberParser(arg).toFixed(2));
 
     return z.object({
         route_code: z.number().positive(t("formDialog.validation.invalidRouteCode")).nullish(),
@@ -128,10 +128,8 @@ export const RouteFormDialog = ({
                 route_code: routeToEdit?.route_code ?? null,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                price: globalizeFormatter(parseFloat(routeToEdit?.price ?? "") || 0),
-                payroll_price: globalizeFormatter(
-                    parseFloat(routeToEdit?.payroll_price ?? "") || 0,
-                ),
+                price: numberFormatter(parseFloat(routeToEdit?.price ?? "") || 0),
+                payroll_price: numberFormatter(parseFloat(routeToEdit?.payroll_price ?? "") || 0),
             });
         } else {
             reset(ROUTE_FORM_DEFAULT_VALUE);

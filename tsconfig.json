@@ -18,11 +18,7 @@
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"],
-            "globalize": ["node_modules/globalize/dist/globalize"],
-            "globalize/*": ["node_modules/globalize/dist/globalize/*"],
-            "cldr": ["node_modules/cldrjs/dist/cldr"],
-            "cldr/*": ["node_modules/cldrjs/dist/cldr/*"]
+            "@/*": ["./src/*"]
         },
         "types": ["vite/client", "node"]
     },

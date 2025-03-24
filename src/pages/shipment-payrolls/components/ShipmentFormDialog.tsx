@@ -19,7 +19,7 @@ import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";
 import { Driver } from "@/pages/driver/types";
 import { DriverPayroll } from "@/pages/driver-payrolls/types";
-import { globalizeFormatter } from "@/utils/globalize";
+import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
 import type { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
@@ -378,11 +378,11 @@ const ShipmentFormDialogFields = ({
                                 form.setValue("route_code", selectedRoute?.route_code ?? 0);
                                 form.setValue(
                                     "price",
-                                    globalizeFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
+                                    numberFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
                                 );
                                 form.setValue(
                                     "payroll_price",
-                                    globalizeFormatter(
+                                    numberFormatter(
                                         parseFloat(selectedRoute?.payroll_price ?? "") || 0,
                                     ),
                                 );
