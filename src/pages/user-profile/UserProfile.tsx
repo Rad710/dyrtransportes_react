@@ -5,10 +5,8 @@ import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
-import MuiCard from "@mui/material/Card";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
-import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import { useAuthStore } from "@/stores/authStore";
@@ -23,6 +21,9 @@ import { api } from "@/utils/axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { userProfileTranslationNamespace } from "./translations";
+import type { TFunction } from "i18next";
+import { UserProfileContainer } from "./components/UserProfileContainer";
+import { UserProfileCard } from "./components/UserProfileCard";
 
 const UserProfileEditApi = {
     putUserProfile: async (formData: FormData) =>
@@ -38,81 +39,48 @@ const UserProfileEditApi = {
             }),
 };
 
-// Remove fixed width from Card component
-const Card = styled(MuiCard)(({ theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    alignSelf: "center",
-    width: "100%", // Set to 100% always
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    margin: "auto",
-    boxShadow:
-        "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-    // Remove the fixed width for larger screens
-    ...theme.applyStyles("dark", {
-        boxShadow:
-            "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-    }),
-}));
+const getUserProfileFormSchema = (t: TFunction) => {
+    return z
+        .object({
+            name: z.string().min(1, { message: t("validation.nameRequired") }),
+            email: z.string().email({ message: t("validation.emailInvalid") }),
+            current_password: z.string().optional(),
+            new_password: z.string().optional(),
+        })
+        .refine(
+            (data) => {
+                // If new password is provided, current password must also be provided
+                return !data.new_password || !!data.current_password;
+            },
+            {
+                message: t("validation.currentPasswordRequired"),
+                path: ["current_password"],
+            },
+        )
+        .refine(
+            (data) => {
+                // If new password is provided, it must meet complexity requirements
+                if (!data.new_password) return true;
 
-const UserProfileContainer = styled(Stack)(({ theme }) => ({
-    width: "100%", // Ensure container is full width
-    "&::before": {
-        content: '""',
-        display: "block",
-        position: "absolute",
-        zIndex: -1,
-        inset: 0,
-        backgroundImage:
-            "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-        backgroundRepeat: "no-repeat",
-        ...theme.applyStyles("dark", {
-            backgroundImage:
-                "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
-        }),
-    },
-}));
+                const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+                return passwordRegex.test(data.new_password);
+            },
+            {
+                message: t("validation.passwordComplexity"),
+                path: ["new_password"],
+            },
+        );
+};
+type UserProfileFormSchema = z.infer<ReturnType<typeof getUserProfileFormSchema>>;
+
+// Remove fixed width from Card component
 
 export const UserProfile = ({ title }: PageProps) => {
     // Translation
     const { t } = useTranslation(userProfileTranslationNamespace);
 
     // Define schema with Zod and translations
-    const userProfileFormSchema = useMemo(() => {
-        return z
-            .object({
-                name: z.string().min(1, { message: t("validation.nameRequired") }),
-                email: z.string().email({ message: t("validation.emailInvalid") }),
-                current_password: z.string().optional(),
-                new_password: z.string().optional(),
-            })
-            .refine(
-                (data) => {
-                    // If new password is provided, current password must also be provided
-                    return !data.new_password || !!data.current_password;
-                },
-                {
-                    message: t("validation.currentPasswordRequired"),
-                    path: ["current_password"],
-                },
-            )
-            .refine(
-                (data) => {
-                    // If new password is provided, it must meet complexity requirements
-                    if (!data.new_password) return true;
-
-                    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-                    return passwordRegex.test(data.new_password);
-                },
-                {
-                    message: t("validation.passwordComplexity"),
-                    path: ["new_password"],
-                },
-            );
-    }, [t]);
-
-    type UserProfileFormSchema = z.infer<typeof userProfileFormSchema>;
+    const userProfileFormSchema = useMemo(() => getUserProfileFormSchema(t), [t]);
 
     //STATE
     const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -203,7 +171,7 @@ export const UserProfile = ({ title }: PageProps) => {
         >
             <ColorModeSelect sx={{ position: "absolute", top: "1rem", right: "1rem" }} />
 
-            <Card variant="outlined" sx={{ overflowY: "visible", maxWidth: "100%" }}>
+            <UserProfileCard variant="outlined" sx={{ overflowY: "visible", maxWidth: "100%" }}>
                 <Typography
                     component="h1"
                     variant="h4"
@@ -365,7 +333,7 @@ export const UserProfile = ({ title }: PageProps) => {
                         </Button>
                     </Stack>
                 </Box>
-            </Card>
+            </UserProfileCard>
         </UserProfileContainer>
     );
 };

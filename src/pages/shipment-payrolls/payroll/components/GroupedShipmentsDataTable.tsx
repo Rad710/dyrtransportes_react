@@ -11,11 +11,9 @@ import Checkbox from "@mui/material/Checkbox";
 
 import { Autocomplete, CircularProgress, Stack, TablePagination, TextField } from "@mui/material";
 
-import { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
 import React, { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
-import { ShipmentApi } from "../utils";
 import { isAxiosError } from "axios";
 import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
@@ -23,7 +21,10 @@ import { AutocompleteOption } from "@/types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { globalizeFormatter } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
-import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
+import { shipmentTranslationNamespace } from "../../translations"; // Adjust path as needed
+import type { GroupedShipments, Shipment } from "../types";
+import type { ShipmentPayroll } from "../../types";
+import { ShipmentApi } from "../utils";
 
 type Column = {
     id: keyof Shipment | "diff" | "total" | "checkbox";

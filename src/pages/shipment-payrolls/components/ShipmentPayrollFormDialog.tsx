@@ -8,7 +8,6 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Box from "@mui/material/Box";
-import { styled } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
@@ -20,12 +19,19 @@ import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { useTranslation } from "react-i18next";
 import { shipmentPayrollListTranslationNamespace } from "../translations";
+import type { TFunction } from "i18next";
 
-// Styled component for the dialog content with better scroll handling
-const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-    overflow: "visible", // Allow content to be visible outside the dialog
-    paddingBottom: theme.spacing(2),
-}));
+const getShipmentPayrollFormSchema = (t: TFunction) => {
+    return z.object({
+        payroll_code: z.number().positive(t("formDialog.validation.invalidPayrollCode")).nullish(),
+        payroll_timestamp: z.date({
+            required_error: t("formDialog.validation.dateRequired"),
+        }),
+        collected: z.boolean(),
+        deleted: z.boolean(),
+    });
+};
+type ShipmentPayrollFormSchema = z.infer<ReturnType<typeof getShipmentPayrollFormSchema>>;
 
 interface ShipmentPayrollDialogProps extends FormDialogProps {
     year: number;
@@ -48,21 +54,7 @@ export const ShipmentPayrollFormDialog = ({
     const { t } = useTranslation(shipmentPayrollListTranslationNamespace);
 
     // Create schema with translations
-    const shipmentPayrollFormSchema = useMemo(() => {
-        return z.object({
-            payroll_code: z
-                .number()
-                .positive(t("formDialog.validation.invalidPayrollCode"))
-                .nullish(),
-            payroll_timestamp: z.date({
-                required_error: t("formDialog.validation.dateRequired"),
-            }),
-            collected: z.boolean(),
-            deleted: z.boolean(),
-        });
-    }, [t]);
-
-    type ShipmentPayrollFormSchema = z.infer<typeof shipmentPayrollFormSchema>;
+    const shipmentPayrollFormSchema = useMemo(() => getShipmentPayrollFormSchema(t), [t]);
 
     // State
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -258,7 +250,7 @@ export const ShipmentPayrollFormDialog = ({
             <DialogTitle>
                 {!getValues("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
             </DialogTitle>
-            <StyledDialogContent>
+            <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box
                     sx={{
@@ -305,7 +297,7 @@ export const ShipmentPayrollFormDialog = ({
                         )}
                     />
                 </Box>
-            </StyledDialogContent>
+            </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>{t("formDialog.close")}</Button>
                 <Button

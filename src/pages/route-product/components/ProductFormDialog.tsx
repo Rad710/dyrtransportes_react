@@ -19,6 +19,28 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { productTranslationNamespace } from "../translations";
+import type { TFunction } from "i18next";
+
+const getProductFormSchema = (t: TFunction) => {
+    const createRequiredStringSchema = (fieldName: string) =>
+        z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: fieldName.toLowerCase(),
+                }),
+            });
+
+    return z.object({
+        product_code: z.number().positive(t("formDialog.validation.invalidProductCode")).nullish(),
+        product_name: createRequiredStringSchema(t("formDialog.fields.productName")),
+    });
+};
+
+type ProductFormSchema = z.infer<ReturnType<typeof getProductFormSchema>>;
 
 interface ProductFormDialogProps extends FormDialogProps {
     loadProductList: () => Promise<void>;
@@ -37,30 +59,7 @@ export const ProductFormDialog = ({
     const { t } = useTranslation(productTranslationNamespace);
 
     // Create schema with translations
-    const productFormSchema = useMemo(() => {
-        // Create a reusable string validation for fields with similar requirements
-        const createRequiredStringSchema = (fieldName: string) =>
-            z
-                .string({
-                    invalid_type_error: t("formDialog.validation.invalidValue"),
-                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
-                })
-                .min(1, {
-                    message: t("formDialog.validation.fieldEmpty", {
-                        field: fieldName.toLowerCase(),
-                    }),
-                });
-
-        return z.object({
-            product_code: z
-                .number()
-                .positive(t("formDialog.validation.invalidProductCode"))
-                .nullish(),
-            product_name: createRequiredStringSchema(t("formDialog.fields.productName")),
-        });
-    }, [t]);
-
-    type ProductFormSchema = z.infer<typeof productFormSchema>;
+    const productFormSchema = useMemo(() => getProductFormSchema(t), [t]);
 
     const PRODUCT_FORM_DEFAULT_VALUE: ProductFormSchema = {
         product_code: null,

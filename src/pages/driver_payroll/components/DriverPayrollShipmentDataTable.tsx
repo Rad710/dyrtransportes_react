@@ -15,13 +15,13 @@ import { ActionsMenu } from "@/components/ActionsMenu";
 import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { Shipment } from "@/pages/shipment-payrolls/types";
-import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
 import { DriverPayroll } from "../types";
 import { DriverPayrollApi } from "../utils";
 import { globalizeFormatter } from "@/utils/globalize";
+import type { Shipment } from "@/pages/shipment-payrolls/payroll/types";
+import { ShipmentApi } from "@/pages/shipment-payrolls/payroll/utils";
 
 const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
     const theme = useTheme();

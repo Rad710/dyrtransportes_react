@@ -8,67 +8,48 @@ import FormControl from "@mui/material/FormControl";
 import { Link as MuiLink } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import MuiCard from "@mui/material/Card";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
-import { styled } from "@mui/material/styles";
 import ColorModeSelect from "@/theme/ColorModeSelect";
 import { DyRTransportesIcon } from "@/components/DyRTransportesIcon";
-import { isAxiosError } from "axios";
+import { isAxiosError, type AxiosError, type AxiosResponse } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink } from "react-router";
-import { PageProps } from "@/types";
+import { PageProps, type ApiResponse, type AuthResponse } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getLoginFormSchema, LogInApi, type LoginFormData } from "./utils";
 import { useTranslation } from "react-i18next";
 import { loginTranslationNamespace } from "./translations";
+import { api } from "@/utils/axios";
+import type { TFunction } from "i18next";
+import { z } from "zod";
+import { AuthCard } from "@/pages/auth/components/AuthCard";
+import { AuthContainer } from "@/pages/auth/components/AuthContainer";
 
-const Card = styled(MuiCard)(({ theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    alignSelf: "center",
-    width: "100%",
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    margin: "auto",
-    [theme.breakpoints.up("sm")]: {
-        maxWidth: "450px",
-    },
-    boxShadow:
-        "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-    ...theme.applyStyles("dark", {
-        boxShadow:
-            "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-    }),
-}));
+const loginUser = (formData: FormData) =>
+    api
+        .post(`/auth/log-in`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then((response: AxiosResponse<AuthResponse | null>) => response.data ?? null)
+        .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+            return errorResponse ?? null;
+        });
 
-const LogInContainer = styled(Stack)(({ theme }) => ({
-    height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
-    minHeight: "100%",
-    padding: theme.spacing(2),
-    [theme.breakpoints.up("sm")]: {
-        padding: theme.spacing(4),
-    },
-    "&::before": {
-        content: '""',
-        display: "block",
-        position: "absolute",
-        zIndex: -1,
-        inset: 0,
-        backgroundImage:
-            "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-        backgroundRepeat: "no-repeat",
-        ...theme.applyStyles("dark", {
-            backgroundImage:
-                "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
+const getLoginFormSchema = (t: TFunction<"login">) => {
+    return z.object({
+        email: z.string().email({ message: t("errors.emailRequired") }),
+        password: z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/, {
+            message: t("errors.passwordRequired"),
         }),
-    },
-}));
+        remember_me: z.boolean().optional(),
+    });
+};
+
+type LoginFormData = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export const LogIn = ({ title }: PageProps) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -115,7 +96,7 @@ export const LogIn = ({ title }: PageProps) => {
             console.log("Login post: ", Object.fromEntries(formData));
         }
 
-        const resp = await LogInApi.loginUser(formData);
+        const resp = await loginUser(formData);
 
         if (import.meta.env.VITE_DEBUG) {
             console.log("LogIn response: ", { resp });
@@ -131,9 +112,9 @@ export const LogIn = ({ title }: PageProps) => {
     };
 
     return (
-        <LogInContainer direction="column" justifyContent="space-between" overflow="auto">
+        <AuthContainer direction="column" justifyContent="space-between" overflow="auto">
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
-            <Card variant="outlined" sx={{ overflowY: "visible" }}>
+            <AuthCard variant="outlined" sx={{ overflowY: "visible" }}>
                 <DyRTransportesIcon />
                 <Typography
                     component="h1"
@@ -230,7 +211,7 @@ export const LogIn = ({ title }: PageProps) => {
                         </MuiLink>
                     </Typography>
                 </Box>
-            </Card>
-        </LogInContainer>
+            </AuthCard>
+        </AuthContainer>
     );
 };

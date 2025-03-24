@@ -20,6 +20,61 @@ import { useToast } from "@/context/ToastContext";
 import { globalizeFormatter, globalizeParser } from "@/utils/globalize";
 import { useTranslation } from "react-i18next";
 import { routeTranslationNamespace } from "../translations";
+import type { TFunction } from "i18next";
+
+const getRouteFormSchema = (t: TFunction) => {
+    const createRequiredStringSchema = (fieldName: string) =>
+        z
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: fieldName.toLowerCase(),
+                }),
+            });
+
+    // Create a reusable number validation schema for price fields
+    const createPriceSchema = (fieldName: string) =>
+        z.coerce
+            .string({
+                invalid_type_error: t("formDialog.validation.invalidValue"),
+                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+            })
+            .superRefine((arg, ctx) => {
+                if (arg.length <= 0) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.too_small,
+                        minimum: 1,
+                        type: "string",
+                        inclusive: true,
+                        message: t("formDialog.validation.fieldEmpty", { field: fieldName }),
+                    });
+                }
+
+                const val = globalizeParser(arg);
+                if (!val) {
+                    return ctx.addIssue({
+                        code: z.ZodIssueCode.invalid_type,
+                        message: t("formDialog.validation.invalidNumber"),
+                        expected: "number",
+                        received: "unknown",
+                    });
+                }
+            })
+            .transform((arg) => globalizeParser(arg).toFixed(2));
+
+    return z.object({
+        route_code: z.number().positive(t("formDialog.validation.invalidRouteCode")).nullish(),
+        origin: createRequiredStringSchema(t("formDialog.fields.origin")),
+        destination: createRequiredStringSchema(t("formDialog.fields.destination")),
+        price: createPriceSchema(t("formDialog.fields.price")),
+        payroll_price: createPriceSchema(t("formDialog.fields.payrollPrice")),
+    });
+};
+
+type RouteFormSchema = z.infer<ReturnType<typeof getRouteFormSchema>>;
 
 interface RouteFormDialogProps extends FormDialogProps {
     loadRouteList: () => Promise<void>;
@@ -38,60 +93,7 @@ export const RouteFormDialog = ({
     const { t } = useTranslation(routeTranslationNamespace);
 
     // Create schema with translations
-    const routeFormSchema = useMemo(() => {
-        // Create a reusable string validation for fields with similar requirements
-        const createRequiredStringSchema = (fieldName: string) =>
-            z
-                .string({
-                    invalid_type_error: t("formDialog.validation.invalidValue"),
-                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
-                })
-                .min(1, {
-                    message: t("formDialog.validation.fieldEmpty", {
-                        field: fieldName.toLowerCase(),
-                    }),
-                });
-
-        // Create a reusable number validation schema for price fields
-        const createPriceSchema = (fieldName: string) =>
-            z.coerce
-                .string({
-                    invalid_type_error: t("formDialog.validation.invalidValue"),
-                    required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
-                })
-                .superRefine((arg, ctx) => {
-                    if (arg.length <= 0) {
-                        return ctx.addIssue({
-                            code: z.ZodIssueCode.too_small,
-                            minimum: 1,
-                            type: "string",
-                            inclusive: true,
-                            message: t("formDialog.validation.fieldEmpty", { field: fieldName }),
-                        });
-                    }
-
-                    const val = globalizeParser(arg);
-                    if (!val) {
-                        return ctx.addIssue({
-                            code: z.ZodIssueCode.invalid_type,
-                            message: t("formDialog.validation.invalidNumber"),
-                            expected: "number",
-                            received: "unknown",
-                        });
-                    }
-                })
-                .transform((arg) => globalizeParser(arg).toFixed(2));
-
-        return z.object({
-            route_code: z.number().positive(t("formDialog.validation.invalidRouteCode")).nullish(),
-            origin: createRequiredStringSchema(t("formDialog.fields.origin")),
-            destination: createRequiredStringSchema(t("formDialog.fields.destination")),
-            price: createPriceSchema(t("formDialog.fields.price")),
-            payroll_price: createPriceSchema(t("formDialog.fields.payrollPrice")),
-        });
-    }, [t]);
-
-    type RouteFormSchema = z.infer<typeof routeFormSchema>;
+    const routeFormSchema = useMemo(() => getRouteFormSchema(t), [t]);
 
     const ROUTE_FORM_DEFAULT_VALUE: RouteFormSchema = {
         route_code: null,

@@ -5,23 +5,25 @@ import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PageProps } from "@/types";
-import { GroupedShipments, Shipment, ShipmentPayroll as ShipmentPayrollType } from "./types";
+import { ShipmentPayroll as ShipmentPayrollType } from "../types";
 import { isAxiosError } from "axios";
 
-import { ShipmentApi, ShipmentPayrollApi } from "./utils";
+import { ShipmentPayrollApi } from "../utils";
 import { ShipmentFormDialog } from "./components/ShipmentFormDialog";
 import { GroupedShipmentsDataTable } from "./components/GroupedShipmentsDataTable";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
-import { ProductApi, RouteApi } from "../route-product/utils";
-import { DriverApi } from "../driver/utils";
-import { Product, Route } from "../route-product/types";
-import { Driver } from "../driver/types";
+import { ProductApi, RouteApi } from "../../route-product/utils";
+import { DriverApi } from "../../driver/utils";
+import { Product, Route } from "../../route-product/types";
+import { Driver } from "../../driver/types";
 import { DateTime } from "luxon";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
 import { useTranslation } from "react-i18next";
-import { shipmentTranslationNamespace } from "./translations"; // Adjust path as needed
+import { shipmentTranslationNamespace } from "../translations";
+import type { GroupedShipments, Shipment } from "./types";
+import { ShipmentApi } from "./utils";
 
 export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
     const { t } = useTranslation(shipmentTranslationNamespace);

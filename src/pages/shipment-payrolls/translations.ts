@@ -359,6 +359,7 @@ const shipmentResources = {
 };
 
 const shipmentPayrollListTranslationNamespace = "shipmentPayrollList";
+const shipmentTranslationNamespace = "shipment";
 appLanguages.forEach((lang) => {
     if (!i18n.hasResourceBundle(lang, shipmentPayrollListTranslationNamespace)) {
         i18n.addResourceBundle(
@@ -367,10 +368,7 @@ appLanguages.forEach((lang) => {
             shipmentPayrollListResources[lang].translation,
         );
     }
-});
 
-const shipmentTranslationNamespace = "shipment";
-appLanguages.forEach((lang) => {
     if (!i18n.hasResourceBundle(lang, shipmentTranslationNamespace)) {
         i18n.addResourceBundle(
             lang,
