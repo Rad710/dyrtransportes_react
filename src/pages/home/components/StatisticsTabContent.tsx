@@ -4,27 +4,27 @@ import SearchIcon from "@mui/icons-material/Search";
 import { DateTime } from "luxon";
 import { api } from "@/utils/axios";
 import { isAxiosError, type AxiosError, type AxiosResponse } from "axios";
-import type { DinatranRow } from "./types";
-import type { ApiResponse, PageProps } from "@/types";
-import { DinatranDataTable } from "./components/DinatranDataTable";
+import type { ApiResponse } from "@/types";
 import { useToast } from "@/context/ToastContext";
 import { TableChart as TableChartIcon } from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { downloadFile } from "@/utils/file";
+import type { StatisticRow } from "../types";
+import { StatisticsDataTable } from "./StatisticsDataTable";
 import { useTranslation } from "react-i18next";
-import { dinatranTranslationNamespace } from "./translations";
+import { homeTranslationNamespace } from "../translations";
 
-const getDinatranData = async (startDate: DateTime, endDate: DateTime) =>
+const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/dinatran?start_date=${startDate}&end_date=${endDate}`)
-        .then((response: AxiosResponse<DinatranRow[] | null>) => response.data ?? [])
+        .get(`/statistics?start_date=${startDate}&end_date=${endDate}`)
+        .then((response: AxiosResponse<StatisticRow[] | null>) => response.data ?? [])
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
         });
 
-const exportDinatranData = async (startDate: DateTime, endDate: DateTime) =>
+const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/dinatran/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+        .get(`/statistics/export-excel?start_date=${startDate}&end_date=${endDate}`, {
             responseType: "blob",
         })
         .then((response: AxiosResponse<BlobPart | null>) => {
@@ -34,10 +34,13 @@ const exportDinatranData = async (startDate: DateTime, endDate: DateTime) =>
             return errorResponse;
         });
 
-export const Dinatran = ({ title }: PageProps) => {
+export const StatisticsTabContent = () => {
+    // Add translation hook with home namespace
+    const { t } = useTranslation(homeTranslationNamespace);
+
     // state
     const [loading, setLoading] = useState<boolean>(true);
-    const [dinatranRows, setDinatranRows] = useState<DinatranRow[]>([]);
+    const [statisticRows, setStatisticRows] = useState<StatisticRow[]>([]);
 
     const [startDate, setStartDate] = useState<DateTime>(DateTime.now().startOf("day"));
     const [endDate, setEndDate] = useState<DateTime>(
@@ -48,40 +51,32 @@ export const Dinatran = ({ title }: PageProps) => {
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
-    // translations
-    const { t } = useTranslation(dinatranTranslationNamespace);
-
-    // USE EFFECT
-    useEffect(() => {
-        document.title = title;
-    }, [title]);
-
-    const loadDinatranRows = async () => {
+    const loadStatisticsRows = async () => {
         setLoading(true);
-        const resp = await getDinatranData(startDate, endDate);
+        const resp = await getStatisticsData(startDate, endDate);
         setLoading(false);
         if (!isAxiosError(resp) && resp) {
-            setDinatranRows(resp);
+            setStatisticRows(resp);
         } else {
             showToastAxiosError(resp);
-            setDinatranRows([]);
+            setStatisticRows([]);
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded DINATRAN rows: ", { resp });
+            console.log("Loaded statistics rows: ", { resp });
         }
     };
 
     useEffect(() => {
-        loadDinatranRows();
+        loadStatisticsRows();
     }, []);
 
     const onSearch = async () => {
         setLoading(true);
-        await loadDinatranRows();
+        await loadStatisticsRows();
     };
 
-    const handleExportarDinatran = () => {
+    const handleExportarStatistics = () => {
         const startDateString = startDate.toLocaleString({
             year: "numeric",
             month: "long",
@@ -94,41 +89,41 @@ export const Dinatran = ({ title }: PageProps) => {
         });
 
         openConfirmDialog({
-            title: t("exportDialog.title"),
-            message: t("exportDialog.message", {
+            title: t("statistics.exportDialog.title"),
+            message: t("statistics.exportDialog.message", {
                 startDate: startDateString,
                 endDate: endDateString,
             }),
-            confirmText: t("exportDialog.confirmText"),
+            confirmText: t("statistics.exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting DINATRAN...");
+                    console.log("Exporting statistics...");
                 }
-                const resp = await exportDinatranData(startDate, endDate);
+                const resp = await exportStatisticData(startDate, endDate);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting DINATRAN resp: ", { resp });
+                    console.log("Exporting statistics resp: ", { resp });
                 }
 
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        t("fileName"),
+                        t("statistics.fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess(t("notifications.exportSuccess"));
+                    showToastSuccess(t("statistics.notifications.exportSuccess"));
                 } else {
-                    showToastError(t("notifications.exportError"));
+                    showToastError(t("statistics.notifications.exportError"));
                 }
             },
         });
     };
 
     return (
-        <Box sx={{ p: 2 }}>
+        <Box>
             <Box
                 sx={{
                     display: "flex",
@@ -140,7 +135,7 @@ export const Dinatran = ({ title }: PageProps) => {
             >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("searchControls.startDate")}
+                        label={t("statistics.searchControls.startDate")}
                         type="date"
                         fullWidth
                         value={startDate.toFormat("yyyy-MM-dd")}
@@ -160,7 +155,7 @@ export const Dinatran = ({ title }: PageProps) => {
 
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("searchControls.endDate")}
+                        label={t("statistics.searchControls.endDate")}
                         type="date"
                         fullWidth
                         value={endDate.toFormat("yyyy-MM-dd")}
@@ -189,20 +184,20 @@ export const Dinatran = ({ title }: PageProps) => {
                         height: "40px",
                     }}
                 >
-                    <Box>{t("searchControls.search")}</Box>
+                    <Box>{t("statistics.searchControls.search")}</Box>
                 </Button>
 
                 <Button
                     variant="contained"
                     color="success"
                     startIcon={<TableChartIcon />}
-                    onClick={handleExportarDinatran}
+                    onClick={handleExportarStatistics}
                 >
-                    {t("searchControls.export")}
+                    {t("statistics.searchControls.export")}
                 </Button>
             </Box>
 
-            <DinatranDataTable loading={loading} dinatranRows={dinatranRows} />
+            <StatisticsDataTable loading={loading} statisticRows={statisticRows} />
         </Box>
     );
 };

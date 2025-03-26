@@ -3,6 +3,7 @@ export type DinatranRow = {
     shipments: number;
     total_origin_weight: string;
     total_destination_weight: string;
+    total_diff: string;
     total_shipment_payroll: string;
     total_driver_payroll: string;
 };

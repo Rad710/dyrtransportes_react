@@ -51,10 +51,7 @@ export const DinatranDataTable = ({ loading, dinatranRows }: DinatranDataTablePr
             headerName: t("dataTable.columns.difference"),
             flex: 1,
             minWidth: 100,
-            renderCell: ({ row }) =>
-                numberFormatter(
-                    parseFloat(row.total_destination_weight) - parseFloat(row.total_origin_weight),
-                ),
+            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_diff)),
         },
         {
             field: "totalShipmentPayroll",
