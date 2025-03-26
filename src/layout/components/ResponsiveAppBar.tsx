@@ -85,6 +85,11 @@ export const ResponsiveAppBar = () => {
             url: "/drivers",
             translationKey: "navigation.drivers",
         },
+        {
+            name: t("navigation.dinatran"),
+            url: "/dinatran",
+            translationKey: "navigation.dinatran",
+        },
     ];
 
     const settings: AppMenuLink[] = [

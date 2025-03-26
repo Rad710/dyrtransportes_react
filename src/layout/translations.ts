@@ -8,6 +8,7 @@ const resources = {
                 driverPayrolls: "Driver Payrolls",
                 routes: "Routes",
                 drivers: "Drivers",
+                dinatran: "DINATRAN",
             },
             userMenu: {
                 openSettings: "Open settings",
@@ -23,6 +24,7 @@ const resources = {
                 driverPayrolls: "Liquidaciones",
                 routes: "Precios y Productos",
                 drivers: "Choferes",
+                dinatran: "DINATRAN",
             },
             userMenu: {
                 openSettings: "Abrir configuración",

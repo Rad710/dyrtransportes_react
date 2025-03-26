@@ -1,5 +1,9 @@
 import { createTheme, alpha, PaletteMode, Shadows } from "@mui/material/styles";
 
+// locales
+import { bgBG } from "@mui/x-data-grid/locales";
+import { bgBG as coreBgBG } from "@mui/material/locale";
+
 declare module "@mui/material/Paper" {
     interface PaperPropsVariantOverrides {
         highlighted: true;
@@ -26,7 +30,7 @@ declare module "@mui/material/styles/createPalette" {
     }
 }
 
-const defaultTheme = createTheme();
+const defaultTheme = createTheme({}, bgBG, coreBgBG);
 
 const customShadows: Shadows = [...defaultTheme.shadows];
 
