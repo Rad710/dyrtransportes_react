@@ -7,7 +7,7 @@ import { Box, CircularProgress, CssBaseline, StyledEngineProvider } from "@mui/m
 
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
-import { hydrateAuth, useAuthStore } from "@/stores/authStore";
+import { cleanup, hydrateAuth, useAuthStore } from "@/stores/authStore";
 
 import { ErrorPage } from "@/components/ErrorPage";
 import { Layout } from "@/layout/Layout";
@@ -49,6 +49,10 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
         };
 
         initAuth();
+
+        return () => {
+            cleanup();
+        };
     }, []);
 
     if (isLoading) {
