@@ -2,6 +2,36 @@ import { AxiosError, isAxiosError } from "axios";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import { ApiResponse } from "@/types";
+import { useTranslation } from "react-i18next";
+import i18n, { appLanguages } from "@/utils/i18n";
+
+const resources = {
+    en: {
+        translation: {
+            unexpectedError: "An unexpected error occurred",
+            connectionError: "Connection error with the server",
+            noResponse: "No response received from server",
+            error: "Error",
+            mustBeUsedWithin: "must be used within a",
+        },
+    },
+    es: {
+        translation: {
+            unexpectedError: "Ocurrió un error inesperado",
+            connectionError: "Error de conexión con el Servidor",
+            noResponse: "No se recibió respuesta del servidor",
+            error: "Error",
+            mustBeUsedWithin: "debe usarse dentro de un",
+        },
+    },
+};
+
+const toastTranslationNamespace = "toast";
+appLanguages.forEach((lang) => {
+    if (!i18n.hasResourceBundle(lang, toastTranslationNamespace)) {
+        i18n.addResourceBundle(lang, toastTranslationNamespace, resources[lang].translation);
+    }
+});
 
 export type ToastSeverity = "success" | "error" | "warning" | "info";
 
@@ -30,7 +60,7 @@ interface ToastProviderProps {
     children: ReactNode;
 }
 
-// Toast component remains the same
+// Toast component
 export const Toast = ({
     open,
     message,
@@ -52,7 +82,7 @@ export const Toast = ({
     );
 };
 
-// Updated context with new functions
+// Updated context with translations
 const ToastContext = createContext<ToastContextType>({
     showToast: () => null,
     showToastSuccess: () => null,
@@ -62,13 +92,14 @@ const ToastContext = createContext<ToastContextType>({
 
 export const ToastProvider = ({ children }: ToastProviderProps) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
+    const { t } = useTranslation(toastTranslationNamespace);
 
     const showToast = (message: string, severity: ToastSeverity = "success") => {
         const id = Date.now();
         setToasts((prev) => [...prev, { id, message, severity }]);
     };
 
-    // New helper functions
+    // Helper functions
     const showToastSuccess = (message: string) => {
         showToast(message, "success");
     };
@@ -80,7 +111,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     const showToastAxiosError = (error?: AxiosError<ApiResponse> | Error | null) => {
         console.error(error);
 
-        let errorMessage = "An unexpected error occurred";
+        let errorMessage = t("unexpectedError");
 
         if (error instanceof Error) {
             // Handle general Error objects
@@ -89,15 +120,15 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 
         if (isAxiosError(error)) {
             if (error?.code === "ERR_NETWORK") {
-                errorMessage = "Error de conexión con el Servidor";
+                errorMessage = t("connectionError");
             }
 
             // Handle Axios specific errors
             if (error.response) {
-                errorMessage = `Error: ${error?.response?.data?.message} | ${error?.message}`;
+                errorMessage = `${t("error")}: ${error?.response?.data?.message} | ${error?.message}`;
             } else if (error.request) {
                 // The request was made but no response was received
-                errorMessage = "No response received from server";
+                errorMessage = t("noResponse");
             }
         }
 
@@ -139,9 +170,10 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 };
 
 export const useToast = (): ToastContextType => {
+    const { t } = useTranslation(toastTranslationNamespace);
     const context = useContext(ToastContext);
     if (context === undefined) {
-        throw new Error("useToast must be used within a ToastProvider");
+        throw new Error(`useToast ${t("mustBeUsedWithin")} ToastProvider`);
     }
     return context;
 };
