@@ -2,9 +2,48 @@ import { useRouteError, Link as RouterLink } from "react-router";
 import { Box, Typography, Container, Button, Paper, Divider, useTheme } from "@mui/material";
 import { DyRTransportesIcon } from "./DyRTransportesIcon";
 import { Home as HomeIcon, Refresh as RefreshIcon } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
+import i18n, { appLanguages } from "@/utils/i18n";
+
+const resources = {
+    en: {
+        translation: {
+            pageNotFound: "We couldn't find the page you're looking for",
+            internalServerError: "Internal server error",
+            forbiddenError: "You don't have permission to access this page",
+            unexpectedError: "An unexpected error occurred",
+            error: "Error",
+            unknownError: "Unknown error",
+            technicalDetails: "Technical details:",
+            goHome: "Go home",
+            tryAgain: "Try again",
+        },
+    },
+    es: {
+        translation: {
+            pageNotFound: "No encontramos la página que estás buscando",
+            internalServerError: "Error interno del servidor",
+            forbiddenError: "No tienes permiso para acceder a esta página",
+            unexpectedError: "Ocurrió un error inesperado",
+            error: "Error",
+            unknownError: "Error desconocido",
+            technicalDetails: "Detalles técnicos:",
+            goHome: "Ir al inicio",
+            tryAgain: "Intentar de nuevo",
+        },
+    },
+};
+
+const errorPageTranslationNamespace = "errorPage";
+appLanguages.forEach((lang) => {
+    if (!i18n.hasResourceBundle(lang, errorPageTranslationNamespace)) {
+        i18n.addResourceBundle(lang, errorPageTranslationNamespace, resources[lang].translation);
+    }
+});
 
 export const ErrorPage = () => {
     const theme = useTheme();
+    const { t } = useTranslation(errorPageTranslationNamespace);
     const error = useRouteError() as {
         statusText?: string;
         message?: string;
@@ -20,17 +59,17 @@ export const ErrorPage = () => {
     const getErrorMessage = () => {
         switch (statusCode) {
             case 404:
-                return "No encontramos la página que estás buscando";
+                return t("pageNotFound");
             case 500:
-                return "Error interno del servidor";
+                return t("internalServerError");
             case 403:
-                return "No tienes permiso para acceder a esta página";
+                return t("forbiddenError");
             default:
-                return "Ocurrió un error inesperado";
+                return t("unexpectedError");
         }
     };
 
-    const errorDetail = error.statusText || error.message || "Error desconocido";
+    const errorDetail = error.statusText || error.message || t("unknownError");
 
     return (
         <Container maxWidth="sm">
@@ -72,7 +111,7 @@ export const ErrorPage = () => {
                             gap: 1,
                         }}
                     >
-                        {statusCode ? `Error ${statusCode}` : "Error"}
+                        {statusCode ? `${t("error")} ${statusCode}` : t("error")}
                     </Typography>
 
                     <Typography
@@ -97,7 +136,7 @@ export const ErrorPage = () => {
                                 borderRadius: 1,
                             }}
                         >
-                            Detalles técnicos: {errorDetail}
+                            {t("technicalDetails")} {errorDetail}
                         </Typography>
                     )}
 
@@ -116,7 +155,7 @@ export const ErrorPage = () => {
                             to="/"
                             startIcon={<HomeIcon />}
                         >
-                            Ir al inicio
+                            {t("goHome")}
                         </Button>
                         <Button
                             variant="outlined"
@@ -124,7 +163,7 @@ export const ErrorPage = () => {
                             onClick={() => window.location.reload()}
                             startIcon={<RefreshIcon />}
                         >
-                            Intentar de nuevo
+                            {t("tryAgain")}
                         </Button>
                     </Box>
                 </Paper>

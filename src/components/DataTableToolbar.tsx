@@ -1,6 +1,7 @@
 import { alpha, Toolbar, Tooltip, Typography, IconButton, Box, Button } from "@mui/material";
-
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useTranslation } from "react-i18next";
+import i18n, { appLanguages } from "@/utils/i18n";
 
 interface DataTableToolbar {
     tableTitle: string;
@@ -9,12 +10,42 @@ interface DataTableToolbar {
     handleMove?: () => void;
 }
 
+const resources = {
+    en: {
+        translation: {
+            selected: "selected",
+            move: "Move",
+            delete: "Delete",
+        },
+    },
+    es: {
+        translation: {
+            selected: "seleccionados",
+            move: "Mover",
+            delete: "Eliminar",
+        },
+    },
+};
+
+const dataTableToolbarTranslationNamespace = "dataTableToolbar";
+appLanguages.forEach((lang) => {
+    if (!i18n.hasResourceBundle(lang, dataTableToolbarTranslationNamespace)) {
+        i18n.addResourceBundle(
+            lang,
+            dataTableToolbarTranslationNamespace,
+            resources[lang].translation,
+        );
+    }
+});
+
 export const DataTableToolbar = ({
     tableTitle,
     numSelected,
     handleDelete,
     handleMove,
 }: Readonly<DataTableToolbar>) => {
+    const { t } = useTranslation(dataTableToolbarTranslationNamespace);
+
     return (
         <Toolbar
             sx={[
@@ -35,7 +66,7 @@ export const DataTableToolbar = ({
                     variant="subtitle1"
                     component="div"
                 >
-                    {numSelected} selected
+                    {numSelected} {t("selected")}
                 </Typography>
             ) : (
                 <Typography sx={{ flex: "1 1 100%" }} variant="h6" id="tableTitle" component="div">
@@ -51,15 +82,15 @@ export const DataTableToolbar = ({
                 }}
             >
                 {handleMove && (numSelected ?? 0) > 0 && (
-                    <Tooltip title="Move">
+                    <Tooltip title={t("move")}>
                         <Button variant="outlined" onClick={handleMove}>
-                            Mover
+                            {t("move")}
                         </Button>
                     </Tooltip>
                 )}
 
                 {handleDelete && (numSelected ?? 0) > 0 && (
-                    <Tooltip title="Delete">
+                    <Tooltip title={t("delete")}>
                         <IconButton onClick={handleDelete}>
                             <DeleteIcon />
                         </IconButton>
