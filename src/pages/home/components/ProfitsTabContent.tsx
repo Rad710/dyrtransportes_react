@@ -1,46 +1,25 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { DateTime } from "luxon";
-import { api } from "@/utils/axios";
-import { isAxiosError, type AxiosError, type AxiosResponse } from "axios";
-import type { ApiResponse } from "@/types";
+import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { TableChart as TableChartIcon } from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { downloadFile } from "@/utils/file";
-import type { StatisticRow } from "../types";
-import { StatisticsDataTable } from "./StatisticsDataTable";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "../translations";
+import { exportStatisticData, getStatisticsData } from "./StatisticsTabContent";
+import type { ProfitData } from "../types";
+import { ProfitsChart } from "./ProfitsChart";
 
-export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
-    api
-        .get(`/statistics?start_date=${startDate}&end_date=${endDate}`)
-        .then((response: AxiosResponse<StatisticRow[] | null>) => response.data ?? [])
-        .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-            return errorResponse ?? null;
-        });
-
-export const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
-    api
-        .get(`/statistics/export-excel?start_date=${startDate}&end_date=${endDate}`, {
-            responseType: "blob",
-        })
-        .then((response: AxiosResponse<BlobPart | null>) => {
-            return response ?? null;
-        })
-        .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-            return errorResponse;
-        });
-
-export const StatisticsTabContent = () => {
+export const ProfitsTabContent = () => {
     // Add translation hook with home namespace
     const { t } = useTranslation(homeTranslationNamespace);
 
     // state
     const [loading, setLoading] = useState<boolean>(true);
-    const [statisticRows, setStatisticRows] = useState<StatisticRow[]>([]);
+    const [profitData, setProfitData] = useState<ProfitData | null>(null);
 
     const [startDate, setStartDate] = useState<DateTime>(
         DateTime.now().minus({ month: 1 }).startOf("day"),
@@ -53,32 +32,67 @@ export const StatisticsTabContent = () => {
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
-    const loadStatisticsRows = async () => {
+    const loadProfitData = async () => {
         setLoading(true);
         const resp = await getStatisticsData(startDate, endDate);
         setLoading(false);
         if (!isAxiosError(resp) && resp) {
-            setStatisticRows(resp);
+            const totals = resp.reduce(
+                (acc, item) => {
+                    const totalShipmentPayroll = parseFloat(item.total_shipment_payroll);
+                    const totalDriverPayroll = parseFloat(item.total_driver_payroll);
+                    const totalExpensesAmount = parseFloat(item.total_expenses_amount);
+
+                    const totalLosses = totalExpensesAmount - totalDriverPayroll;
+
+                    // Add current item's values to the accumulator
+                    acc.shipments += item.shipments || 0;
+                    acc.totalOriginWeight += parseFloat(item.total_origin_weight) || 0;
+                    acc.totalDestinationWeight += parseFloat(item.total_destination_weight) || 0;
+                    acc.totalShipmentPayroll += totalShipmentPayroll || 0;
+                    acc.totalDriverPayroll += totalDriverPayroll || 0;
+                    acc.totalExpensesAmountReceipt +=
+                        parseFloat(item.total_expenses_amount_receipt) || 0;
+                    acc.totalExpensesAmountNoReceipt +=
+                        parseFloat(item.total_expenses_amount_no_receipt) || 0;
+                    acc.totalLosses += totalLosses > 0 ? totalLosses : 0;
+                    acc.totalProfits += totalShipmentPayroll - totalDriverPayroll || 0;
+
+                    return acc;
+                },
+                {
+                    shipments: 0,
+                    totalOriginWeight: 0,
+                    totalDestinationWeight: 0,
+                    totalShipmentPayroll: 0,
+                    totalDriverPayroll: 0,
+                    totalExpensesAmountReceipt: 0,
+                    totalExpensesAmountNoReceipt: 0,
+                    totalLosses: 0,
+                    totalProfits: 0,
+                },
+            );
+
+            setProfitData(totals);
         } else {
             showToastAxiosError(resp);
-            setStatisticRows([]);
+            setProfitData(null);
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded statistics rows: ", { resp });
+            console.log("Loaded Profit rows: ", { resp });
         }
     };
 
     useEffect(() => {
-        loadStatisticsRows();
+        loadProfitData();
     }, []);
 
     const onSearch = async () => {
-        setLoading(true);
-        await loadStatisticsRows();
+        await loadProfitData();
     };
 
-    const handleExportarStatistics = () => {
+    const handleExportarProfit = () => {
         const startDateString = startDate.toLocaleString({
             year: "numeric",
             month: "long",
@@ -91,34 +105,34 @@ export const StatisticsTabContent = () => {
         });
 
         openConfirmDialog({
-            title: t("statistics.exportDialog.title"),
-            message: t("statistics.exportDialog.message", {
+            title: t("profits.exportDialog.title"),
+            message: t("profits.exportDialog.message", {
                 startDate: startDateString,
                 endDate: endDateString,
             }),
-            confirmText: t("statistics.exportDialog.confirmText"),
+            confirmText: t("profits.exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "info",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting statistics...");
+                    console.log("Exporting profits...");
                 }
                 const resp = await exportStatisticData(startDate, endDate);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting statistics resp: ", { resp });
+                    console.log("Exporting profits resp: ", { resp });
                 }
 
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        t("statistics.fileName"),
+                        t("profits.fileName"),
                         resp.headers?.["content-disposition"],
                     );
 
-                    showToastSuccess(t("statistics.notifications.exportSuccess"));
+                    showToastSuccess(t("profits.notifications.exportSuccess"));
                 } else {
-                    showToastError(t("statistics.notifications.exportError"));
+                    showToastError(t("profits.notifications.exportError"));
                 }
             },
         });
@@ -137,7 +151,7 @@ export const StatisticsTabContent = () => {
             >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("statistics.searchControls.startDate")}
+                        label={t("profits.searchControls.startDate")}
                         type="date"
                         fullWidth
                         value={startDate.toFormat("yyyy-MM-dd")}
@@ -157,7 +171,7 @@ export const StatisticsTabContent = () => {
 
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("statistics.searchControls.endDate")}
+                        label={t("profits.searchControls.endDate")}
                         type="date"
                         fullWidth
                         value={endDate.toFormat("yyyy-MM-dd")}
@@ -186,20 +200,31 @@ export const StatisticsTabContent = () => {
                         height: "40px",
                     }}
                 >
-                    <Box>{t("statistics.searchControls.search")}</Box>
+                    <Box>{t("profits.searchControls.search")}</Box>
                 </Button>
 
                 <Button
                     variant="contained"
                     color="success"
                     startIcon={<TableChartIcon />}
-                    onClick={handleExportarStatistics}
+                    onClick={handleExportarProfit}
                 >
-                    {t("statistics.searchControls.export")}
+                    {t("profits.searchControls.export")}
                 </Button>
             </Box>
 
-            <StatisticsDataTable loading={loading} statisticRows={statisticRows} />
+            <Box sx={{ mt: 4, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                {loading ? (
+                    <>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2 }}>
+                            {t("profits.loading")}
+                        </Typography>
+                    </>
+                ) : (
+                    <ProfitsChart profitData={profitData} startDate={startDate} endDate={endDate} />
+                )}
+            </Box>
         </Box>
     );
 };

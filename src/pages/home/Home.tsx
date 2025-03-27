@@ -5,6 +5,7 @@ import { TabPanel } from "@/components/TabPanel";
 import { StatisticsTabContent } from "./components/StatisticsTabContent";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "./translations";
+import { ProfitsTabContent } from "./components/ProfitsTabContent";
 
 export const Home = ({ title }: Readonly<PageProps>) => {
     const { t } = useTranslation(homeTranslationNamespace);
@@ -24,13 +25,21 @@ export const Home = ({ title }: Readonly<PageProps>) => {
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                 <Tabs value={value} onChange={handleChange} aria-label="home-tabs">
                     <Tab
-                        label={t("tabs.statistics")}
+                        label={t("profits.tabs")}
                         id="home-tab-0"
                         aria-controls="home-tabpanel-0"
+                    />
+                    <Tab
+                        label={t("statistics.tabs")}
+                        id="home-tab-1"
+                        aria-controls="home-tabpanel-1"
                     />
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>
+                <ProfitsTabContent />
+            </TabPanel>
+            <TabPanel value={value} index={1}>
                 <StatisticsTabContent />
             </TabPanel>
         </Box>

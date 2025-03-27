@@ -4,11 +4,8 @@ import i18n, { appLanguages } from "@/utils/i18n";
 const resources = {
     en: {
         translation: {
-            title: "Statistics",
-            tabs: {
-                statistics: "Statistics",
-            },
             statistics: {
+                tabs: "Statistics",
                 searchControls: {
                     startDate: "Start Date",
                     endDate: "End Date",
@@ -42,15 +39,50 @@ const resources = {
                     },
                 },
             },
+            profits: {
+                tabs: "Profits",
+                searchControls: {
+                    startDate: "Start Date",
+                    endDate: "End Date",
+                    search: "Search",
+                    export: "Export",
+                },
+                exportDialog: {
+                    title: "Confirm Export",
+                    message: "The report will be exported for {{startDate}} - {{endDate}}",
+                    confirmText: "Confirm Export",
+                },
+                notifications: {
+                    exportSuccess: "Report exported successfully.",
+                    exportError: "Error exporting report.",
+                },
+                fileName: "profits.xlsx",
+                loading: "Loading...",
+                chart: {
+                    title: "Profit Summary from {{startDate}} to {{endDate}}",
+                    labels: {
+                        summary: "Summary",
+                        income: "Income",
+                        expenses: "Expenses",
+                        losses: "Losses",
+                        profits: "Profits",
+                        totalShipments: "Total Shipments",
+                    },
+                    totals: {
+                        income: "Total Income:",
+                        expenses: "Total Expenses:",
+                        losses: "Total Losses:",
+                        profits: "Total Profits:",
+                        shipments: "Total Shipments:",
+                    },
+                },
+            },
         },
     },
     es: {
         translation: {
-            title: "Estadísticas",
-            tabs: {
-                statistics: "Estadísticas",
-            },
             statistics: {
+                tabs: "Estadísticas",
                 searchControls: {
                     startDate: "Fecha Inicio",
                     endDate: "Fecha Fin",
@@ -81,6 +113,44 @@ const resources = {
                         totalExpensesAmountReceipt: "Total Gastos Facturados (Gs.)",
                         totalExpensesAmountNoReceipt: "Total Gastos No Facturados (Gs.)",
                         totalExpensesAmount: "Total Gastos (Gs.)",
+                    },
+                },
+            },
+            profits: {
+                tabs: "Ganancias",
+                searchControls: {
+                    startDate: "Fecha Inicio",
+                    endDate: "Fecha Fin",
+                    search: "Buscar",
+                    export: "Exportar",
+                },
+                exportDialog: {
+                    title: "Confirmar Exportación",
+                    message: "Se exportará el informe {{startDate}} - {{endDate}}",
+                    confirmText: "Confirmar Exportación",
+                },
+                notifications: {
+                    exportSuccess: "Informe exportado exitosamente.",
+                    exportError: "Error al exportar Informe.",
+                },
+                fileName: "ganancias.xlsx",
+                loading: "Cargando...",
+                chart: {
+                    title: "Resumen de Ganancias de {{startDate}} hasta {{endDate}}",
+                    labels: {
+                        summary: "Resumen",
+                        income: "Ingresos",
+                        expenses: "Egresos",
+                        losses: "Pérdidas",
+                        profits: "Ganancias",
+                        totalShipments: "Total Viajes",
+                    },
+                    totals: {
+                        income: "Total Ingresos:",
+                        expenses: "Total Egresos:",
+                        losses: "Total Pérdidas:",
+                        profits: "Total Ganancias:",
+                        shipments: "Total Viajes:",
                     },
                 },
             },
