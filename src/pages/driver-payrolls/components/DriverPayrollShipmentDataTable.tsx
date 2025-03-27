@@ -332,7 +332,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "shipment_payroll_code",
             headerName: t("shipments.columns.payrollCode"),
-            minWidth: 70,
+            minWidth: 60,
             flex: 0.5, // smallest flex value for the smallest column
         },
         {
@@ -365,14 +365,14 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "receipt_code",
             headerName: t("shipments.columns.receipt"),
-            minWidth: 130,
+            minWidth: 100,
             flex: 1,
             align: "right",
         },
         {
             field: "product_name",
             headerName: t("shipments.columns.product"),
-            minWidth: 130,
+            minWidth: 100,
             flex: 1,
         },
         {
@@ -393,7 +393,8 @@ export const DriverPayrollShipmentDataTable = ({
             headerName: t("shipments.columns.originWeight"),
             renderCell: ({ row }) => numberFormatter(parseInt(row.origin_weight)),
             minWidth: 100,
-            flex: 0.8,
+            flex: 1,
+            headerClassName: "wrap-header",
             align: "right",
         },
         {
@@ -401,23 +402,26 @@ export const DriverPayrollShipmentDataTable = ({
             headerName: t("shipments.columns.destinationWeight"),
             renderCell: ({ row }) => numberFormatter(parseInt(row.destination_weight)),
             minWidth: 100,
-            flex: 0.8,
+            flex: 1,
+            headerClassName: "wrap-header",
             align: "right",
         },
         {
             field: "price",
             headerName: t("shipments.columns.price"),
             renderCell: ({ row }) => numberFormatter(parseFloat(row.price)),
-            minWidth: 120,
-            flex: 0.8,
+            minWidth: 100,
+            flex: 1,
+            headerClassName: "wrap-header",
             align: "right",
         },
         {
             field: "payroll_price",
             headerName: t("shipments.columns.payrollPrice"),
             renderCell: ({ row }) => numberFormatter(parseFloat(row.payroll_price)),
-            minWidth: 120,
-            flex: 0.8,
+            minWidth: 100,
+            flex: 1,
+            headerClassName: "wrap-header",
             align: "right",
         },
         {
@@ -478,6 +482,15 @@ export const DriverPayrollShipmentDataTable = ({
                     disableRowSelectionOnClick
                     sx={{
                         border: 0,
+                        "& .wrap-header": {
+                            whiteSpace: "normal",
+                            lineHeight: "normal",
+                            "& .MuiDataGrid-columnHeaderTitle": {
+                                whiteSpace: "normal",
+                                lineHeight: 1.2,
+                                overflow: "visible",
+                            },
+                        },
                     }}
                     loading={loading}
                     getRowId={(row: Shipment) => row.shipment_code ?? 0}

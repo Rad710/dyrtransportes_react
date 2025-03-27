@@ -4,7 +4,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 interface DataTableToolbar {
     tableTitle: string;
-    numSelected: number;
+    numSelected?: number;
     handleDelete?: () => void;
     handleMove?: () => void;
 }
@@ -22,13 +22,13 @@ export const DataTableToolbar = ({
                     pl: { sm: 2 },
                     pr: { xs: 1, sm: 1 },
                 },
-                numSelected > 0 && {
+                (numSelected ?? 0) > 0 && {
                     bgcolor: (theme) =>
                         alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
                 },
             ]}
         >
-            {numSelected > 0 ? (
+            {(numSelected ?? 0) > 0 ? (
                 <Typography
                     sx={{ flex: "1 1 100%" }}
                     color="inherit"
@@ -50,7 +50,7 @@ export const DataTableToolbar = ({
                     paddingRight: 3,
                 }}
             >
-                {handleMove && numSelected > 0 && (
+                {handleMove && (numSelected ?? 0) > 0 && (
                     <Tooltip title="Move">
                         <Button variant="outlined" onClick={handleMove}>
                             Mover
@@ -58,7 +58,7 @@ export const DataTableToolbar = ({
                     </Tooltip>
                 )}
 
-                {handleDelete && numSelected > 0 && (
+                {handleDelete && (numSelected ?? 0) > 0 && (
                     <Tooltip title="Delete">
                         <IconButton onClick={handleDelete}>
                             <DeleteIcon />

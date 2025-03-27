@@ -183,13 +183,15 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
     );
 
     return (
-        <Box sx={{ paddingTop: 3 }}>
+        <Box>
             <Box
                 sx={{
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 3,
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 2,
+                    paddingRight: 3,
+                    justifyContent: { xs: "flex-start", md: "space-between" },
+                    alignItems: { xs: "flex-start", md: "center" },
                 }}
             >
                 <Typography variant="h5" component="h2">
@@ -202,13 +204,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         : ""}
                 </Typography>
 
-                <Box
-                    sx={{
-                        display: "flex",
-                        gap: 2,
-                        paddingRight: 3,
-                    }}
-                >
+                <Box display="flex" gap={2} sx={{ flexWrap: { xs: "wrap", md: "nowrap" } }}>
                     <CustomSwitch
                         checked={currentShipmentPayroll?.collected}
                         onChange={
@@ -276,15 +272,17 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                 </Box>
             </Box>
 
-            <GroupedShipmentsDataTable
-                loading={loadingTable}
-                groupedShipmentsList={groupedShipmentsList}
-                loadShipmentList={loadShipmentListAndAutocompleteOptions}
-                payrollCode={payrollCode}
-                setShipmentToEdit={setShipmentToEdit}
-                setEditFormDialogOpen={setEditFormDialogOpen}
-                shipmentPayrollList={shipmentPayrollList}
-            />
+            <Box sx={{ marginTop: 3 }}>
+                <GroupedShipmentsDataTable
+                    loading={loadingTable}
+                    groupedShipmentsList={groupedShipmentsList}
+                    loadShipmentList={loadShipmentListAndAutocompleteOptions}
+                    payrollCode={payrollCode}
+                    setShipmentToEdit={setShipmentToEdit}
+                    setEditFormDialogOpen={setEditFormDialogOpen}
+                    shipmentPayrollList={shipmentPayrollList}
+                />
+            </Box>
         </Box>
     );
 };

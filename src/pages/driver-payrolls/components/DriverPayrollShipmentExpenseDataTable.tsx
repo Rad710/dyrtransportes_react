@@ -279,7 +279,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         {
             field: "receipt",
             headerName: t("expenses.columns.receipt"),
-            minWidth: 130,
+            minWidth: 100,
             flex: 1,
         },
         {
@@ -292,7 +292,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
             field: "amount",
             headerName: t("expenses.columns.amount"),
             renderCell: ({ row }) => numberFormatter(parseFloat(row.amount)),
-            minWidth: 120,
+            minWidth: 110,
             flex: 0.8,
             align: "right",
         },
