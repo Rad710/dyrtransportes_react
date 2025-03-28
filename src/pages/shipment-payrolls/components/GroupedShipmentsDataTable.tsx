@@ -562,8 +562,9 @@ export function GroupedShipmentsDataTable({
                 }
 
                 const resp = await ShipmentApi.changeShipmentListShipmentPayroll(
-                    selectedPayroll,
                     selectedRows,
+                    selectedPayroll,
+                    null,
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment resp: ", { resp });

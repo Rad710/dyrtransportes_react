@@ -310,9 +310,10 @@ export const DriverPayrollShipmentDataTable = ({
                     return;
                 }
 
-                const resp = await DriverPayrollApi.changeShipmentListDriverPayroll(
-                    selectedPayroll,
+                const resp = await ShipmentApi.changeShipmentListShipmentPayroll(
                     selectedRows as number[],
+                    null,
+                    selectedPayroll,
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment resp: ", { resp });

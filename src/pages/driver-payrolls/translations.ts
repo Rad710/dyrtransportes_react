@@ -393,7 +393,7 @@ const driverPayrollResources = {
             shipments: {
                 tableTitle: "Cargas de Liquidación",
                 columns: {
-                    payrollCode: "Liquidación #",
+                    payrollCode: "Planilla #",
                     date: "Fecha",
                     dispatch: "Despacho",
                     receipt: "Recibo",

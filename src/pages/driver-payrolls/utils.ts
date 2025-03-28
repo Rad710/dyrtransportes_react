@@ -7,7 +7,6 @@ import {
     ShipmentExpense,
     ShipmentExpenseApiResponse,
 } from "./types";
-import { Shipment } from "../shipment-payrolls/types";
 import { DateTime } from "luxon";
 
 export const DriverPayrollApi = {
@@ -27,15 +26,6 @@ export const DriverPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    // TODO: move to shipments endpoints
-    getDriverPayrollShipmentList: async (driverPayrollCode: number) =>
-        api
-            .get(`/driver-payroll/${driverPayrollCode}/shipments`)
-            .then((response: AxiosResponse<Shipment[] | null>) => response.data ?? [])
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            }),
-
     postDriverPayroll: async (payload: DriverPayroll) =>
         api
             .post(`/driver-payroll`, payload)
@@ -50,23 +40,6 @@ export const DriverPayrollApi = {
         api
             .put(`/driver-payroll/${code}`, payload)
             .then((response: AxiosResponse<DriverPayrollApiResponse | null>) => {
-                return response.data ?? null;
-            })
-            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
-                return errorResponse ?? null;
-            }),
-
-    // TODO: move to shipments endpoints
-    changeShipmentListDriverPayroll: async (
-        driverPayrollCode: number,
-        shipmentCodeList: number[],
-    ) =>
-        api
-            .patch(
-                `/shipments/change-driver-payroll?driver_payroll_code=${driverPayrollCode}`,
-                shipmentCodeList,
-            )
-            .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {

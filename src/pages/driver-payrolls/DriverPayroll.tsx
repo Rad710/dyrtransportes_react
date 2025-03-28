@@ -24,6 +24,7 @@ import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayro
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 import { downloadFile } from "@/utils/file";
 import { driverPayrollTranslationNamespace } from "./translations";
+import { ShipmentApi } from "../shipment-payrolls/utils";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
@@ -57,7 +58,7 @@ const DriverPayrollShipmentsTab = ({
         const [driverPayrollsResp, shipmentsResp, routesResp, productsResp, driversResp] =
             await Promise.all([
                 DriverPayrollApi.getDriverPayrollList(driverCode),
-                DriverPayrollApi.getDriverPayrollShipmentList(driverPayrollCode),
+                ShipmentApi.getShipmentList(null, driverPayrollCode),
                 RouteApi.getRouteList(),
                 ProductApi.getProductList(),
                 DriverApi.getDriverList(),
@@ -329,7 +330,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
             const [respDriver, respPayroll] = await Promise.all([
                 DriverApi.getDriver(driverCode),
                 DriverPayrollApi.getDriverPayroll(driverPayrollCode),
-                DriverPayrollApi.getDriverPayrollShipmentList(driverPayrollCode),
+                ShipmentApi.getShipmentList(null, driverPayrollCode),
             ]);
 
             if (isAxiosError(respDriver) || !respDriver) {

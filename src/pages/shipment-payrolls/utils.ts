@@ -108,9 +108,14 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    getShipmentList: async (shipment_payroll_code?: number | null) =>
+    getShipmentList: async (
+        shipment_payroll_code?: number | null,
+        driver_payroll_code?: number | null,
+    ) =>
         api
-            .get(`/shipments?shipment_payroll_code=${shipment_payroll_code}`)
+            .get(
+                `/shipments?shipment_payroll_code=${shipment_payroll_code ?? ""}&driver_payroll_code=${driver_payroll_code ?? ""}`,
+            )
             .then((response: AxiosResponse<Shipment[] | null>) => {
                 return response.data ?? [];
             })
@@ -149,12 +154,13 @@ export const ShipmentApi = {
             }),
 
     changeShipmentListShipmentPayroll: async (
-        shipmentPayrollCode: number,
         shipmentCodeList: number[],
+        shipmentPayrollCode?: number | null,
+        driver_payroll_code?: number | null,
     ) =>
         api
             .patch(
-                `/shipments/change-shipment-payroll?shipment_payroll_code=${shipmentPayrollCode}`,
+                `/shipments/change-payroll?shipment_payroll_code=${shipmentPayrollCode ?? ""}&driver_payroll_code=${driver_payroll_code ?? ""}`,
                 shipmentCodeList,
             )
             .then((response: AxiosResponse<ApiResponse | null>) => {
