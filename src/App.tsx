@@ -160,7 +160,7 @@ const router = createBrowserRouter([
 export const App = () => {
     return (
         <StyledEngineProvider injectFirst>
-            <AppTheme disableCustomTheme={true}>
+            <AppTheme disableCustomTheme>
                 <CssBaseline enableColorScheme />
 
                 <ConfirmationProvider>

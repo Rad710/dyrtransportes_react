@@ -9,8 +9,8 @@ import { surfacesCustomizations } from "./customizations/surfaces";
 import { colorSchemes, typography, shadows, shape } from "./themePrimitives";
 
 // locales
-import { bgBG } from "@mui/x-data-grid/locales";
-import { bgBG as coreBgBG } from "@mui/material/locale";
+import { esES, enUS } from "@mui/x-data-grid/locales";
+import { esES as coreEsES, enUS as coreEnUS } from "@mui/material/locale";
 
 interface AppThemeProps {
     children: React.ReactNode;
@@ -21,11 +21,20 @@ interface AppThemeProps {
     themeComponents?: ThemeOptions["components"];
 }
 
-export default function AppTheme(props: AppThemeProps) {
-    const { children, disableCustomTheme, themeComponents } = props;
+export default function AppTheme({ children, disableCustomTheme, themeComponents }: AppThemeProps) {
+    // Check if client's language is Spanish
+    const isSpanish = React.useMemo(() => {
+        // Only run on client side
+        if (typeof window !== "undefined") {
+            const userLanguage = navigator.language || (navigator as any).userLanguage;
+            return userLanguage.startsWith("es");
+        }
+        return false;
+    }, []);
+
     const theme = React.useMemo(() => {
         return disableCustomTheme
-            ? {}
+            ? createTheme({}, isSpanish ? esES : enUS, isSpanish ? coreEsES : coreEnUS)
             : createTheme(
                   {
                       // For more details about CSS variables configuration, see https://mui.com/material-ui/customization/css-theme-variables/configuration/
@@ -46,13 +55,11 @@ export default function AppTheme(props: AppThemeProps) {
                           ...themeComponents,
                       },
                   },
-                  bgBG,
-                  coreBgBG,
+                  isSpanish ? esES : enUS,
+                  isSpanish ? coreEsES : coreEnUS,
               );
     }, [disableCustomTheme, themeComponents]);
-    if (disableCustomTheme) {
-        return <React.Fragment>{children}</React.Fragment>;
-    }
+
     return (
         <ThemeProvider theme={theme} disableTransitionOnChange>
             {children}
