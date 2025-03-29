@@ -213,12 +213,12 @@ export const DriverDataTable = ({
             minWidth: 130,
             flex: 1,
         },
-        {
-            field: "modification_user",
-            headerName: t("dataTable.columns.modifiedBy"),
-            minWidth: 130,
-            flex: 1,
-        },
+        // {
+        //     field: "modification_user",
+        //     headerName: t("dataTable.columns.modifiedBy"),
+        //     minWidth: 130,
+        //     flex: 1,
+        // },
         {
             field: "action",
             headerName: t("dataTable.columns.actions"),
