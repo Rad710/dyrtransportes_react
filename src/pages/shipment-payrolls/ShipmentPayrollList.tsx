@@ -76,7 +76,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                 const payrollsToExport =
                     selectedPayrollList.length > 0
                         ? payrollList.filter((p) =>
-                              selectedPayrollList.includes(p.payroll_code || 0),
+                              selectedPayrollList.includes(p.payroll_code || 0)
                           )
                         : payrollList;
 
@@ -87,7 +87,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                 // Sort by timestamp to get first and last
                 const startDate = DateTime.fromHTTP(
                     payrollsToExport[payrollsToExport.length - 1].payroll_timestamp,
-                    { zone: "local" },
+                    { zone: "local" }
                 );
                 const endDate = DateTime.fromHTTP(payrollsToExport[0].payroll_timestamp, {
                     zone: "local",
@@ -111,7 +111,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));
@@ -139,8 +139,9 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                     console.log("Deleting payrolls...", selectedPayrollList);
                 }
 
-                const resp =
-                    await ShipmentPayrollApi.deleteShipmentPayrollList(selectedPayrollList);
+                const resp = await ShipmentPayrollApi.deleteShipmentPayrollList(
+                    selectedPayrollList
+                );
 
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Delete result...", { resp });
@@ -197,8 +198,8 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
         if (!isAxiosError(payrollResp) && payrollResp) {
             setPayrollList(
                 payrollList.map((item) =>
-                    item.payroll_code !== payroll.payroll_code ? item : payrollResp,
-                ),
+                    item.payroll_code !== payroll.payroll_code ? item : payrollResp
+                )
             );
         } else {
             showToastAxiosError(payrollResp);
@@ -210,7 +211,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                 status: collected
                     ? t("collectionStatus.collected")
                     : t("collectionStatus.notCollected"),
-            }),
+            })
         );
     };
 
@@ -288,11 +289,11 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                         const isChecked = selectedPayrollList.includes(payroll.payroll_code || 0);
                         const payrollDate = DateTime.fromHTTP(payroll.payroll_timestamp, {
                             zone: "local",
-                        }).setLocale("es");
+                        });
                         const collectionDate = payroll.collection_timestamp
                             ? DateTime.fromHTTP(payroll.collection_timestamp, {
                                   zone: "local",
-                              }).setLocale("es")
+                              })
                             : null;
 
                         return (
@@ -336,7 +337,7 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                             onChange={(e) =>
                                                 handleCheckPayroll(
                                                     payroll.payroll_code ?? null,
-                                                    e.target.checked,
+                                                    e.target.checked
                                                 )
                                             }
                                             inputProps={{
@@ -356,7 +357,9 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                     {/* Button - full width on mobile */}
                                     <Button
                                         component={Link}
-                                        to={`/shipment-payrolls/payroll/${payroll.payroll_code ?? 0}`}
+                                        to={`/shipment-payrolls/payroll/${
+                                            payroll.payroll_code ?? 0
+                                        }`}
                                         variant="contained"
                                         color="info"
                                         sx={{
