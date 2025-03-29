@@ -45,7 +45,7 @@ export const DriverDataTable = ({
         setSelectedRows([]);
     }, [driverList]);
 
-    const paginationModel = { page: 0, pageSize: 25 };
+    const paginationModel = { page: 0, pageSize: 100 };
 
     const handleEditDriver = (row: Driver) => {
         if (setDriverToEdit && setEditFormDialogOpen) {

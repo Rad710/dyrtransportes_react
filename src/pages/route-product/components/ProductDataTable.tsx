@@ -41,7 +41,7 @@ export const ProductDataTable = ({
         setSelectedRows([]);
     }, [productList]);
 
-    const paginationModel = { page: 0, pageSize: 25 };
+    const paginationModel = { page: 0, pageSize: 100 };
 
     const handleEditProduct = (row: Product) => {
         setProductToEdit(row);

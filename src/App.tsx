@@ -245,7 +245,7 @@ const router = createBrowserRouter([
 export const App = () => {
     return (
         <StyledEngineProvider injectFirst>
-            <AppTheme disableCustomTheme>
+            <AppTheme>
                 <CssBaseline enableColorScheme />
 
                 <ConfirmationProvider>
