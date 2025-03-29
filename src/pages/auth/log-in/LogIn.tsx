@@ -42,9 +42,7 @@ const loginUser = (formData: FormData) =>
 const getLoginFormSchema = (t: TFunction<"login">) => {
     return z.object({
         email: z.string().email({ message: t("errors.emailRequired") }),
-        password: z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/, {
-            message: t("errors.passwordRequired"),
-        }),
+        password: z.string(),
         remember_me: z.boolean().optional(),
     });
 };

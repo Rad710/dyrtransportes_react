@@ -12,7 +12,7 @@ export const downloadFile = (
     contentDisposition?: string,
 ): void => {
     // Try to extract filename from Content-Disposition header
-    const match = contentDisposition?.match(/filename="(.+)"/);
+    const match = contentDisposition?.match(/filename=(.+)/);
     const filename = match?.at(1) ?? defaultFilename;
 
     // Create download link and trigger it
