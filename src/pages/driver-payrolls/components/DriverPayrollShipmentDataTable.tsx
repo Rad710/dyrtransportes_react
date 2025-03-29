@@ -19,7 +19,6 @@ import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
 import { DriverPayroll } from "../types";
-import { DriverPayrollApi } from "../utils";
 import type { Shipment } from "@/pages/shipment-payrolls/types";
 import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
 import { driverPayrollTranslationNamespace } from "../translations";

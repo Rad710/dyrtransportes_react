@@ -21,7 +21,8 @@ export default function AppTheme({ children, disableCustomTheme, themeComponents
     const isSpanish = useMemo(() => {
         // Only run on client side
         if (typeof window !== "undefined") {
-            const userLanguage = navigator.language || (navigator as any).userLanguage;
+            const userLanguage =
+                navigator.language || (navigator as { userLanguage?: string }).userLanguage || "en";
             return userLanguage.startsWith("es");
         }
         return false;

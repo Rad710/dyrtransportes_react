@@ -17,7 +17,7 @@ export default function ColorModeSelect(props: SelectProps) {
             value={mode}
             onChange={(event) => setMode(event.target.value as "system" | "light" | "dark")}
             SelectDisplayProps={{
-                // @ts-ignore
+                // @ts-expect-error - data-screenshot attribute is not recognized by TypeScript
                 "data-screenshot": "toggle-mode",
             }}
             {...props}

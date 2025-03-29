@@ -4,8 +4,7 @@ import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import eslintConfigPrettier from "eslint-config-prettier";
 
-/** @type {import("eslint").Linter.Config[]} */
-export default [
+const configs = [
     pluginReact.configs.flat.recommended,
     pluginJs.configs.recommended,
     ...tseslint.configs.recommended,
@@ -14,19 +13,16 @@ export default [
         files: ["**/*.{ts,tsx}"],
     },
     {
-        ignores: ["src/components/ui/*"]
-    },
-    {
-        languageOptions: { 
-        globals: globals.browser,
-        ecmaVersion: "latest",
-        sourceType: "module",
-        parserOptions: {
-            ecmaFeatures: {
-                jsx: true,
+        languageOptions: {
+            globals: globals.browser,
+            ecmaVersion: "latest",
+            sourceType: "module",
+            parserOptions: {
+                ecmaFeatures: {
+                    jsx: true,
+                },
             },
         },
-        }
     },
     {
         ...pluginReact.configs.flat.recommended,
@@ -44,6 +40,8 @@ export default [
             "react/jsx-uses-vars": "off",
             "react/react-in-jsx-scope": "off",
             "no-extra-boolean-cast": "off",
-        }
+        },
     },
 ];
+
+export default configs;
