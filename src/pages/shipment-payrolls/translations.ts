@@ -235,7 +235,7 @@ const shipmentResources = {
                     destination: "Destination",
                     dispatch_code: "Dispatch",
                     receipt_code: "Receipt",
-                    price: "Price",
+                    price: "Price (no VAT: {{priceNoVat}})",
                     payroll_price: "Payroll Price",
                     origin_weight: "Origin Weight",
                     destination_weight: "Destination Weight",
@@ -339,7 +339,7 @@ const shipmentResources = {
                     destination: "Destino",
                     dispatch_code: "Remisión",
                     receipt_code: "Recepción",
-                    price: "Precio",
+                    price: "Precio (sin IVA: {{priceNoVat}})",
                     payroll_price: "Precio Liquidación",
                     origin_weight: "Kg. Origen",
                     destination_weight: "Kg. Destino",
@@ -365,7 +365,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             shipmentPayrollTranslationNamespace,
-            shipmentPayrollResources[lang].translation,
+            shipmentPayrollResources[lang].translation
         );
     }
 
@@ -373,7 +373,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             shipmentTranslationNamespace,
-            shipmentResources[lang].translation,
+            shipmentResources[lang].translation
         );
     }
 });

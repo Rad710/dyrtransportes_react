@@ -54,16 +54,16 @@ const ShipmentFormDialogFields = ({
                 .filter(Boolean)
                 .map((truck_plate) => ({ id: truck_plate, label: truck_plate }))
                 .sort((a, b) => a.label.localeCompare(b.label)),
-        [driverList],
+        [driverList]
     );
     const originOptionList: AutocompleteOption[] = useMemo(
         () =>
             Array.from(
                 new Map(
-                    routeList.map((item) => [item.origin, { label: item.origin, id: item.origin }]),
-                ).values(),
+                    routeList.map((item) => [item.origin, { label: item.origin, id: item.origin }])
+                ).values()
             ).sort((a, b) => a.label.localeCompare(b.label)),
-        [routeList],
+        [routeList]
     );
     const destinationOptionList: AutocompleteOption[] = useMemo(
         () =>
@@ -74,10 +74,10 @@ const ShipmentFormDialogFields = ({
                         .map((item) => [
                             item.destination,
                             { label: item.destination, id: item.destination },
-                        ]),
-                ).values(),
+                        ])
+                ).values()
             ).sort((a, b) => a.label.localeCompare(b.label)),
-        [routeList, watchedOrigin],
+        [routeList, watchedOrigin]
     );
     const productOptionList: AutocompleteOption[] = useMemo(
         () =>
@@ -85,7 +85,7 @@ const ShipmentFormDialogFields = ({
                 id: item.product_code?.toString() ?? "",
                 label: item.product_name ?? "",
             })),
-        [productList],
+        [productList]
     );
     const driverOptionList: AutocompleteOptionDriver[] = useMemo(
         () =>
@@ -95,7 +95,7 @@ const ShipmentFormDialogFields = ({
                 truck_plate: item.truck_plate ?? "",
                 trailer_plate: item.trailer_plate ?? "",
             })),
-        [driverList],
+        [driverList]
     );
 
     // optional options enable the fields
@@ -103,18 +103,22 @@ const ShipmentFormDialogFields = ({
         () =>
             shipmentPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [shipmentPayrollList],
+        [shipmentPayrollList]
     );
 
     const driverPayrollOptionList: AutocompleteOption[] = useMemo(
         () =>
             driverPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [driverPayrollList],
+        [driverPayrollList]
     );
 
     return (
@@ -137,13 +141,13 @@ const ShipmentFormDialogFields = ({
                                 },
                             }}
                             value={DateTime.fromJSDate(
-                                field.value ?? DateTime.now().startOf("day").toJSDate(),
+                                field.value ?? DateTime.now().startOf("day").toJSDate()
                             ).toFormat("yyyy-MM-dd")}
                             onChange={(e) => {
                                 field.onChange(
                                     e.target.value
                                         ? DateTime.fromISO(e.target.value).toJSDate()
-                                        : DateTime.now().startOf("day").toJSDate(),
+                                        : DateTime.now().startOf("day").toJSDate()
                                 );
                             }}
                         />
@@ -158,7 +162,7 @@ const ShipmentFormDialogFields = ({
                             options={driverOptionList}
                             value={
                                 driverOptionList.find(
-                                    (option) => option.id === field.value?.toString(),
+                                    (option) => option.id === field.value?.toString()
                                 ) || null
                             }
                             onChange={(_, newValue) => {
@@ -222,7 +226,7 @@ const ShipmentFormDialogFields = ({
                                 options={shipmentPayrollOptionList}
                                 value={
                                     shipmentPayrollOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
+                                        (option) => String(option.id) === String(field.value)
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
@@ -254,7 +258,7 @@ const ShipmentFormDialogFields = ({
                                 options={driverPayrollOptionList}
                                 value={
                                     driverPayrollOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
+                                        (option) => String(option.id) === String(field.value)
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
@@ -288,7 +292,7 @@ const ShipmentFormDialogFields = ({
                             options={productOptionList}
                             value={
                                 productOptionList.find(
-                                    (option) => String(option.id) === String(field.value),
+                                    (option) => String(option.id) === String(field.value)
                                 ) || null
                             }
                             onChange={(_, newValue) => {
@@ -323,7 +327,7 @@ const ShipmentFormDialogFields = ({
                             options={originOptionList}
                             value={
                                 originOptionList.find(
-                                    (option) => String(option.id) === String(field.value),
+                                    (option) => String(option.id) === String(field.value)
                                 ) || null
                             }
                             onChange={(_, newValue) => {
@@ -361,7 +365,7 @@ const ShipmentFormDialogFields = ({
                             options={destinationOptionList}
                             value={
                                 destinationOptionList.find(
-                                    (option) => String(option.id) === String(field.value),
+                                    (option) => String(option.id) === String(field.value)
                                 ) || null
                             }
                             onChange={(_, newValue) => {
@@ -372,19 +376,19 @@ const ShipmentFormDialogFields = ({
                                     routeList.find(
                                         (item) =>
                                             item.origin === watchedOrigin &&
-                                            item.destination === selectedDestination,
+                                            item.destination === selectedDestination
                                     ) ?? null;
 
                                 form.setValue("route_code", selectedRoute?.route_code ?? 0);
                                 form.setValue(
                                     "price",
-                                    numberFormatter(parseFloat(selectedRoute?.price ?? "") || 0),
+                                    numberFormatter(parseFloat(selectedRoute?.price ?? "") || 0)
                                 );
                                 form.setValue(
                                     "payroll_price",
                                     numberFormatter(
-                                        parseFloat(selectedRoute?.payroll_price ?? "") || 0,
-                                    ),
+                                        parseFloat(selectedRoute?.payroll_price ?? "") || 0
+                                    )
                                 );
                             }}
                             disabled={!watchedOrigin}
@@ -445,7 +449,11 @@ const ShipmentFormDialogFields = ({
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            label={t("formDialog.fields.price")}
+                            label={t("formDialog.fields.price", {
+                                priceNoVat:
+                                    numberFormatter(parseFloat(field.value || "0") * (10 / 11)) ||
+                                    0,
+                            })}
                             fullWidth
                             error={!!form.formState.errors.price}
                             helperText={form.formState.errors.price?.message}
