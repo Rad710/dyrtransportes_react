@@ -22,11 +22,9 @@ export default function AppTheme({ children, disableCustomTheme, themeComponents
         // Check if client's language is Spanish
         let isSpanish = false;
         if (typeof window !== "undefined") {
-            // TODO: fix language options
-            isSpanish = true;
-            // const userLanguage =
-            //     navigator.language || (navigator as { userLanguage?: string }).userLanguage || "en";
-            // isSpanish = userLanguage.startsWith("es");
+            const userLanguage =
+                navigator.language || (navigator as { userLanguage?: string }).userLanguage || "en";
+            isSpanish = userLanguage.startsWith("es");
         }
 
         const dataGridLanguage = isSpanish ? dataGridEsEs : dataGridEnUs;
