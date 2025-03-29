@@ -98,7 +98,7 @@ export const StatisticsTabContent = () => {
             }),
             confirmText: t("statistics.exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {

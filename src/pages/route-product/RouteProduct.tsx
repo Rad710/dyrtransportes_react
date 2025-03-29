@@ -64,7 +64,7 @@ const RouteTabContent = () => {
             message: t("exportDialog.message"),
             confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
@@ -186,7 +186,7 @@ const ProductTabContent = () => {
             message: t("exportDialog.message"),
             confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {

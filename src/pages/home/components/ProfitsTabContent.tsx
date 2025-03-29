@@ -112,7 +112,7 @@ export const ProfitsTabContent = () => {
             }),
             confirmText: t("profits.exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {

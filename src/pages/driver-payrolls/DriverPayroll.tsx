@@ -397,7 +397,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
             message: t("confirmations.export.message"),
             confirmText: t("confirmations.export.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {

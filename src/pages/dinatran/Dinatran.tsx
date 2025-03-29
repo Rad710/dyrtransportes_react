@@ -101,7 +101,7 @@ export const Dinatran = ({ title }: PageProps) => {
             }),
             confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {

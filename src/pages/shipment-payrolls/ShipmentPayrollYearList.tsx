@@ -111,7 +111,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
             message: t("exportDialog.message"),
             confirmText: t("exportDialog.confirmText"),
             confirmButtonProps: {
-                color: "info",
+                color: "success",
             },
             onConfirm: async () => {
                 if (!selectedYear) {
