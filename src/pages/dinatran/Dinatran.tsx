@@ -39,7 +39,9 @@ export const Dinatran = ({ title }: PageProps) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [dinatranRows, setDinatranRows] = useState<DinatranRow[]>([]);
 
-    const [startDate, setStartDate] = useState<DateTime>(DateTime.now().startOf("day"));
+    const [startDate, setStartDate] = useState<DateTime>(
+        DateTime.now().minus({ month: 1 }).startOf("day"),
+    );
     const [endDate, setEndDate] = useState<DateTime>(
         DateTime.now().plus({ day: 1 }).startOf("day"),
     );
