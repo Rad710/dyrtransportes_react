@@ -7,9 +7,12 @@ import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "./translations";
 import { ProfitsTabContent } from "./components/ProfitsTabContent";
 import { BackupTabContent } from "./components/BackupTabContent";
+import { useAuthStore } from "@/stores/authStore";
 
 export const Home = ({ title }: Readonly<PageProps>) => {
     const { t } = useTranslation(homeTranslationNamespace);
+
+    const user = useAuthStore((state) => state.user);
 
     useEffect(() => {
         document.title = title;
@@ -35,11 +38,13 @@ export const Home = ({ title }: Readonly<PageProps>) => {
                         id="home-tab-1"
                         aria-controls="home-tabpanel-1"
                     />
-                    <Tab
-                        label={t("database.tabs")}
-                        id="home-tab-2"
-                        aria-controls="home-tabpanel-2"
-                    />
+                    {user?.admin && (
+                        <Tab
+                            label={t("database.tabs")}
+                            id="home-tab-2"
+                            aria-controls="home-tabpanel-2"
+                        />
+                    )}
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>
@@ -48,9 +53,11 @@ export const Home = ({ title }: Readonly<PageProps>) => {
             <TabPanel value={value} index={1}>
                 <StatisticsTabContent />
             </TabPanel>
-            <TabPanel value={value} index={2}>
-                <BackupTabContent />
-            </TabPanel>
+            {user?.admin && (
+                <TabPanel value={value} index={2}>
+                    <BackupTabContent />
+                </TabPanel>
+            )}
         </Box>
     );
 };

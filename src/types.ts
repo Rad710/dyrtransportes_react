@@ -19,6 +19,7 @@ export interface AuthResponse extends ApiResponse {
 export interface User {
     email: string;
     name: string;
+    admin?: boolean;
 }
 
 export interface FormDialogProps {
