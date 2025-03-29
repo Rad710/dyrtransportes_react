@@ -79,6 +79,21 @@ const resources = {
                     },
                 },
             },
+            database: {
+                tabs: "Database",
+                backup: {
+                    title: "Create a backup to safeguard your data",
+                    button: {
+                        default: "Download Backup",
+                        loading: "Creating backup...",
+                    },
+                    notifications: {
+                        success: "Database backup created successfully.",
+                        error: "Error creating database backup.",
+                    },
+                    fileName: "database_backup.sql",
+                },
+            },
         },
     },
     es: {
@@ -156,6 +171,21 @@ const resources = {
                         profits: "Total Ganancias:",
                         shipments: "Total Viajes:",
                     },
+                },
+            },
+            database: {
+                tabs: "Base de Datos",
+                backup: {
+                    title: "Crea una Copia de Seguridad para respaldar los datos",
+                    button: {
+                        default: "Descargar Copia",
+                        loading: "Creando copia...",
+                    },
+                    notifications: {
+                        success: "Copia de seguridad creada exitosamente.",
+                        error: "Error al crear copia de seguridad.",
+                    },
+                    fileName: "copia_seguridad.sql",
                 },
             },
         },
