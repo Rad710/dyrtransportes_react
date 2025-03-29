@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import type { ThemeOptions } from "@mui/material/styles";
 import { colorSchemes, shadows } from "./themePrimitives";
@@ -6,6 +5,7 @@ import { colorSchemes, shadows } from "./themePrimitives";
 // locales
 import { esES, enUS } from "@mui/x-data-grid/locales";
 import { esES as coreEsES, enUS as coreEnUS } from "@mui/material/locale";
+import { useMemo } from "react";
 
 interface AppThemeProps {
     children: React.ReactNode;
@@ -18,7 +18,7 @@ interface AppThemeProps {
 
 export default function AppTheme({ children, disableCustomTheme, themeComponents }: AppThemeProps) {
     // Check if client's language is Spanish
-    const isSpanish = React.useMemo(() => {
+    const isSpanish = useMemo(() => {
         // Only run on client side
         if (typeof window !== "undefined") {
             const userLanguage = navigator.language || (navigator as any).userLanguage;
@@ -27,7 +27,7 @@ export default function AppTheme({ children, disableCustomTheme, themeComponents
         return false;
     }, []);
 
-    const theme = React.useMemo(() => {
+    const theme = useMemo(() => {
         return disableCustomTheme
             ? createTheme({}, isSpanish ? esES : enUS, isSpanish ? coreEsES : coreEnUS)
             : createTheme(

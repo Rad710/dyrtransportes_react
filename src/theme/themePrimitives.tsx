@@ -4,6 +4,32 @@ import { createTheme, alpha, Shadows } from "@mui/material/styles";
 import { enUS } from "@mui/x-data-grid/locales";
 import { enUS as coreEnUS } from "@mui/material/locale";
 
+declare module "@mui/material/Paper" {
+    interface PaperPropsVariantOverrides {
+        highlighted: true;
+    }
+}
+declare module "@mui/material/styles/createPalette" {
+    interface ColorRange {
+        50: string;
+        100: string;
+        200: string;
+        300: string;
+        400: string;
+        500: string;
+        600: string;
+        700: string;
+        800: string;
+        900: string;
+    }
+
+    interface PaletteColor extends ColorRange {}
+
+    interface Palette {
+        baseShadow: string;
+    }
+}
+
 // Create the default theme to use its light mode palette
 const defaultTheme = createTheme({}, enUS, coreEnUS);
 
@@ -77,9 +103,6 @@ export const colorSchemes = {
     // Use the default theme's light mode
     light: {
         // Just use the default theme's palette for light mode
-        palette: {
-            mode: "light",
-        },
     },
     // Keep your only dark mode
     dark: {

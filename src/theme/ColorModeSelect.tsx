@@ -1,12 +1,17 @@
 import { useColorScheme } from "@mui/material/styles";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectProps } from "@mui/material/Select";
+import { useTranslation } from "react-i18next";
+import { themeTranslationNamespace } from "./translations";
 
 export default function ColorModeSelect(props: SelectProps) {
     const { mode, setMode } = useColorScheme();
+    const { t } = useTranslation(themeTranslationNamespace);
+
     if (!mode) {
         return null;
     }
+
     return (
         <Select
             value={mode}
@@ -17,9 +22,9 @@ export default function ColorModeSelect(props: SelectProps) {
             }}
             {...props}
         >
-            <MenuItem value="system">System</MenuItem>
-            <MenuItem value="light">Light</MenuItem>
-            <MenuItem value="dark">Dark</MenuItem>
+            <MenuItem value="system">{t("colorMode.system")}</MenuItem>
+            <MenuItem value="light">{t("colorMode.light")}</MenuItem>
+            <MenuItem value="dark">{t("colorMode.dark")}</MenuItem>
         </Select>
     );
 }
