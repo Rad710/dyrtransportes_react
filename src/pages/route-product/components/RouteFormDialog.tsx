@@ -197,8 +197,6 @@ export const RouteFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadRouteList();
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

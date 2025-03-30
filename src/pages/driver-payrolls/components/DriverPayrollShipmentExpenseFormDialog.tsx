@@ -120,9 +120,11 @@ const ShipmentExpenseFormDialogFields = ({
         () =>
             driverPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [driverPayrollList],
+        [driverPayrollList]
     );
 
     return (
@@ -145,13 +147,13 @@ const ShipmentExpenseFormDialogFields = ({
                                 },
                             }}
                             value={DateTime.fromJSDate(
-                                field.value ?? DateTime.now().startOf("day").toJSDate(),
+                                field.value ?? DateTime.now().startOf("day").toJSDate()
                             ).toFormat("yyyy-MM-dd")}
                             onChange={(e) => {
                                 field.onChange(
                                     e.target.value
                                         ? DateTime.fromISO(e.target.value).toJSDate()
-                                        : DateTime.now().startOf("day").toJSDate(),
+                                        : DateTime.now().startOf("day").toJSDate()
                                 );
                             }}
                         />
@@ -181,7 +183,7 @@ const ShipmentExpenseFormDialogFields = ({
                                 options={driverPayrollOptionList}
                                 value={
                                     driverPayrollOptionList.find(
-                                        (option) => String(option.id) === String(field.value),
+                                        (option) => String(option.id) === String(field.value)
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
@@ -356,8 +358,6 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
         showToastSuccess(resp.message ?? t("expenses.dialogs.form.defaultSuccess"));
 
         await loadExpenseList();
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

@@ -633,8 +633,6 @@ export const ShipmentFormDialog = ({
         showToastSuccess(resp.message ?? t("formDialog.successMessage"));
 
         await loadShipmentList();
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

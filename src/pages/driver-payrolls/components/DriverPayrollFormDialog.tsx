@@ -79,7 +79,7 @@ export const DriverPayrollFormDialog = ({
         },
         {
             zone: "local",
-        },
+        }
     );
 
     // Default values
@@ -201,8 +201,6 @@ export const DriverPayrollFormDialog = ({
 
         const driverPayrollList = await DriverPayrollApi.getDriverPayrollList(driverCode);
         setDriverPayrollList(!isAxiosError(driverPayrollList) ? driverPayrollList : []);
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

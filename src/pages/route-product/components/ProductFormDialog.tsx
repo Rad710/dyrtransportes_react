@@ -157,8 +157,6 @@ export const ProductFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadProductList();
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

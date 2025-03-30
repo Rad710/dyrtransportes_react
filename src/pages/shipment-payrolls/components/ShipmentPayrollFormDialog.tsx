@@ -72,7 +72,7 @@ export const ShipmentPayrollFormDialog = ({
         },
         {
             zone: "local",
-        },
+        }
     );
 
     // Default values
@@ -193,8 +193,6 @@ export const ShipmentPayrollFormDialog = ({
 
         const shipmentPayrollList = await ShipmentPayrollApi.getShipmentPayrollList(year);
         setPayrollList(!isAxiosError(shipmentPayrollList) ? shipmentPayrollList : []);
-
-        handleClose();
     };
 
     const getDialogDescription = () => {

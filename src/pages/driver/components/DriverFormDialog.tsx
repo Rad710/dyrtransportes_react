@@ -170,7 +170,6 @@ export const DriverFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadDriverList();
-        handleClose();
     };
 
     const getDialogDescription = () => {
