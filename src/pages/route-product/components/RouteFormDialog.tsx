@@ -197,6 +197,10 @@ export const RouteFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadRouteList();
+
+        if (!routeToEdit) {
+            reset(ROUTE_FORM_DEFAULT_VALUE);
+        }
     };
 
     const getDialogDescription = () => {

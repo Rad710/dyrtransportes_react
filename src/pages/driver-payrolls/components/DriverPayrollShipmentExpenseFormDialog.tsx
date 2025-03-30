@@ -358,6 +358,10 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
         showToastSuccess(resp.message ?? t("expenses.dialogs.form.defaultSuccess"));
 
         await loadExpenseList();
+
+        if (!expenseToEdit) {
+            form.reset(EXPENSE_FORM_DEFAULT_VALUE(payrollCode));
+        }
     };
 
     const getDialogDescription = () => {

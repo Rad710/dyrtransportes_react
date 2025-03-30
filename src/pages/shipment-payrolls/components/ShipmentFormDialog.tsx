@@ -633,6 +633,10 @@ export const ShipmentFormDialog = ({
         showToastSuccess(resp.message ?? t("formDialog.successMessage"));
 
         await loadShipmentList();
+
+        if (!shipmentToEdit) {
+            form.reset(ShipmentUtils.SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+        }
     };
 
     const getDialogDescription = () => {

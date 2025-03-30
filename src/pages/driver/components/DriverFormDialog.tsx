@@ -170,6 +170,10 @@ export const DriverFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadDriverList();
+
+        if (!driverToEdit) {
+            reset(DRIVER_FORM_DEFAULT_VALUE);
+        }
     };
 
     const getDialogDescription = () => {

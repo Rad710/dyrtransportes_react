@@ -157,6 +157,10 @@ export const ProductFormDialog = ({
         showToastSuccess(resp.message);
 
         await loadProductList();
+
+        if (!productToEdit) {
+            reset(PRODUCT_FORM_DEFAULT_VALUE);
+        }
     };
 
     const getDialogDescription = () => {

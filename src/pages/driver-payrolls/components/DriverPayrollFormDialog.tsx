@@ -201,6 +201,10 @@ export const DriverPayrollFormDialog = ({
 
         const driverPayrollList = await DriverPayrollApi.getDriverPayrollList(driverCode);
         setDriverPayrollList(!isAxiosError(driverPayrollList) ? driverPayrollList : []);
+
+        if (!payrollToEdit) {
+            reset(PAYROLL_FORM_DEFAULT_VALUE);
+        }
     };
 
     const getDialogDescription = () => {

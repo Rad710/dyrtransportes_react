@@ -193,6 +193,10 @@ export const ShipmentPayrollFormDialog = ({
 
         const shipmentPayrollList = await ShipmentPayrollApi.getShipmentPayrollList(year);
         setPayrollList(!isAxiosError(shipmentPayrollList) ? shipmentPayrollList : []);
+
+        if (!payrollToEdit) {
+            reset(PAYROLL_FORM_DEFAULT_VALUE);
+        }
     };
 
     const getDialogDescription = () => {
