@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -116,6 +116,7 @@ export const RouteFormDialog = ({
         formState: { errors },
         reset,
         handleSubmit,
+        control,
     } = useForm<RouteFormSchema>({
         resolver: zodResolver(routeFormSchema),
         defaultValues: ROUTE_FORM_DEFAULT_VALUE,
@@ -271,13 +272,23 @@ export const RouteFormDialog = ({
                             />
                         </Stack>
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                            <TextField
-                                {...register("price")}
-                                label={t("formDialog.fields.price")}
-                                fullWidth
-                                type="text"
-                                error={!!errors.price}
-                                helperText={errors.price?.message}
+                            <Controller
+                                name="price"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label={t("formDialog.fields.price", {
+                                            priceNoVat:
+                                                numberFormatter(
+                                                    parseFloat(field.value || "0") * (10 / 11)
+                                                ) || 0,
+                                        })}
+                                        fullWidth
+                                        error={!!errors.price}
+                                        helperText={errors.price?.message}
+                                    />
+                                )}
                             />
                             <TextField
                                 {...register("payroll_price")}

@@ -112,7 +112,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
                 return (
                     <Box
                         component="span"
-                        sx={{ color: theme.palette.success.main, fontWeight: "bold" }}
+                        sx={{ color: theme.palette.error.main, fontWeight: "bold" }}
                     >
                         {numberFormatter(totalLosses > 0 ? totalLosses : 0)}
                     </Box>
@@ -126,10 +126,13 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             minWidth: 100,
             headerClassName: "wrap-header",
             renderCell: ({ row }) => (
-                <Box component="span" sx={{ color: theme.palette.error.main, fontWeight: "bold" }}>
+                <Box
+                    component="span"
+                    sx={{ color: theme.palette.success.main, fontWeight: "bold" }}
+                >
                     {numberFormatter(
                         parseFloat(row.total_shipment_payroll) -
-                            parseFloat(row.total_driver_payroll),
+                            parseFloat(row.total_driver_payroll)
                     )}
                 </Box>
             ),

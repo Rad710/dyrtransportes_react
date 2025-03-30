@@ -55,7 +55,7 @@ const routeResources = {
                 fields: {
                     origin: "Origin",
                     destination: "Destination",
-                    price: "Price",
+                    price: "Price (no VAT: {{priceNoVat}})",
                     payrollPrice: "Payroll Price",
                 },
                 validation: {
@@ -121,7 +121,7 @@ const routeResources = {
                 fields: {
                     origin: "Origen",
                     destination: "Destino",
-                    price: "Precio",
+                    price: "Precio (sin IVA: {{priceNoVat}})",
                     payrollPrice: "Precio Liquidación",
                 },
                 validation: {
@@ -266,7 +266,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             productTranslationNamespace,
-            productResources[lang].translation,
+            productResources[lang].translation
         );
     }
 });

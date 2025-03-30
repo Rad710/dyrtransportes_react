@@ -40,7 +40,8 @@ export const numberParser = (value: string | number): number => {
     const locale = i18n.language;
     let processedValue = String(value).trim();
 
-    if (locale === "es") {
+    // Check if locale starts with "es" to handle both "es" and variants like "es-ES"
+    if (locale.startsWith("es")) {
         // Spanish uses comma as decimal separator and period as thousands separator
         processedValue = processedValue.replace(/\./g, "").replace(/,/g, ".");
     } else {
