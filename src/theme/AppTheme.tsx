@@ -6,6 +6,7 @@ import { colorSchemes, shadows } from "./themePrimitives";
 import { esES as dataGridEsEs, enUS as dataGridEnUs } from "@mui/x-data-grid/locales";
 import { esES as coreEsES, enUS as coreEnUS } from "@mui/material/locale";
 import { useMemo } from "react";
+import i18n from "@/utils/i18n";
 
 interface AppThemeProps {
     children: React.ReactNode;
@@ -19,14 +20,7 @@ interface AppThemeProps {
 export default function AppTheme({ children, disableCustomTheme, themeComponents }: AppThemeProps) {
     const theme = useMemo(() => {
         // Only run on client side
-        // Check if client's language is Spanish
-        let isSpanish = false;
-        if (typeof window !== "undefined") {
-            const userLanguage =
-                navigator.language || (navigator as { userLanguage?: string }).userLanguage || "en";
-            isSpanish = userLanguage.startsWith("es");
-        }
-
+        const isSpanish = i18n.language.startsWith("es");
         const dataGridLanguage = isSpanish ? dataGridEsEs : dataGridEnUs;
         const coreLanguage = isSpanish ? coreEsES : coreEnUS;
 
@@ -46,7 +40,7 @@ export default function AppTheme({ children, disableCustomTheme, themeComponents
                       },
                   },
                   dataGridLanguage,
-                  coreLanguage,
+                  coreLanguage
               );
     }, [disableCustomTheme, themeComponents]);
 
