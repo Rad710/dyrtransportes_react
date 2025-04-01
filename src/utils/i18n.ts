@@ -23,6 +23,9 @@ i18n.use(LanguageDetector)
             order: ["navigator", "htmlTag", "cookie", "localStorage", "path", "subdomain"],
             caches: ["localStorage", "cookie"], // Cache language detection results
         },
+        load: "languageOnly",
+        nonExplicitSupportedLngs: true,
+        cleanCode: true,
     });
 
 export const i18nChangeLanguage = (language: string) => {
@@ -38,7 +41,7 @@ export const i18nChangeLanguage = (language: string) => {
 export const numberParser = (value: string | number): number => {
     if (typeof value === "number") return value;
 
-    const locale = i18n.language;
+    const locale = i18n.languages[0];
     let processedValue = String(value).trim();
 
     // Check if locale starts with "es" to handle both "es" and variants like "es-ES"
@@ -67,7 +70,7 @@ export const numberFormatter = (value: number, options: Intl.NumberFormatOptions
     };
 
     const mergedOptions = { ...defaultOptions, ...options };
-    const locale = i18n.language;
+    const locale = i18n.languages[0];
 
     return new Intl.NumberFormat(locale, mergedOptions).format(value);
 };

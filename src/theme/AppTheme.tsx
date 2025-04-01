@@ -20,7 +20,7 @@ interface AppThemeProps {
 export default function AppTheme({ children, disableCustomTheme, themeComponents }: AppThemeProps) {
     const theme = useMemo(() => {
         // Only run on client side
-        const isSpanish = i18n.language.startsWith("es");
+        const isSpanish = i18n.languages[0].startsWith("es");
         const dataGridLanguage = isSpanish ? dataGridEsEs : dataGridEnUs;
         const coreLanguage = isSpanish ? coreEsES : coreEnUS;
 
