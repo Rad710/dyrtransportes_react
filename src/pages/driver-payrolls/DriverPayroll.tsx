@@ -179,7 +179,7 @@ const DriverPayrollExpensesTab = ({
     >([]);
 
     const [shipmentExpenseToEdit, setShipmentExpenseToEdit] = useState<ShipmentExpense | null>(
-        null,
+        null
     );
 
     // context
@@ -260,10 +260,6 @@ const DriverPayrollExpensesTab = ({
                         mb: { xs: 4, md: 0 },
                     }}
                 >
-                    <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
-                        {t("expenses.sections.withReceipt")}
-                    </Typography>
-
                     <DriverPayrollShipmentExpenseDataTable
                         loading={loading}
                         loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
@@ -273,6 +269,7 @@ const DriverPayrollExpensesTab = ({
                         showReceiptColumn={true}
                         driverPayrollCode={driverPayrollCode}
                         driverPayrollList={driverPayrollList}
+                        title={t("expenses.sections.withReceipt")}
                     />
                 </Box>
 
@@ -282,10 +279,6 @@ const DriverPayrollExpensesTab = ({
                         width: { xs: "100%", md: "50%" },
                     }}
                 >
-                    <Typography variant="h6" component="h6" sx={{ mb: { xs: 2, md: 0 } }}>
-                        {t("expenses.sections.withoutReceipt")}
-                    </Typography>
-
                     <DriverPayrollShipmentExpenseDataTable
                         loading={loading}
                         loadDriverPayrollShipmentExpenseList={loadDriverPayrollShipmentExpenses}
@@ -295,6 +288,7 @@ const DriverPayrollExpensesTab = ({
                         showReceiptColumn={false}
                         driverPayrollCode={driverPayrollCode}
                         driverPayrollList={driverPayrollList}
+                        title={t("expenses.sections.withoutReceipt")}
                     />
                 </Box>
             </Box>
@@ -387,7 +381,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
             t("notifications.statusChanged", {
                 code: payroll.payroll_code ?? 0,
                 status: paid ? t("payroll.status.paid") : t("payroll.status.unpaid"),
-            }),
+            })
         );
     };
 
@@ -412,7 +406,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));
@@ -467,7 +461,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
                             checkedDescription={
                                 driverPayroll?.paid_timestamp
                                     ? DateTime.fromHTTP(driverPayroll.paid_timestamp).toFormat(
-                                          "dd/MM/yyyy",
+                                          "dd/MM/yyyy"
                                       )
                                     : ""
                             }

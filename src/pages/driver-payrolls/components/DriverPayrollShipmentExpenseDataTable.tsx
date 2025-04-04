@@ -81,6 +81,7 @@ type DriverPayrollShipmentExpenseDataTableProps = {
     showReceiptColumn: boolean;
     driverPayrollCode: number;
     driverPayrollList: DriverPayroll[];
+    title: string;
 };
 
 export const DriverPayrollShipmentExpenseDataTable = ({
@@ -92,6 +93,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     showReceiptColumn,
     driverPayrollCode,
     driverPayrollList,
+    title,
 }: DriverPayrollShipmentExpenseDataTableProps) => {
     const { t } = useTranslation(driverPayrollTranslationNamespace);
 
@@ -108,9 +110,11 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         () =>
             driverPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [driverPayrollList],
+        [driverPayrollList]
     );
 
     useEffect(() => {
@@ -137,7 +141,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                 }
 
                 const resp = await ShipmentExpenseApi.deleteShipmentExpenseList(
-                    selectedRows as number[],
+                    selectedRows as number[]
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Expenses resp: ", { resp });
@@ -233,7 +237,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
 
                 const resp = await ShipmentExpenseApi.changeShipmentListDriverPayroll(
                     selectedPayroll,
-                    selectedRows as number[],
+                    selectedRows as number[]
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment Expense resp: ", { resp });
@@ -329,7 +333,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
-                tableTitle={t("expenses.tableTitle")}
+                tableTitle={title}
                 numSelected={selectedRows.length}
                 handleDelete={handleDeleteSelected}
                 handleMove={handleChangeShipmentExpenseListDriverPayroll}
