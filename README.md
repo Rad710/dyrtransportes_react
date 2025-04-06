@@ -8,8 +8,15 @@ The "Grain Transport Journey Recording Platform" is a web application designed t
 Configuration .env:
 
 ```env
+# dev
 VITE_API_URL=http://localhost:8080
 VITE_DEBUG=1
+
+# docker
+VITE_API_URL=VITE_API_URL_PLACEHOLDER
+
+# prod
+VITE_API_URL=
 ```
 
 Run dev:
