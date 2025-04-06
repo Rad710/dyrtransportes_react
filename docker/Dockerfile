@@ -1,6 +1,9 @@
 ## docker build -t dyrtransportes-nginx:1.10.0 -f docker/Dockerfile .
 ## or ${REGISTRY}/dyrtransportes/dyrtransportes-react:1.10.0
 
+### for arm
+#docker buildx build --builder=my_builder --platform linux/amd64,linux/arm64 -t 192.168.100.15/dyrtransportes/dyrtransportes-react:1.10.0 -f docker/Dockerfile --push .
+
 FROM node:22.14.0-slim AS builder
 
 RUN npm install -g pnpm

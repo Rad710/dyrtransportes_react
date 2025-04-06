@@ -67,7 +67,7 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
             const filtered = driverList.filter(
                 (driver) =>
                     driver.driver_name?.toLowerCase().includes(query) ||
-                    driver.driver_surname?.toLowerCase().includes(query),
+                    driver.driver_surname?.toLowerCase().includes(query)
             );
             setFilteredDriverList(filtered);
         }
@@ -89,15 +89,15 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
         const driverResp = await DriverApi.getDriver(driver.driver_code ?? 0);
         if (!isAxiosError(driverResp) && driverResp) {
             const updatedDriverList = driverList.map((item) =>
-                item.driver_code !== driver.driver_code ? item : driverResp,
+                item.driver_code !== driver.driver_code ? item : driverResp
             );
             setDriverList(updatedDriverList);
 
             // Also update the filtered list to reflect changes
             setFilteredDriverList(
                 filteredDriverList.map((item) =>
-                    item.driver_code !== driver.driver_code ? item : driverResp,
-                ),
+                    item.driver_code !== driver.driver_code ? item : driverResp
+                )
             );
         } else {
             showToastAxiosError(driverResp);
@@ -107,7 +107,7 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
             t("notifications.statusChanged", {
                 name: driverName.trim(),
                 status: active ? t("driver.status.active") : t("driver.status.deactivated"),
-            }),
+            })
         );
     };
 
@@ -176,7 +176,7 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
                                 >
                                     <Box
                                         sx={{
-                                            width: { xs: "100%", sm: "400px" },
+                                            width: { xs: "100%", sm: "500px" },
                                             display: "flex",
                                             justifyContent: "center",
                                         }}
@@ -208,6 +208,17 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
                                                 }}
                                             >
                                                 {driver.driver_name} {driver.driver_surname}
+                                                <Typography
+                                                    component="span"
+                                                    sx={{
+                                                        ml: 1,
+                                                        color: "text.secondary",
+                                                        opacity: 0.7,
+                                                        fontWeight: "normal",
+                                                    }}
+                                                >
+                                                    [#{driver.driver_code ?? 0}]
+                                                </Typography>
                                             </Button>
                                             <Divider
                                                 sx={{

@@ -43,7 +43,7 @@ const resources = {
                 shipmentPayrolls: "Cobranzas",
                 driverPayrolls: "Liquidaciones",
                 routes: "Precios y Productos",
-                drivers: "Choferes",
+                drivers: "Nómina",
                 dinatran: "DINATRAN",
             },
             userMenu: {
