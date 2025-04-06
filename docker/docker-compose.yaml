@@ -11,6 +11,8 @@ services:
 
     container_name: dyrtransportes-react
 
+    restart: always
+
     networks:
       - dyrtransportes-frontend
       - dyrtransportes
