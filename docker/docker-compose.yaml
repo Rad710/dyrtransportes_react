@@ -1,0 +1,22 @@
+services:
+  dyrtransportes-react:
+    image: dyrtransportes-nginx:1.10.0
+    
+    ports:
+      - 80:80
+      - 443:443
+
+    environment:
+      - VITE_API_URL=http://dyrtransportes-flask:8080
+
+    container_name: dyrtransportes-react
+
+    networks:
+      - dyrtransportes-frontend
+      - dyrtransportes
+
+networks:
+  dyrtransportes-frontend:
+  dyrtransportes:
+    name: dyrtransportes
+    external: true
