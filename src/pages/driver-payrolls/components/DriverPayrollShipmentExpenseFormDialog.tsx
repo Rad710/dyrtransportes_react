@@ -28,9 +28,12 @@ import { numberFormatter, numberParser } from "@/utils/i18n";
 const getShipmentExpenseFormSchema = (t: TFunction) =>
     z.object({
         expense_code: z.number().nullable(),
-        expense_date: z.coerce.date({
-            required_error: t("expenses.dialogs.form.errors.dateRequired"),
-        }),
+        expense_date: z.coerce
+            .date({
+                required_error: t("expenses.dialogs.form.errors.dateRequired"),
+            })
+            .min(new Date("2000-01-01"), t("expenses.dialogs.form.errors.dateRequired"))
+            .max(new Date("2100-12-31"), t("expenses.dialogs.form.errors.dateRequired")),
         receipt: z.string({
             invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
             required_error: t("expenses.dialogs.form.errors.receiptRequired"),

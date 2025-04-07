@@ -110,11 +110,13 @@ export const ShipmentApi = {
 
     getShipmentList: async (
         shipment_payroll_code?: number | null,
-        driver_payroll_code?: number | null,
+        driver_payroll_code?: number | null
     ) =>
         api
             .get(
-                `/shipments?shipment_payroll_code=${shipment_payroll_code ?? ""}&driver_payroll_code=${driver_payroll_code ?? ""}`,
+                `/shipments?shipment_payroll_code=${
+                    shipment_payroll_code ?? ""
+                }&driver_payroll_code=${driver_payroll_code ?? ""}`
             )
             .then((response: AxiosResponse<Shipment[] | null>) => {
                 return response.data ?? [];
@@ -156,12 +158,14 @@ export const ShipmentApi = {
     changeShipmentListShipmentPayroll: async (
         shipmentCodeList: number[],
         shipmentPayrollCode?: number | null,
-        driver_payroll_code?: number | null,
+        driver_payroll_code?: number | null
     ) =>
         api
             .patch(
-                `/shipments/change-payroll?shipment_payroll_code=${shipmentPayrollCode ?? ""}&driver_payroll_code=${driver_payroll_code ?? ""}`,
-                shipmentCodeList,
+                `/shipments/change-payroll?shipment_payroll_code=${
+                    shipmentPayrollCode ?? ""
+                }&driver_payroll_code=${driver_payroll_code ?? ""}`,
+                shipmentCodeList
             )
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;
@@ -211,11 +215,24 @@ const getShipmentFormSchema = (t: TFunction) =>
             .number()
             .positive(t("formDialog.validation.invalidShipmentCode"))
             .nullish(),
-        shipment_date: z.coerce.date({
-            required_error: t("formDialog.validation.fieldRequired", {
-                field: t("formDialog.fields.shipment_date"),
-            }),
-        }),
+        shipment_date: z.coerce
+            .date({
+                required_error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.shipment_date"),
+                }),
+            })
+            .min(
+                new Date("2000-01-01"),
+                t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.shipment_date"),
+                })
+            )
+            .max(
+                new Date("2100-12-31"),
+                t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.shipment_date"),
+                })
+            ),
 
         driver_name: z
             .string({
@@ -226,7 +243,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             })
             .min(
                 1,
-                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") }),
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") })
             ),
         truck_plate: z
             .string({
@@ -239,7 +256,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                 1,
                 t("formDialog.validation.fieldEmpty", {
                     field: t("formDialog.fields.truck_plate"),
-                }),
+                })
             ),
         trailer_plate: z
             .string({
@@ -258,7 +275,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             })
             .min(
                 1,
-                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") }),
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") })
             ),
 
         product_code: z.coerce
@@ -270,7 +287,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             })
             .min(
                 1,
-                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") }),
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") })
             ),
         product_name: z
             .string({
@@ -281,7 +298,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             })
             .min(
                 1,
-                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") }),
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") })
             ),
 
         route_code: z.coerce
@@ -299,7 +316,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             })
             .min(
                 1,
-                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.origin") }),
+                t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.origin") })
             ),
         destination: z
             .string({
@@ -312,7 +329,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                 1,
                 t("formDialog.validation.fieldEmpty", {
                     field: t("formDialog.fields.destination"),
-                }),
+                })
             ),
 
         price: z.coerce
@@ -412,7 +429,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             .int(
                 t("formDialog.validation.noDecimals", {
                     field: t("formDialog.fields.origin_weight"),
-                }),
+                })
             )
             .min(1, {
                 message: t("formDialog.validation.fieldEmpty", {
@@ -429,7 +446,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             .int(
                 t("formDialog.validation.noDecimals", {
                     field: t("formDialog.fields.destination_weight"),
-                }),
+                })
             )
             .min(1, {
                 message: t("formDialog.validation.fieldEmpty", {

@@ -24,9 +24,12 @@ import type { TFunction } from "i18next";
 const getShipmentPayrollFormSchema = (t: TFunction) => {
     return z.object({
         payroll_code: z.number().positive(t("formDialog.validation.invalidPayrollCode")).nullish(),
-        payroll_timestamp: z.date({
-            required_error: t("formDialog.validation.dateRequired"),
-        }),
+        payroll_timestamp: z
+            .date({
+                required_error: t("formDialog.validation.dateRequired"),
+            })
+            .min(new Date("2000-01-01"), t("formDialog.validation.dateRequired"))
+            .max(new Date("2100-12-31"), t("formDialog.validation.dateRequired")),
         collected: z.boolean(),
         deleted: z.boolean(),
     });

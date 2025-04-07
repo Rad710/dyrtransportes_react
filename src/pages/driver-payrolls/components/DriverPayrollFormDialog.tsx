@@ -32,9 +32,12 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
 const getDriverPayrollFormSchema = (t: TFunction) =>
     z.object({
         payroll_code: z.number().positive(t("formDialog.errors.invalidCode")).nullish(),
-        payroll_timestamp: z.date({
-            required_error: t("formDialog.errors.dateRequired"),
-        }),
+        payroll_timestamp: z
+            .date({
+                required_error: t("formDialog.errors.dateRequired"),
+            })
+            .min(new Date("2000-01-01"), t("formDialog.errors.dateRequired"))
+            .max(new Date("2100-12-31"), t("formDialog.errors.dateRequired")),
         paid: z.boolean(),
         deleted: z.boolean(),
     });
