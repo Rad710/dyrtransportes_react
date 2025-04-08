@@ -34,10 +34,19 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
             })
             .min(new Date("2000-01-01"), t("expenses.dialogs.form.errors.dateRequired"))
             .max(new Date("2100-12-31"), t("expenses.dialogs.form.errors.dateRequired")),
-        receipt: z.string({
-            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
-            required_error: t("expenses.dialogs.form.errors.receiptRequired"),
-        }),
+        receipt: z
+            .string({
+                invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
+                required_error: t("expenses.dialogs.form.errors.receiptRequired"),
+            })
+            .transform((val) => {
+                if (val === null || val === undefined) {
+                    return val;
+                }
+                const trimmed = val.trim();
+                return trimmed === "" ? null : trimmed;
+            })
+            .nullish(),
         amount: z.coerce
             .string({
                 invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
@@ -100,7 +109,7 @@ const expenseToFormSchema = (expense: ShipmentExpense): ShipmentExpenseFormSchem
 const formSchemaToExpense = (formSchema: ShipmentExpenseFormSchema): ShipmentExpense => ({
     expense_code: formSchema.expense_code,
     expense_date: DateTime.fromJSDate(formSchema.expense_date).toHTTP() ?? "",
-    receipt: formSchema.receipt,
+    receipt: formSchema.receipt ?? "",
     amount: formSchema.amount,
     reason: formSchema.reason,
     driver_payroll_code: formSchema.driver_payroll_code,
