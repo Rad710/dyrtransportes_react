@@ -98,7 +98,10 @@ export const DriverPayrollShipmentExpenseDataTable = ({
     const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // state
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+        type: "include",
+        ids: new Set(),
+    });
 
     // context
     const { openConfirmDialog } = useConfirmation();
@@ -119,7 +122,10 @@ export const DriverPayrollShipmentExpenseDataTable = ({
 
     useEffect(() => {
         // on expense list rerender empty selection
-        setSelectedRows([]);
+        setSelectedRows({
+            type: "include",
+            ids: new Set(),
+        });
     }, [expenseList]);
 
     const handleEditExpense = (row: ShipmentExpense) => {
@@ -141,7 +147,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                 }
 
                 const resp = await ShipmentExpenseApi.deleteShipmentExpenseList(
-                    selectedRows as number[]
+                    selectedRows.ids.values().toArray() as number[]
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Expenses resp: ", { resp });
@@ -237,7 +243,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
 
                 const resp = await ShipmentExpenseApi.changeShipmentListDriverPayroll(
                     selectedPayroll,
-                    selectedRows as number[]
+                    selectedRows.ids.values().toArray() as number[]
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment Expense resp: ", { resp });
@@ -334,7 +340,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
                 tableTitle={title}
-                numSelected={selectedRows.length}
+                numSelected={selectedRows.ids.size}
                 handleDelete={handleDeleteSelected}
                 handleMove={handleChangeShipmentExpenseListDriverPayroll}
             />

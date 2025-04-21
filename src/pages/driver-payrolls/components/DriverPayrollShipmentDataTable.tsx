@@ -33,16 +33,16 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
     const totals = useMemo(() => {
         const totalOrigin = shipmentList.reduce(
             (sum, item) => sum + parseFloat(item.origin_weight),
-            0,
+            0
         );
         const totalDestination = shipmentList.reduce(
             (sum, item) => sum + parseFloat(item.destination_weight),
-            0,
+            0
         );
         const totalMoney = shipmentList.reduce(
             (sum, item) =>
                 sum + parseFloat(item.destination_weight) * parseFloat(item.payroll_price),
-            0,
+            0
         );
         return { totalOrigin, totalDestination, totalMoney };
     }, [shipmentList]);
@@ -176,7 +176,10 @@ export const DriverPayrollShipmentDataTable = ({
     const { t } = useTranslation(driverPayrollTranslationNamespace);
 
     // state
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+        type: "include",
+        ids: new Set(),
+    });
 
     // context
     const { openConfirmDialog } = useConfirmation();
@@ -188,14 +191,19 @@ export const DriverPayrollShipmentDataTable = ({
         () =>
             driverPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [driverPayrollList],
+        [driverPayrollList]
     );
 
     useEffect(() => {
         // on shipment list rerender empty selection
-        setSelectedRows([]);
+        setSelectedRows({
+            type: "include",
+            ids: new Set(),
+        });
     }, [shipmentList]);
 
     const handleEditShipment = (row: Shipment) => {
@@ -216,7 +224,9 @@ export const DriverPayrollShipmentDataTable = ({
                     console.log("Deleting Shipments...", selectedRows);
                 }
 
-                const resp = await ShipmentApi.deleteShipmentList(selectedRows as number[]);
+                const resp = await ShipmentApi.deleteShipmentList(
+                    selectedRows.ids.values().toArray() as number[]
+                );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Shipments resp: ", { resp });
                 }
@@ -310,9 +320,9 @@ export const DriverPayrollShipmentDataTable = ({
                 }
 
                 const resp = await ShipmentApi.changeShipmentListShipmentPayroll(
-                    selectedRows as number[],
+                    selectedRows.ids.values().toArray() as number[],
                     null,
-                    selectedPayroll,
+                    selectedPayroll
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment resp: ", { resp });
@@ -467,7 +477,7 @@ export const DriverPayrollShipmentDataTable = ({
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
                 tableTitle={t("shipments.tableTitle")}
-                numSelected={selectedRows.length}
+                numSelected={selectedRows.ids.size}
                 handleDelete={handleDeleteSelected}
                 handleMove={handleChangeShipmentListDriverPayroll}
             />

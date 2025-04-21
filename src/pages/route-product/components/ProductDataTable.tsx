@@ -30,7 +30,10 @@ export const ProductDataTable = ({
     const { t } = useTranslation(productTranslationNamespace);
 
     // state
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+        type: "include",
+        ids: new Set(),
+    });
 
     // context
     const { openConfirmDialog } = useConfirmation();
@@ -38,7 +41,10 @@ export const ProductDataTable = ({
 
     useEffect(() => {
         // on product list rerender empty selection
-        setSelectedRows([]);
+        setSelectedRows({
+            type: "include",
+            ids: new Set(),
+        });
     }, [productList]);
 
     const paginationModel = { page: 0, pageSize: 100 };
@@ -61,7 +67,9 @@ export const ProductDataTable = ({
                     console.log("Deleting Products...", selectedRows);
                 }
 
-                const resp = await ProductApi.deleteProductList(selectedRows as number[]);
+                const resp = await ProductApi.deleteProductList(
+                    selectedRows.ids.values().toArray() as number[]
+                );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Products resp: ", { resp });
                 }
@@ -159,7 +167,7 @@ export const ProductDataTable = ({
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
                 tableTitle={t("dataTable.tableTitle")}
-                numSelected={selectedRows.length}
+                numSelected={selectedRows.ids.size}
                 handleDelete={handleDeleteSelected}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>

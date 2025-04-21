@@ -34,7 +34,10 @@ export const DriverDataTable = ({
     const { t } = useTranslation(driverTranslationNamespace);
 
     //state
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+        type: "include",
+        ids: new Set(),
+    });
 
     // context
     const { openConfirmDialog } = useConfirmation();
@@ -42,7 +45,10 @@ export const DriverDataTable = ({
 
     useEffect(() => {
         // on driver list rerender empty selection
-        setSelectedRows([]);
+        setSelectedRows({
+            type: "include",
+            ids: new Set(),
+        });
     }, [driverList]);
 
     const paginationModel = { page: 0, pageSize: 100 };
@@ -67,7 +73,9 @@ export const DriverDataTable = ({
                     console.log("Deleting Drivers...", selectedRows);
                 }
 
-                const resp = await DriverApi.deleteDriverList(selectedRows as number[]);
+                const resp = await DriverApi.deleteDriverList(
+                    selectedRows.ids.values().toArray() as number[]
+                );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Deleting Drivers resp: ", { resp });
                 }
@@ -233,7 +241,7 @@ export const DriverDataTable = ({
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
                 tableTitle={t("dataTable.tableTitle")}
-                numSelected={selectedRows.length}
+                numSelected={selectedRows.ids.size}
                 handleDelete={mode === "active" ? handleDeleteSelected : undefined}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>

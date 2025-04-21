@@ -14,7 +14,10 @@ type DinatranDataTableProps = {
 
 export const DinatranDataTable = ({ loading, dinatranRows }: DinatranDataTableProps) => {
     // state
-    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+    const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+        type: "include",
+        ids: new Set(),
+    });
     const { t } = useTranslation(dinatranTranslationNamespace);
 
     const paginationModel = { page: 0, pageSize: 100 };
@@ -73,7 +76,7 @@ export const DinatranDataTable = ({ loading, dinatranRows }: DinatranDataTablePr
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
             <DataTableToolbar
                 tableTitle={t("dataTable.tableTitle")}
-                numSelected={selectedRows.length}
+                numSelected={selectedRows.ids.size}
             />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
