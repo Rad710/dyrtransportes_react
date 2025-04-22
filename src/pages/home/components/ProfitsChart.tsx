@@ -1,24 +1,10 @@
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-    type ChartOptions,
-    type ChartData,
-} from "chart.js";
-import { useMemo } from "react";
-import { Bar } from "react-chartjs-2";
 import { Typography, Box, Stack, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { BarChart } from "@mui/x-charts/BarChart";
 import type { ProfitData } from "../types";
 import type { DateTime } from "luxon";
 import { numberFormatter } from "@/utils/i18n";
 import { homeTranslationNamespace } from "../translations";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 type ProfitsChartProps = {
     profitData: ProfitData | null;
@@ -41,69 +27,6 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
         day: "numeric",
     });
 
-    const setUpChart = () => {
-        const options: ChartOptions<"bar"> = {
-            indexAxis: "y",
-            elements: {
-                bar: {
-                    borderWidth: 2,
-                },
-            },
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: "right",
-                },
-                title: {
-                    display: true,
-                    text: t("profits.chart.title", {
-                        startDate: startDateString,
-                        endDate: endDateString,
-                    }),
-                    font: {
-                        family: theme.typography.fontFamily,
-                        size: 16,
-                        weight: "bold",
-                    },
-                },
-            },
-        };
-
-        const data: ChartData<"bar"> = {
-            labels: [t("profits.chart.labels.summary")],
-            datasets: [
-                {
-                    label: t("profits.chart.labels.income"),
-                    data: [profitData?.totalShipmentPayroll ?? 0],
-                    backgroundColor: theme.palette.primary.main + "CC", // Adding transparency
-                    borderColor: theme.palette.primary.dark,
-                },
-                {
-                    label: t("profits.chart.labels.expenses"),
-                    data: [profitData?.totalDriverPayroll ?? 0],
-                    backgroundColor: theme.palette.warning.main + "CC",
-                    borderColor: theme.palette.warning.dark,
-                },
-                {
-                    label: t("profits.chart.labels.losses"),
-                    data: [profitData?.totalLosses ?? 0],
-                    backgroundColor: theme.palette.error.main + "CC",
-                    borderColor: theme.palette.error.dark,
-                },
-                {
-                    label: t("profits.chart.labels.profits"),
-                    data: [profitData?.totalProfits ?? 0],
-                    backgroundColor: theme.palette.success.main + "CC",
-                    borderColor: theme.palette.success.dark,
-                },
-            ],
-        };
-
-        return { options, data };
-    };
-
-    const barProperties = useMemo(() => setUpChart(), [profitData, theme, t]);
-
     return (
         <Box
             sx={{
@@ -112,12 +35,53 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                 width: "100%",
             }}
         >
-            <Box sx={{ width: { xs: "100%", md: "60%" } }}>
-                <Bar
-                    options={barProperties.options}
-                    data={barProperties.data}
-                    redraw={true}
-                    updateMode="resize"
+            <Box sx={{ width: "100%", height: "100%" }}>
+                <BarChart
+                    sx={{
+                        height: { xs: 300, md: 400 },
+                    }}
+                    layout="horizontal"
+                    title={t("profits.chart.title", {
+                        startDate: startDateString,
+                        endDate: endDateString,
+                    })}
+                    series={[
+                        {
+                            data: [profitData?.totalShipmentPayroll ?? 0],
+                            label: t("profits.chart.labels.income"),
+                            color: theme.palette.primary.main,
+                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                        },
+                        {
+                            data: [profitData?.totalDriverPayroll ?? 0],
+                            label: t("profits.chart.labels.expenses"),
+                            color: theme.palette.warning.main,
+                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                        },
+                        {
+                            data: [profitData?.totalLosses ?? 0],
+                            label: t("profits.chart.labels.losses"),
+                            color: theme.palette.error.main,
+                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                        },
+                        {
+                            data: [profitData?.totalProfits ?? 0],
+                            label: t("profits.chart.labels.profits"),
+                            color: theme.palette.success.main,
+                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                        },
+                    ]}
+                    yAxis={[
+                        {
+                            scaleType: "band",
+                            data: [t("profits.chart.labels.summary")],
+                        },
+                    ]}
+                    slotProps={{
+                        legend: {
+                            position: { vertical: "middle", horizontal: "start" },
+                        },
+                    }}
                 />
             </Box>
 
