@@ -28,16 +28,15 @@ import { numberFormatter, numberParser } from "@/utils/i18n";
 const getShipmentExpenseFormSchema = (t: TFunction) =>
     z.object({
         expense_code: z.number().nullable(),
-        expense_date: z.coerce
+        expense_date: z
             .date({
-                required_error: t("expenses.dialogs.form.errors.dateRequired"),
+                error: t("expenses.dialogs.form.errors.dateRequired"),
             })
             .min(new Date("2000-01-01"), t("expenses.dialogs.form.errors.dateRequired"))
             .max(new Date("2100-12-31"), t("expenses.dialogs.form.errors.dateRequired")),
         receipt: z
             .string({
-                invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
-                required_error: t("expenses.dialogs.form.errors.receiptRequired"),
+                error: t("expenses.dialogs.form.errors.receiptRequired"),
             })
             .transform((val) => {
                 if (val === null || val === undefined) {
@@ -47,17 +46,16 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
                 return trimmed === "" ? null : trimmed;
             })
             .nullish(),
-        amount: z.coerce
+        amount: z
             .string({
-                invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
-                required_error: t("expenses.dialogs.form.errors.amountRequired"),
+                error: t("expenses.dialogs.form.errors.amountRequired"),
             })
             .superRefine((arg, ctx) => {
                 if (arg.length <= 0) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.too_small,
+                        code: "too_small",
+                        origin: "string",
                         minimum: 1,
-                        type: "string",
                         inclusive: true,
                         message: t("expenses.dialogs.form.errors.amountEmpty"),
                     });
@@ -66,7 +64,7 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
                 const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.invalid_type,
+                        code: "invalid_type",
                         message: t("expenses.dialogs.form.errors.invalidNumber"),
                         expected: "number",
                         received: "unknown",
@@ -75,12 +73,10 @@ const getShipmentExpenseFormSchema = (t: TFunction) =>
             })
             .transform((arg) => numberParser(arg).toFixed(2)),
         reason: z.string({
-            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
-            required_error: t("expenses.dialogs.form.errors.reasonRequired"),
+            error: t("expenses.dialogs.form.errors.reasonRequired"),
         }),
         driver_payroll_code: z.number({
-            invalid_type_error: t("expenses.dialogs.form.errors.invalidValue"),
-            required_error: t("expenses.dialogs.form.errors.payrollCodeRequired"),
+            error: t("expenses.dialogs.form.errors.payrollCodeRequired"),
         }),
     });
 

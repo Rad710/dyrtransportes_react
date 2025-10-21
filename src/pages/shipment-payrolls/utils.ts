@@ -215,9 +215,9 @@ const getShipmentFormSchema = (t: TFunction) =>
             .number()
             .positive(t("formDialog.validation.invalidShipmentCode"))
             .nullish(),
-        shipment_date: z.coerce
+        shipment_date: z
             .date({
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.shipment_date"),
                 }),
             })
@@ -236,8 +236,7 @@ const getShipmentFormSchema = (t: TFunction) =>
 
         driver_name: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.driver"),
                 }),
             })
@@ -247,8 +246,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             ),
         truck_plate: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.truck_plate"),
                 }),
             })
@@ -260,16 +258,14 @@ const getShipmentFormSchema = (t: TFunction) =>
             ),
         trailer_plate: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.truck_plate"),
                 }),
             })
             .nullish(),
-        driver_code: z.coerce
+        driver_code: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.driver"),
                 }),
             })
@@ -278,10 +274,9 @@ const getShipmentFormSchema = (t: TFunction) =>
                 t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.driver") })
             ),
 
-        product_code: z.coerce
+        product_code: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.product"),
                 }),
             })
@@ -291,8 +286,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             ),
         product_name: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.product"),
                 }),
             })
@@ -301,16 +295,14 @@ const getShipmentFormSchema = (t: TFunction) =>
                 t("formDialog.validation.fieldEmpty", { field: t("formDialog.fields.product") })
             ),
 
-        route_code: z.coerce
+        route_code: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", { field: "Route" }),
+                error: t("formDialog.validation.fieldRequired", { field: "Route" }),
             })
             .min(1, t("formDialog.validation.fieldEmpty", { field: "Route" })),
         origin: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.origin"),
                 }),
             })
@@ -320,8 +312,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             ),
         destination: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.destination"),
                 }),
             })
@@ -332,19 +323,18 @@ const getShipmentFormSchema = (t: TFunction) =>
                 })
             ),
 
-        price: z.coerce
+        price: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.price"),
                 }),
             })
             .superRefine((arg, ctx) => {
                 if (arg.length <= 0) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.too_small,
+                        code: "too_small",
+                        origin: "string",
                         minimum: 1,
-                        type: "string",
                         inclusive: true,
                         message: t("formDialog.validation.fieldEmpty", {
                             field: t("formDialog.fields.price"),
@@ -355,7 +345,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                 const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.invalid_type,
+                        code: "invalid_type",
                         message: t("formDialog.validation.invalidNumber"),
                         expected: "number",
                         received: "unknown",
@@ -363,19 +353,18 @@ const getShipmentFormSchema = (t: TFunction) =>
                 }
             })
             .transform((arg) => numberParser(arg).toFixed(2)),
-        payroll_price: z.coerce
+        payroll_price: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.payroll_price"),
                 }),
             })
             .superRefine((arg, ctx) => {
                 if (arg.length <= 0) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.too_small,
+                        code: "too_small",
+                        origin: "string",
                         minimum: 1,
-                        type: "string",
                         inclusive: true,
                         message: t("formDialog.validation.fieldEmpty", {
                             field: t("formDialog.fields.payroll_price"),
@@ -386,7 +375,7 @@ const getShipmentFormSchema = (t: TFunction) =>
                 const val = numberParser(arg);
                 if (!val) {
                     ctx.addIssue({
-                        code: z.ZodIssueCode.invalid_type,
+                        code: "invalid_type",
                         message: t("formDialog.validation.invalidNumber"),
                         expected: "number",
                         received: "unknown",
@@ -397,8 +386,7 @@ const getShipmentFormSchema = (t: TFunction) =>
 
         dispatch_code: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.dispatch_code"),
                 }),
             })
@@ -409,8 +397,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             }),
         receipt_code: z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.receipt_code"),
                 }),
             })
@@ -419,10 +406,9 @@ const getShipmentFormSchema = (t: TFunction) =>
                     field: t("formDialog.fields.receipt_code"),
                 }),
             }),
-        origin_weight: z.coerce
+        origin_weight: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.origin_weight"),
                 }),
             })
@@ -436,10 +422,9 @@ const getShipmentFormSchema = (t: TFunction) =>
                     field: t("formDialog.fields.origin_weight"),
                 }),
             }),
-        destination_weight: z.coerce
+        destination_weight: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.destination_weight"),
                 }),
             })
@@ -455,8 +440,7 @@ const getShipmentFormSchema = (t: TFunction) =>
             }),
         shipment_payroll_code: z
             .number({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", {
+                error: t("formDialog.validation.fieldRequired", {
                     field: t("formDialog.fields.payroll"),
                 }),
             })

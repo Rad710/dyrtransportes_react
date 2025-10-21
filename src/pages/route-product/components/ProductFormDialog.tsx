@@ -25,8 +25,7 @@ const getProductFormSchema = (t: TFunction) => {
     const createRequiredStringSchema = (fieldName: string) =>
         z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                error: t("formDialog.validation.fieldRequired", { field: fieldName }),
             })
             .min(1, {
                 message: t("formDialog.validation.fieldEmpty", {

@@ -26,7 +26,7 @@ const getShipmentPayrollFormSchema = (t: TFunction) => {
         payroll_code: z.number().positive(t("formDialog.validation.invalidPayrollCode")).nullish(),
         payroll_timestamp: z
             .date({
-                required_error: t("formDialog.validation.dateRequired"),
+                error: t("formDialog.validation.dateRequired"),
             })
             .min(new Date("2000-01-01"), t("formDialog.validation.dateRequired"))
             .max(new Date("2100-12-31"), t("formDialog.validation.dateRequired")),

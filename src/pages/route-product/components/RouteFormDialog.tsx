@@ -26,8 +26,7 @@ const getRouteFormSchema = (t: TFunction) => {
     const createRequiredStringSchema = (fieldName: string) =>
         z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                error: t("formDialog.validation.fieldRequired", { field: fieldName }),
             })
             .min(1, {
                 message: t("formDialog.validation.fieldEmpty", {
@@ -37,17 +36,16 @@ const getRouteFormSchema = (t: TFunction) => {
 
     // Create a reusable number validation schema for price fields
     const createPriceSchema = (fieldName: string) =>
-        z.coerce
+        z
             .string({
-                invalid_type_error: t("formDialog.validation.invalidValue"),
-                required_error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                error: t("formDialog.validation.fieldRequired", { field: fieldName }),
             })
             .superRefine((arg, ctx) => {
                 if (arg.length <= 0) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.too_small,
+                        code: "too_small",
+                        origin: "string",
                         minimum: 1,
-                        type: "string",
                         inclusive: true,
                         message: t("formDialog.validation.fieldEmpty", { field: fieldName }),
                     });
@@ -56,7 +54,7 @@ const getRouteFormSchema = (t: TFunction) => {
                 const val = numberParser(arg);
                 if (!val) {
                     return ctx.addIssue({
-                        code: z.ZodIssueCode.invalid_type,
+                        code: "invalid_type",
                         message: t("formDialog.validation.invalidNumber"),
                         expected: "number",
                         received: "unknown",
