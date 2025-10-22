@@ -15,15 +15,14 @@ import { useEffect, useMemo, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/utils/axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { userProfileTranslationNamespace } from "./translations";
-import type { TFunction } from "i18next";
 import { UserProfileContainer } from "./components/UserProfileContainer";
 import { UserProfileCard } from "./components/UserProfileCard";
+import { getUserProfileFormSchema, type UserProfileFormSchema } from "./schema";
 
 const UserProfileEditApi = {
     putUserProfile: async (formData: FormData) =>
@@ -38,40 +37,6 @@ const UserProfileEditApi = {
                 return errorResponse ?? null;
             }),
 };
-
-const getUserProfileFormSchema = (t: TFunction) => {
-    return z
-        .object({
-            name: z.string().min(1, { message: t("validation.nameRequired") }),
-            email: z.string().email({ message: t("validation.emailInvalid") }),
-            current_password: z.string().optional(),
-            new_password: z.string().optional(),
-        })
-        .refine(
-            (data) => {
-                // If new password is provided, current password must also be provided
-                return !data.new_password || !!data.current_password;
-            },
-            {
-                message: t("validation.currentPasswordRequired"),
-                path: ["current_password"],
-            },
-        )
-        .refine(
-            (data) => {
-                // If new password is provided, it must meet complexity requirements
-                if (!data.new_password) return true;
-
-                const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-                return passwordRegex.test(data.new_password);
-            },
-            {
-                message: t("validation.passwordComplexity"),
-                path: ["new_password"],
-            },
-        );
-};
-type UserProfileFormSchema = z.infer<ReturnType<typeof getUserProfileFormSchema>>;
 
 // Remove fixed width from Card component
 

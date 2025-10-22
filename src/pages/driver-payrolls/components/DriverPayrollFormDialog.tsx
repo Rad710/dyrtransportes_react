@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -20,28 +19,13 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { driverPayrollListTranslationNamespace } from "../translations";
-import type { TFunction } from "i18next";
+import { getDriverPayrollFormSchema, type DriverPayrollFormSchema } from "../schema";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
     overflow: "visible", // Allow content to be visible outside the dialog
     paddingBottom: theme.spacing(2),
 }));
-
-// Create a dynamic schema that uses translations
-const getDriverPayrollFormSchema = (t: TFunction) =>
-    z.object({
-        payroll_code: z.number().positive(t("formDialog.errors.invalidCode")).nullish(),
-        payroll_timestamp: z
-            .date({
-                error: t("formDialog.errors.dateRequired"),
-            })
-            .min(new Date("2000-01-01"), t("formDialog.errors.dateRequired"))
-            .max(new Date("2100-12-31"), t("formDialog.errors.dateRequired")),
-        paid: z.boolean(),
-        deleted: z.boolean(),
-    });
-type DriverPayrollFormSchema = z.infer<ReturnType<typeof getDriverPayrollFormSchema>>;
 
 interface DriverPayrollDialogProps extends FormDialogProps {
     driverCode: number;

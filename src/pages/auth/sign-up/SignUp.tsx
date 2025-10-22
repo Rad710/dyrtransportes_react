@@ -21,19 +21,7 @@ import { signUpTranslationNamespace } from "./translations";
 import { AuthCard } from "@/pages/auth/components/AuthCard";
 import { AuthContainer } from "@/pages/auth/components/AuthContainer";
 import { api } from "@/utils/axios";
-import type { TFunction } from "i18next";
-import { z } from "zod";
-
-const getSignUpFormSchema = (t: TFunction<"signup">) =>
-    z.object({
-        name: z.string().min(1, { message: t("errors.nameRequired") }),
-        email: z.string().email({ message: t("errors.emailRequired") }),
-        password: z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/, {
-            message: t("errors.passwordRequired"),
-        }),
-    });
-
-type SignUpFormData = z.infer<ReturnType<typeof getSignUpFormSchema>>;
+import { getSignUpFormSchema, type SignUpFormData } from "./schema";
 
 const signUpUser = (formData: FormData) =>
     api

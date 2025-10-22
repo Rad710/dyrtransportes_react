@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -21,96 +20,13 @@ import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
 import { driverPayrollTranslationNamespace } from "../translations";
-import type { TFunction } from "i18next";
-import { numberFormatter, numberParser } from "@/utils/i18n";
-
-// Define schema for form validation
-const getShipmentExpenseFormSchema = (t: TFunction) =>
-    z.object({
-        expense_code: z.number().nullable(),
-        expense_date: z
-            .date({
-                error: t("expenses.dialogs.form.errors.dateRequired"),
-            })
-            .min(new Date("2000-01-01"), t("expenses.dialogs.form.errors.dateRequired"))
-            .max(new Date("2100-12-31"), t("expenses.dialogs.form.errors.dateRequired")),
-        receipt: z
-            .string({
-                error: t("expenses.dialogs.form.errors.receiptRequired"),
-            })
-            .transform((val) => {
-                if (val === null || val === undefined) {
-                    return val;
-                }
-                const trimmed = val.trim();
-                return trimmed === "" ? null : trimmed;
-            })
-            .nullish(),
-        amount: z
-            .string({
-                error: t("expenses.dialogs.form.errors.amountRequired"),
-            })
-            .superRefine((arg, ctx) => {
-                if (arg.length <= 0) {
-                    return ctx.addIssue({
-                        code: "too_small",
-                        origin: "string",
-                        minimum: 1,
-                        inclusive: true,
-                        message: t("expenses.dialogs.form.errors.amountEmpty"),
-                    });
-                }
-
-                const val = numberParser(arg);
-                if (!val) {
-                    return ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("expenses.dialogs.form.errors.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => numberParser(arg).toFixed(2)),
-        reason: z.string({
-            error: t("expenses.dialogs.form.errors.reasonRequired"),
-        }),
-        driver_payroll_code: z.number({
-            error: t("expenses.dialogs.form.errors.payrollCodeRequired"),
-        }),
-    });
-
-type ShipmentExpenseFormSchema = z.infer<ReturnType<typeof getShipmentExpenseFormSchema>>;
-
-// Default values for the form
-const EXPENSE_FORM_DEFAULT_VALUE = (payrollCode: number): ShipmentExpenseFormSchema => ({
-    expense_code: null,
-    expense_date: DateTime.now().startOf("day").toJSDate(),
-    receipt: "",
-    amount: "",
-    reason: "",
-    driver_payroll_code: payrollCode,
-});
-
-// Transformation functions between form schema and API schema
-const expenseToFormSchema = (expense: ShipmentExpense): ShipmentExpenseFormSchema => ({
-    expense_code: expense?.expense_code ?? null,
-    expense_date: DateTime.fromHTTP(expense.expense_date).toJSDate(),
-    receipt: expense?.receipt ?? "",
-    amount: numberFormatter(parseFloat(expense?.amount ?? "0") || 0),
-    reason: expense?.reason ?? "",
-    driver_payroll_code: expense?.driver_payroll_code ?? 0,
-});
-
-const formSchemaToExpense = (formSchema: ShipmentExpenseFormSchema): ShipmentExpense => ({
-    expense_code: formSchema.expense_code,
-    expense_date: DateTime.fromJSDate(formSchema.expense_date).toHTTP() ?? "",
-    receipt: formSchema.receipt ?? "",
-    amount: formSchema.amount,
-    reason: formSchema.reason,
-    driver_payroll_code: formSchema.driver_payroll_code,
-    deleted: false,
-});
+import {
+    EXPENSE_FORM_DEFAULT_VALUE,
+    expenseToFormSchema,
+    formSchemaToExpense,
+    getShipmentExpenseFormSchema,
+    type ShipmentExpenseFormSchema,
+} from "../schema";
 
 // Form fields component
 interface ShipmentExpenseFormDialogFields {

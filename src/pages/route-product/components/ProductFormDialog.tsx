@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
@@ -19,27 +18,7 @@ import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { productTranslationNamespace } from "../translations";
-import type { TFunction } from "i18next";
-
-const getProductFormSchema = (t: TFunction) => {
-    const createRequiredStringSchema = (fieldName: string) =>
-        z
-            .string({
-                error: t("formDialog.validation.fieldRequired", { field: fieldName }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: fieldName.toLowerCase(),
-                }),
-            });
-
-    return z.object({
-        product_code: z.number().positive(t("formDialog.validation.invalidProductCode")).nullish(),
-        product_name: createRequiredStringSchema(t("formDialog.fields.productName")),
-    });
-};
-
-type ProductFormSchema = z.infer<ReturnType<typeof getProductFormSchema>>;
+import { getProductFormSchema, type ProductFormSchema } from "../schema";
 
 interface ProductFormDialogProps extends FormDialogProps {
     loadProductList: () => Promise<void>;

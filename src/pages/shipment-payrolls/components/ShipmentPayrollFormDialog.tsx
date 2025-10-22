@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
@@ -19,22 +18,7 @@ import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { useTranslation } from "react-i18next";
 import { shipmentPayrollTranslationNamespace } from "../translations";
-import type { TFunction } from "i18next";
-
-const getShipmentPayrollFormSchema = (t: TFunction) => {
-    return z.object({
-        payroll_code: z.number().positive(t("formDialog.validation.invalidPayrollCode")).nullish(),
-        payroll_timestamp: z
-            .date({
-                error: t("formDialog.validation.dateRequired"),
-            })
-            .min(new Date("2000-01-01"), t("formDialog.validation.dateRequired"))
-            .max(new Date("2100-12-31"), t("formDialog.validation.dateRequired")),
-        collected: z.boolean(),
-        deleted: z.boolean(),
-    });
-};
-type ShipmentPayrollFormSchema = z.infer<ReturnType<typeof getShipmentPayrollFormSchema>>;
+import { getShipmentPayrollFormSchema, type ShipmentPayrollFormSchema } from "../schema";
 
 interface ShipmentPayrollDialogProps extends FormDialogProps {
     year: number;

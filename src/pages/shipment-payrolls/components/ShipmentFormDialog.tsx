@@ -23,7 +23,8 @@ import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
 import type { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
-import { ShipmentApi, ShipmentUtils, type ShipmentFormSchema } from "../utils";
+import { ShipmentApi, ShipmentUtils } from "../utils";
+import { getShipmentFormSchema, type ShipmentFormSchema } from "../schema";
 
 interface ShipmentFormDialogFields {
     form: UseFormReturn<ShipmentFormSchema>;
@@ -560,7 +561,7 @@ export const ShipmentFormDialog = ({
     const { t } = useTranslation(shipmentTranslationNamespace);
 
     // Create schema with translations
-    const shipmentFormSchema = useMemo(() => ShipmentUtils.getShipmentFormSchema(t), [t]);
+    const shipmentFormSchema = useMemo(() => getShipmentFormSchema(t), [t]);
 
     // STATE
     // React form hook setup

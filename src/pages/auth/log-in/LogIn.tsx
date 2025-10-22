@@ -19,15 +19,14 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link as RouterLink } from "react-router";
 import { PageProps, type ApiResponse, type AuthResponse } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { loginTranslationNamespace } from "./translations";
 import { api } from "@/utils/axios";
-import type { TFunction } from "i18next";
-import { z } from "zod";
 import { AuthCard } from "@/pages/auth/components/AuthCard";
 import { AuthContainer } from "@/pages/auth/components/AuthContainer";
+import { getLoginFormSchema, type LoginFormData } from "./schema";
 
 const loginUser = (formData: FormData) =>
     api
@@ -38,16 +37,6 @@ const loginUser = (formData: FormData) =>
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
         });
-
-const getLoginFormSchema = (t: TFunction<"login">) => {
-    return z.object({
-        email: z.string().email({ message: t("errors.emailRequired") }),
-        password: z.string(),
-        remember_me: z.boolean().optional(),
-    });
-};
-
-type LoginFormData = z.infer<ReturnType<typeof getLoginFormSchema>>;
 
 export const LogIn = ({ title }: PageProps) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +51,7 @@ export const LogIn = ({ title }: PageProps) => {
     const loginFormSchema = useMemo(() => getLoginFormSchema(t), [t]);
 
     const {
-        register,
+        control,
         handleSubmit,
         formState: { errors },
     } = useForm<LoginFormData>({
@@ -141,54 +130,74 @@ export const LogIn = ({ title }: PageProps) => {
                 >
                     <FormControl>
                         <FormLabel htmlFor="email">{t("email")}</FormLabel>
-                        <TextField
-                            id="email"
-                            type="email"
-                            placeholder={t("emailPlaceholder")}
-                            autoComplete="email"
-                            autoFocus
-                            fullWidth
-                            variant="outlined"
-                            error={!!errors.email}
-                            helperText={errors.email?.message}
-                            {...register("email")}
+
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    id="email"
+                                    type="email"
+                                    placeholder={t("emailPlaceholder")}
+                                    autoComplete="email"
+                                    autoFocus
+                                    fullWidth
+                                    variant="outlined"
+                                    error={!!errors.email}
+                                    helperText={errors.email?.message}
+                                />
+                            )}
                         />
                     </FormControl>
                     <FormControl>
                         <FormLabel htmlFor="password">{t("password")}</FormLabel>
-                        <TextField
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder={t("passwordPlaceholder")}
-                            autoComplete="current-password"
-                            fullWidth
-                            variant="outlined"
-                            error={!!errors.password}
-                            helperText={errors.password?.message}
-                            {...register("password")}
-                            slotProps={{
-                                input: {
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="toggle password visibility"
-                                                onClick={togglePasswordVisibility}
-                                                edge="end"
-                                            >
-                                                {showPassword ? (
-                                                    <VisibilityOffIcon />
-                                                ) : (
-                                                    <VisibilityIcon />
-                                                )}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                },
-                            }}
+
+                        <Controller
+                            name="password"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder={t("passwordPlaceholder")}
+                                    autoComplete="current-password"
+                                    fullWidth
+                                    variant="outlined"
+                                    error={!!errors.password}
+                                    helperText={errors.password?.message}
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        onClick={togglePasswordVisibility}
+                                                        edge="end"
+                                                    >
+                                                        {showPassword ? (
+                                                            <VisibilityOffIcon />
+                                                        ) : (
+                                                            <VisibilityIcon />
+                                                        )}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            ),
+                                        },
+                                    }}
+                                />
+                            )}
                         />
                     </FormControl>
                     <FormControlLabel
-                        control={<Checkbox color="primary" {...register("remember_me")} />}
+                        control={
+                            <Controller
+                                name="remember_me"
+                                control={control}
+                                render={({ field }) => <Checkbox {...field} color="primary" />}
+                            />
+                        }
                         label={t("rememberMe")}
                     />
                     <Button type="submit" fullWidth variant="contained">
