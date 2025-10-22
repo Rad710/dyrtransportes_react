@@ -285,16 +285,34 @@ export const RouteFormDialog = ({
                                         fullWidth
                                         error={!!errors.price}
                                         helperText={errors.price?.message}
+                                        value={field.value}
+                                        onChange={(e) =>
+                                            field.onChange(
+                                                e.target.value ? e.target.value : undefined
+                                            )
+                                        }
                                     />
                                 )}
                             />
-                            <TextField
-                                {...register("payroll_price")}
-                                label={t("formDialog.fields.payrollPrice")}
-                                fullWidth
-                                type="text"
-                                error={!!errors.payroll_price}
-                                helperText={errors.payroll_price?.message}
+                            <Controller
+                                name="price"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label={t("formDialog.fields.payrollPrice")}
+                                        fullWidth
+                                        type="text"
+                                        error={!!errors.payroll_price}
+                                        helperText={errors.payroll_price?.message}
+                                        value={field.value}
+                                        onChange={(e) =>
+                                            field.onChange(
+                                                e.target.value ? e.target.value : undefined
+                                            )
+                                        }
+                                    />
+                                )}
                             />
                         </Stack>
                     </Stack>

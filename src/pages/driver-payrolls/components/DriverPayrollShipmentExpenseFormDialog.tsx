@@ -227,6 +227,10 @@ const ShipmentExpenseFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.amount}
                             helperText={form.formState.errors.amount?.message}
+                            value={field.value}
+                            onChange={(e) =>
+                                field.onChange(e.target.value ? e.target.value : undefined)
+                            }
                         />
                     )}
                 />

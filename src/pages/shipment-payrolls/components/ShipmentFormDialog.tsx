@@ -457,6 +457,10 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.price}
                             helperText={form.formState.errors.price?.message}
+                            value={field.value}
+                            onChange={(e) =>
+                                field.onChange(e.target.value ? e.target.value : undefined)
+                            }
                         />
                     )}
                 />
@@ -474,6 +478,10 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.payroll_price}
                             helperText={form.formState.errors.payroll_price?.message}
+                            value={field.value}
+                            onChange={(e) =>
+                                field.onChange(e.target.value ? e.target.value : undefined)
+                            }
                         />
                     )}
                 />
@@ -489,6 +497,12 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.origin_weight}
                             helperText={form.formState.errors.origin_weight?.message}
+                            value={field.value}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value ? parseFloat(e.target.value) : undefined
+                                );
+                            }}
                         />
                     )}
                 />
@@ -504,6 +518,12 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.destination_weight}
                             helperText={form.formState.errors.destination_weight?.message}
+                            value={field.value}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value ? parseFloat(e.target.value) : undefined
+                                );
+                            }}
                         />
                     )}
                 />
