@@ -295,7 +295,7 @@ export const RouteFormDialog = ({
                                 )}
                             />
                             <Controller
-                                name="price"
+                                name="payroll_price"
                                 control={control}
                                 render={({ field }) => (
                                     <TextField
