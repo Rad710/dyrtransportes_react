@@ -74,10 +74,20 @@ export const defaultToLocaleNumberString = (value: string): string => {
     }
     const floatPartString = value.split(".")?.at(1);
 
-    return (
-        numberToLocaleString(intValue) +
-        (floatPartString !== undefined ? "." + floatPartString : "")
-    );
+    const locale = i18n.languages[0];
+    // For Spanish locale, use comma as decimal separator
+    if (locale.startsWith("es")) {
+        return (
+            numberToLocaleString(intValue) +
+            (floatPartString !== undefined ? "," + floatPartString : "")
+        );
+    } else {
+        // For English and other locales, use period as decimal separator
+        return (
+            numberToLocaleString(intValue) +
+            (floatPartString !== undefined ? "." + floatPartString : "")
+        );
+    }
 };
 
 export default i18n;
