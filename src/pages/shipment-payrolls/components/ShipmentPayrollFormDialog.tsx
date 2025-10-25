@@ -11,21 +11,24 @@ import TextField from "@mui/material/TextField";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { ShipmentPayroll } from "../types";
 import { ShipmentPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { useTranslation } from "react-i18next";
 import { shipmentPayrollTranslationNamespace } from "../translations";
-import { getShipmentPayrollFormSchema, type ShipmentPayrollFormSchema } from "../schema";
+import {
+    getShipmentPayrollFormDefaultValue,
+    getShipmentPayrollFormSchema,
+    ShipmentPayrollType,
+} from "../schema";
 
 interface ShipmentPayrollDialogProps extends FormDialogProps {
     year: number;
-    setPayrollList: React.Dispatch<React.SetStateAction<ShipmentPayroll[]>>;
+    setPayrollList: React.Dispatch<React.SetStateAction<ShipmentPayrollType[]>>;
     setSelectedPayrollList: React.Dispatch<React.SetStateAction<number[]>>;
-    payrollToEdit?: ShipmentPayroll | null;
-    setPayrollToEdit?: React.Dispatch<React.SetStateAction<ShipmentPayroll | null>>;
+    payrollToEdit?: ShipmentPayrollType | null;
+    setPayrollToEdit?: React.Dispatch<React.SetStateAction<ShipmentPayrollType | null>>;
 }
 
 export const ShipmentPayrollFormDialog = ({
@@ -63,12 +66,6 @@ export const ShipmentPayrollFormDialog = ({
     );
 
     // Default values
-    const PAYROLL_FORM_DEFAULT_VALUE: ShipmentPayrollFormSchema = {
-        payroll_code: null,
-        payroll_timestamp: startDate.toJSDate(),
-        collected: false,
-        deleted: false,
-    };
 
     // Form setup
     const {
@@ -76,10 +73,10 @@ export const ShipmentPayrollFormDialog = ({
         formState: { errors },
         reset,
         handleSubmit,
-        getValues,
-    } = useForm<ShipmentPayrollFormSchema>({
+        watch,
+    } = useForm<ShipmentPayrollType>({
         resolver: zodResolver(shipmentPayrollFormSchema),
-        defaultValues: PAYROLL_FORM_DEFAULT_VALUE,
+        defaultValues: getShipmentPayrollFormDefaultValue(startDate),
     });
 
     // Use Effect for form data
@@ -87,14 +84,12 @@ export const ShipmentPayrollFormDialog = ({
         if (payrollToEdit) {
             reset({
                 payroll_code: payrollToEdit?.payroll_code ?? null,
-                payroll_timestamp: payrollToEdit?.payroll_timestamp
-                    ? DateTime.fromHTTP(payrollToEdit.payroll_timestamp).toJSDate()
-                    : startDate.toJSDate(),
+                payroll_timestamp: payrollToEdit.payroll_timestamp,
                 collected: payrollToEdit?.collected ?? false,
                 deleted: payrollToEdit?.deleted ?? false,
             });
         } else {
-            reset(PAYROLL_FORM_DEFAULT_VALUE);
+            reset(getShipmentPayrollFormDefaultValue(startDate));
         }
     }, [payrollToEdit, reset]);
 
@@ -105,14 +100,14 @@ export const ShipmentPayrollFormDialog = ({
 
     // After exited reset form to empty and clean payroll being edited
     const handleExited = () => {
-        reset(PAYROLL_FORM_DEFAULT_VALUE);
+        reset(getShipmentPayrollFormDefaultValue(startDate));
         if (setPayrollToEdit) {
             setPayrollToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postForm = async (formData: ShipmentPayroll) => {
+    const postForm = async (formData: ShipmentPayrollType) => {
         if (formData.payroll_code) {
             setSubmitResult({ error: t("formDialog.alreadyExists") });
             return;
@@ -128,7 +123,7 @@ export const ShipmentPayrollFormDialog = ({
         return resp;
     };
 
-    const putForm = async (formData: ShipmentPayroll) => {
+    const putForm = async (formData: ShipmentPayrollType) => {
         if (!formData.payroll_code) {
             setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
@@ -145,25 +140,13 @@ export const ShipmentPayrollFormDialog = ({
     };
 
     // Submit form as post or put
-    const onSubmit = async (payload: ShipmentPayrollFormSchema) => {
+    const onSubmit = async (payload: ShipmentPayrollType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting shipment payroll formData...", { payload });
         }
 
-        const transformedPayload: ShipmentPayroll = {
-            ...payload,
-            payroll_timestamp: DateTime.fromJSDate(payload.payroll_timestamp).toHTTP() || "",
-        };
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting shipment payroll transformedPayload...", {
-                transformedPayload,
-            });
-        }
-
         setIsSubmitting(true);
-        const resp = !payload.payroll_code
-            ? await postForm(transformedPayload)
-            : await putForm(transformedPayload);
+        const resp = !payload.payroll_code ? await postForm(payload) : await putForm(payload);
 
         setIsSubmitting(false);
 
@@ -182,7 +165,7 @@ export const ShipmentPayrollFormDialog = ({
         setPayrollList(!isAxiosError(shipmentPayrollList) ? shipmentPayrollList : []);
 
         if (!payrollToEdit) {
-            reset(PAYROLL_FORM_DEFAULT_VALUE);
+            reset(getShipmentPayrollFormDefaultValue(startDate));
         }
     };
 
@@ -202,7 +185,7 @@ export const ShipmentPayrollFormDialog = ({
                 </Box>
             ) : (
                 <Box component="span">
-                    {!getValues("payroll_code")
+                    {!watch("payroll_code")
                         ? t("formDialog.descriptionAdd")
                         : t("formDialog.descriptionEdit")}
                 </Box>
@@ -237,7 +220,7 @@ export const ShipmentPayrollFormDialog = ({
             }}
         >
             <DialogTitle>
-                {!getValues("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
+                {!watch("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
@@ -256,17 +239,6 @@ export const ShipmentPayrollFormDialog = ({
                                 label={t("formDialog.fields.date")}
                                 type="date"
                                 fullWidth
-                                value={
-                                    field.value
-                                        ? DateTime.fromJSDate(field.value).toFormat("yyyy-MM-dd")
-                                        : ""
-                                }
-                                onChange={(e) => {
-                                    const dateValue = e.target.value;
-                                    if (dateValue) {
-                                        field.onChange(DateTime.fromISO(dateValue).toJSDate());
-                                    }
-                                }}
                                 error={!!errors.payroll_timestamp}
                                 helperText={errors.payroll_timestamp?.message}
                                 slotProps={{
@@ -282,6 +254,17 @@ export const ShipmentPayrollFormDialog = ({
                                         }).toFormat("yyyy-MM-dd"),
                                     },
                                 }}
+                                value={
+                                    DateTime.fromHTTP(field.value).isValid
+                                        ? DateTime.fromHTTP(field.value).toFormat("yyyy-MM-dd")
+                                        : ""
+                                }
+                                onChange={(e) => {
+                                    const dateTime = DateTime.fromISO(e.target.value);
+                                    field.onChange(
+                                        dateTime.isValid ? dateTime.toHTTP() : undefined
+                                    );
+                                }}
                             />
                         )}
                     />
@@ -293,9 +276,9 @@ export const ShipmentPayrollFormDialog = ({
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting}
-                    color={!getValues("payroll_code") ? "primary" : "info"}
+                    color={!watch("payroll_code") ? "primary" : "info"}
                 >
-                    {!getValues("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
+                    {!watch("payroll_code") ? t("formDialog.add") : t("formDialog.edit")}
                 </Button>
             </DialogActions>
         </Dialog>

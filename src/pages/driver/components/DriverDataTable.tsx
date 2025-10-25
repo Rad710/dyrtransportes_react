@@ -1,6 +1,6 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Driver } from "../types";
+import { DriverType } from "../schema";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
@@ -16,9 +16,9 @@ type DriverTableMode = "active" | "deactivated";
 type DriverDataTableProps = {
     mode: DriverTableMode;
     loading: boolean;
-    driverList: Driver[];
+    driverList: DriverType[];
     loadDriverList: () => Promise<void>;
-    setDriverToEdit?: React.Dispatch<React.SetStateAction<Driver | null>>;
+    setDriverToEdit?: React.Dispatch<React.SetStateAction<DriverType | null>>;
     setEditFormDialogOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -53,7 +53,7 @@ export const DriverDataTable = ({
 
     const paginationModel = { page: 0, pageSize: 100 };
 
-    const handleEditDriver = (row: Driver) => {
+    const handleEditDriver = (row: DriverType) => {
         if (setDriverToEdit && setEditFormDialogOpen) {
             setDriverToEdit(row);
             setEditFormDialogOpen(true);
@@ -92,7 +92,7 @@ export const DriverDataTable = ({
         });
     };
 
-    const handleDeleteDriverItem = (row: Driver) => {
+    const handleDeleteDriverItem = (row: DriverType) => {
         openConfirmDialog({
             title: t("dataTable.confirmDelete.title"),
             message: (
@@ -127,7 +127,7 @@ export const DriverDataTable = ({
         });
     };
 
-    const handleRestoreDriverItem = (row: Driver) => {
+    const handleRestoreDriverItem = (row: DriverType) => {
         openConfirmDialog({
             title: t("dataTable.confirmRestore.title"),
             message: (
@@ -162,7 +162,7 @@ export const DriverDataTable = ({
         });
     };
 
-    const getActionMenuItems = (row: Driver) => {
+    const getActionMenuItems = (row: DriverType) => {
         if (mode === "active") {
             return [
                 {
@@ -184,7 +184,7 @@ export const DriverDataTable = ({
         }
     };
 
-    const columns: GridColDef<Driver>[] = [
+    const columns: GridColDef<DriverType>[] = [
         {
             field: "driver_code",
             headerName: t("dataTable.columns.code"),
@@ -256,7 +256,7 @@ export const DriverDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Driver) => row.driver_code ?? 0}
+                    getRowId={(row: DriverType) => row.driver_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

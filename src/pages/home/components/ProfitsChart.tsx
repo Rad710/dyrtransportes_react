@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { BarChart } from "@mui/x-charts/BarChart";
 import type { ProfitData } from "../types";
 import type { DateTime } from "luxon";
-import { numberFormatter } from "@/utils/i18n";
 import { homeTranslationNamespace } from "../translations";
+import { numberToLocaleString } from "@/utils/i18n";
 
 type ProfitsChartProps = {
     profitData: ProfitData | null;
@@ -50,25 +50,25 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                             data: [profitData?.totalShipmentPayroll ?? 0],
                             label: t("profits.chart.labels.income"),
                             color: theme.palette.primary.main,
-                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                            valueFormatter: (value) => numberToLocaleString(value ?? 0),
                         },
                         {
                             data: [profitData?.totalDriverPayroll ?? 0],
                             label: t("profits.chart.labels.expenses"),
                             color: theme.palette.warning.main,
-                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                            valueFormatter: (value) => numberToLocaleString(value ?? 0),
                         },
                         {
                             data: [profitData?.totalLosses ?? 0],
                             label: t("profits.chart.labels.losses"),
                             color: theme.palette.error.main,
-                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                            valueFormatter: (value) => numberToLocaleString(value ?? 0),
                         },
                         {
                             data: [profitData?.totalProfits ?? 0],
                             label: t("profits.chart.labels.profits"),
                             color: theme.palette.success.main,
-                            valueFormatter: (value) => numberFormatter(value ?? 0),
+                            valueFormatter: (value) => numberToLocaleString(value ?? 0),
                         },
                     ]}
                     yAxis={[
@@ -101,7 +101,7 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                         fontWeight="900"
                         sx={{ color: theme.palette.primary.main }}
                     >
-                        {numberFormatter(profitData?.totalShipmentPayroll ?? 0)}
+                        {numberToLocaleString(profitData?.totalShipmentPayroll ?? 0)}
                     </Typography>
                 </Typography>
 
@@ -113,7 +113,7 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                         fontWeight="900"
                         sx={{ color: theme.palette.warning.main }}
                     >
-                        {numberFormatter(profitData?.totalDriverPayroll ?? 0)}
+                        {numberToLocaleString(profitData?.totalDriverPayroll ?? 0)}
                     </Typography>
                 </Typography>
 
@@ -125,7 +125,7 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                         fontWeight="900"
                         sx={{ color: theme.palette.error.main }}
                     >
-                        {numberFormatter(profitData?.totalLosses ?? 0)}
+                        {numberToLocaleString(profitData?.totalLosses ?? 0)}
                     </Typography>
                 </Typography>
 
@@ -142,7 +142,7 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                                     : theme.palette.error.main,
                         }}
                     >
-                        {numberFormatter(profitData?.totalProfits ?? 0)}
+                        {numberToLocaleString(profitData?.totalProfits ?? 0)}
                     </Typography>
                 </Typography>
 

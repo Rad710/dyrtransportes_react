@@ -13,7 +13,7 @@ import { TabPanel } from "@/components/TabPanel";
 import { DriverFormDialog } from "./components/DriverFormDialog";
 
 import { PageProps } from "@/types";
-import type { Driver as DriverType } from "./types";
+import type { DriverType } from "./schema";
 import { DriverApi } from "./utils";
 import { DriverDataTable } from "./components/DriverDataTable";
 import { downloadFile } from "@/utils/file";
@@ -79,7 +79,7 @@ const ActiveDriverTabContent = () => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));

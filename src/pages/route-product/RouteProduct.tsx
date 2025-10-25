@@ -13,7 +13,7 @@ import { RouteDataTable } from "./components/RouteDataTable";
 import { RouteFormDialog } from "./components/RouteFormDialog";
 
 import { PageProps } from "@/types";
-import { Product, Route } from "./types";
+import { ProductType, RouteType } from "./schema";
 import { ProductApi, RouteApi } from "./utils";
 import { ProductDataTable } from "./components/ProductDataTable";
 import { ProductFormDialog } from "./components/ProductFormDialog";
@@ -30,8 +30,8 @@ const RouteTabContent = () => {
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
     //Routes State
-    const [routeList, setRouteList] = useState<Route[]>([]);
-    const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
+    const [routeList, setRouteList] = useState<RouteType[]>([]);
+    const [routeToEdit, setRouteToEdit] = useState<RouteType | null>(null);
 
     // context
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
@@ -79,7 +79,7 @@ const RouteTabContent = () => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));
@@ -152,8 +152,8 @@ const ProductTabContent = () => {
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
     //Product State
-    const [productList, setProductList] = useState<Product[]>([]);
-    const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+    const [productList, setProductList] = useState<ProductType[]>([]);
+    const [productToEdit, setProductToEdit] = useState<ProductType | null>(null);
 
     // context
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
@@ -201,7 +201,7 @@ const ProductTabContent = () => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));

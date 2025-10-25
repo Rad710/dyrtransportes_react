@@ -5,11 +5,6 @@ import AddIcon from "@mui/icons-material/Add";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PageProps } from "@/types";
-import {
-    ShipmentPayroll as ShipmentPayrollType,
-    type GroupedShipments,
-    type Shipment,
-} from "./types";
 import { isAxiosError } from "axios";
 
 import { ShipmentApi, ShipmentPayrollApi } from "./utils";
@@ -19,18 +14,20 @@ import { useConfirmation } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
 import { ProductApi, RouteApi } from "../route-product/utils";
 import { DriverApi } from "../driver/utils";
-import { Product, Route } from "../route-product/types";
-import { Driver } from "../driver/types";
+import { DriverType } from "../driver/schema";
 import { DateTime } from "luxon";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { downloadFile } from "@/utils/file";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "./translations";
+import { ShipmentPayrollType, ShipmentType } from "./schema";
+import { GroupedShipments } from "./types";
+import type { ProductType, RouteType } from "../route-product/schema";
 
 export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
     const { t } = useTranslation(shipmentTranslationNamespace);
     const match = useMatch("/shipment-payrolls/payroll/:payroll_code");
-    const payrollCode = parseInt(match?.params?.payroll_code ?? "") || 0;
+    const payrollCode = Number.parseInt(match?.params?.payroll_code ?? "") || 0;
 
     // State
     const [loadingTable, setLoadingTable] = useState<boolean>(true);
@@ -38,11 +35,11 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
     const [groupedShipmentsList, setGroupedShipmentsList] = useState<GroupedShipments[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
-    const [shipmentToEdit, setShipmentToEdit] = useState<Shipment | null>(null);
+    const [shipmentToEdit, setShipmentToEdit] = useState<ShipmentType | null>(null);
     // used for autocomplete options for dialog form
-    const [productList, setProductList] = useState<Product[]>([]);
-    const [driverList, setDriverList] = useState<Driver[]>([]);
-    const [routeList, setRouteList] = useState<Route[]>([]);
+    const [productList, setProductList] = useState<ProductType[]>([]);
+    const [driverList, setDriverList] = useState<DriverType[]>([]);
+    const [routeList, setRouteList] = useState<RouteType[]>([]);
 
     // Context
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
@@ -131,7 +128,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         "cobranzas.xlsx",
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("shipmentPayroll.exportDialog.successMessage"));
@@ -162,8 +159,8 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
         if (!isAxiosError(payrollResp) && payrollResp) {
             setShipmentPayrollList(
                 shipmentPayrollList.map((item) =>
-                    item.payroll_code !== payroll.payroll_code ? item : payrollResp,
-                ),
+                    item.payroll_code !== payroll.payroll_code ? item : payrollResp
+                )
             );
         } else {
             showToastAxiosError(payrollResp);
@@ -179,7 +176,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
         shipmentPayrollList.find((item) => item.payroll_code === payrollCode) ?? null;
 
     const shipmentPayrollDateString = DateTime.fromHTTP(
-        currentShipmentPayroll?.payroll_timestamp ?? "",
+        currentShipmentPayroll?.payroll_timestamp ?? ""
     );
 
     return (
@@ -212,7 +209,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                                 ? (e) =>
                                       handleCollectionToggle(
                                           currentShipmentPayroll,
-                                          e.target.checked,
+                                          e.target.checked
                                       )
                                 : undefined
                         }
@@ -220,7 +217,7 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         checkedDescription={
                             currentShipmentPayroll?.collection_timestamp
                                 ? DateTime.fromHTTP(
-                                      currentShipmentPayroll.collection_timestamp,
+                                      currentShipmentPayroll.collection_timestamp
                                   ).toFormat("dd/MM/yyyy")
                                 : ""
                         }

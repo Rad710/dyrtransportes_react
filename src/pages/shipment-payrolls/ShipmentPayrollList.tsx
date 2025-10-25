@@ -11,7 +11,7 @@ import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui
 import { isAxiosError } from "axios";
 
 import { PageProps } from "@/types";
-import { ShipmentPayroll } from "./types";
+import { ShipmentPayrollType } from "./schema";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -26,11 +26,11 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
     const { t } = useTranslation(shipmentPayrollTranslationNamespace);
 
     const match = useMatch("/shipment-payrolls/:year");
-    const year = parseInt(match?.params?.year ?? "") || 0;
+    const year = Number.parseInt(match?.params?.year ?? "") || 0;
 
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
-    const [payrollList, setPayrollList] = useState<ShipmentPayroll[]>([]);
+    const [payrollList, setPayrollList] = useState<ShipmentPayrollType[]>([]);
     const [selectedPayrollList, setSelectedPayrollList] = useState<number[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
 
@@ -178,8 +178,8 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
         setSelectedPayrollList(newSelectedPayrollList);
     };
 
-    const handleCollectionToggle = async (payroll: ShipmentPayroll, collected: boolean) => {
-        const newPayroll: ShipmentPayroll = {
+    const handleCollectionToggle = async (payroll: ShipmentPayrollType, collected: boolean) => {
+        const newPayroll: ShipmentPayrollType = {
             ...payroll,
             collected: collected,
         };
@@ -340,8 +340,10 @@ export const ShipmentPayrollList = ({ title }: Readonly<PageProps>) => {
                                                     e.target.checked
                                                 )
                                             }
-                                            inputProps={{
-                                                "aria-label": t("accessibility.selectPayroll"),
+                                            slotProps={{
+                                                input: {
+                                                    "aria-label": t("accessibility.selectPayroll"),
+                                                },
                                             }}
                                         />
                                         <Typography

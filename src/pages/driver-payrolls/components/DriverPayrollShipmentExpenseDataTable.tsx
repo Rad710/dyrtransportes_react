@@ -16,23 +16,23 @@ import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
-import { numberFormatter } from "@/utils/i18n";
+import { defaultToLocaleNumberString, numberToLocaleString } from "@/utils/i18n";
 import { DateTime } from "luxon";
-import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { AutocompleteOption } from "@/types";
 import { driverPayrollTranslationNamespace } from "../translations";
+import { ShipmentExpenseType, DriverPayrollType } from "../schema";
 
 const DriverPayrollShipmentExpenseDataTableFooter = ({
     expenseList,
 }: {
-    expenseList: ShipmentExpense[];
+    expenseList: ShipmentExpenseType[];
 }) => {
     const { t } = useTranslation(driverPayrollTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    const totalAmount = expenseList.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+    const totalAmount = expenseList.reduce((sum, item) => sum + Number.parseFloat(item.amount), 0);
 
     return (
         <Box
@@ -65,7 +65,7 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
                         fontWeight: "bold",
                     }}
                 >
-                    {numberFormatter(totalAmount)}
+                    {numberToLocaleString(totalAmount)}
                 </Typography>
             </Box>
         </Box>
@@ -75,12 +75,12 @@ const DriverPayrollShipmentExpenseDataTableFooter = ({
 type DriverPayrollShipmentExpenseDataTableProps = {
     loading: boolean;
     loadDriverPayrollShipmentExpenseList: () => Promise<void>;
-    expenseList: ShipmentExpense[];
-    setExpenseToEdit: React.Dispatch<React.SetStateAction<ShipmentExpense | null>>;
+    expenseList: ShipmentExpenseType[];
+    setExpenseToEdit: React.Dispatch<React.SetStateAction<ShipmentExpenseType | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     showReceiptColumn: boolean;
     driverPayrollCode: number;
-    driverPayrollList: DriverPayroll[];
+    driverPayrollList: DriverPayrollType[];
     title: string;
 };
 
@@ -128,7 +128,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         });
     }, [expenseList]);
 
-    const handleEditExpense = (row: ShipmentExpense) => {
+    const handleEditExpense = (row: ShipmentExpenseType) => {
         setExpenseToEdit(row);
         setEditFormDialogOpen(true);
     };
@@ -165,12 +165,12 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         });
     };
 
-    const handleDeleteExpenseItem = (row: ShipmentExpense) => {
+    const handleDeleteExpenseItem = (row: ShipmentExpenseType) => {
         openConfirmDialog({
             title: t("expenses.dialogs.delete.title"),
             message: t("expenses.dialogs.delete.messageSingle", {
                 receipt: row.receipt,
-                amount: numberFormatter(parseFloat(row.amount)),
+                amount: defaultToLocaleNumberString(row.amount),
             }),
             confirmText: t("expenses.dialogs.delete.confirmText"),
             confirmButtonProps: {
@@ -223,7 +223,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                             )}
                             onChange={(_, newValue) => {
                                 // Update the captured value in the closure
-                                selectedPayroll = parseInt(newValue?.id ?? "") || 0;
+                                selectedPayroll = Number.parseInt(newValue?.id ?? "") || 0;
                             }}
                             defaultValue={currentDriverPayrollOption}
                             fullWidth
@@ -259,7 +259,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         });
     };
 
-    const columns: GridColDef<ShipmentExpense>[] = [
+    const columns: GridColDef<ShipmentExpenseType>[] = [
         {
             field: "expense_code",
             headerName: t("expenses.columns.expenseCode"),
@@ -301,7 +301,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
         {
             field: "amount",
             headerName: t("expenses.columns.amount"),
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.amount)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.amount),
             minWidth: 110,
             flex: 0.8,
             align: "right",
@@ -357,7 +357,7 @@ export const DriverPayrollShipmentExpenseDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: ShipmentExpense) => row.expense_code ?? 0}
+                    getRowId={(row: ShipmentExpenseType) => row.expense_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

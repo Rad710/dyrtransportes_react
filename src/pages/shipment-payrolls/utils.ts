@@ -2,12 +2,13 @@ import { ApiResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
 import { DateTime } from "luxon";
 import { api } from "@/utils/axios";
-
-import { Shipment, ShipmentApiResponse, GroupedShipments, ShipmentPayroll } from "./types";
-import type { ShipmentFormSchema } from "./schema";
-import { numberFormatter } from "@/utils/i18n";
-
-export type ShipmentPayrollApiResponse = ShipmentPayroll & ApiResponse;
+import type { GroupedShipments } from "./types";
+import type {
+    ShipmentPayrollApiResponse,
+    ShipmentPayrollType,
+    ShipmentType,
+    ShipmentApiResponse,
+} from "./schema";
 
 export const ShipmentPayrollApi = {
     getShipmentPayroll: async (code: number | null) =>
@@ -23,14 +24,14 @@ export const ShipmentPayrollApi = {
     getShipmentPayrollList: async (year?: number | null) =>
         api
             .get(`/shipment-payrolls?year=${year ?? ""}`)
-            .then((response: AxiosResponse<ShipmentPayroll[] | null>) => {
+            .then((response: AxiosResponse<ShipmentPayrollType[] | null>) => {
                 return response.data ?? [];
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    postShipmentPayroll: async (payload: ShipmentPayroll) =>
+    postShipmentPayroll: async (payload: ShipmentPayrollType) =>
         api
             .post(`/shipment-payroll`, payload)
             .then((response: AxiosResponse<ShipmentPayrollApiResponse | null>) => {
@@ -40,7 +41,7 @@ export const ShipmentPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    putShipmentPayroll: async (code: number, payload: ShipmentPayroll) =>
+    putShipmentPayroll: async (code: number, payload: ShipmentPayrollType) =>
         api
             .put(`/shipment-payroll/${code}`, payload)
             .then((response: AxiosResponse<ShipmentPayrollApiResponse | null>) => {
@@ -50,7 +51,7 @@ export const ShipmentPayrollApi = {
                 return errorResponse ?? null;
             }),
 
-    updateCollectionStatus: async (payroll: ShipmentPayroll) =>
+    updateCollectionStatus: async (payroll: ShipmentPayrollType) =>
         api
             .patch(`/shipment-payroll/${payroll.payroll_code ?? 0}/collection-status`, payroll)
             .then((response: AxiosResponse<ShipmentPayrollApiResponse | null>) => {
@@ -99,7 +100,7 @@ export const ShipmentApi = {
     getShipment: async (code: number) =>
         api
             .get(`/shipment/${code}`)
-            .then((response: AxiosResponse<Shipment | null>) => {
+            .then((response: AxiosResponse<ShipmentType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
@@ -116,7 +117,7 @@ export const ShipmentApi = {
                     shipment_payroll_code ?? ""
                 }&driver_payroll_code=${driver_payroll_code ?? ""}`
             )
-            .then((response: AxiosResponse<Shipment[] | null>) => {
+            .then((response: AxiosResponse<ShipmentType[] | null>) => {
                 return response.data ?? [];
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
@@ -133,7 +134,7 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    postShipment: async (payload: Shipment) =>
+    postShipment: async (payload: ShipmentType) =>
         api
             .post(`/shipment`, payload)
             .then((response: AxiosResponse<ShipmentApiResponse | null>) => {
@@ -143,7 +144,7 @@ export const ShipmentApi = {
                 return errorResponse ?? null;
             }),
 
-    putShipment: async (code: number, payload: Shipment) =>
+    putShipment: async (code: number, payload: ShipmentType) =>
         api
             .put(`/shipment/${code}`, payload)
             .then((response: AxiosResponse<ShipmentApiResponse | null>) => {
@@ -204,83 +205,4 @@ export const ShipmentApi = {
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
             }),
-};
-
-export const ShipmentUtils = {
-    SHIPMENT_FORM_DEFAULT_VALUE: (payrollCode: number): ShipmentFormSchema => ({
-        shipment_code: null,
-        shipment_date: DateTime.now().startOf("day").toJSDate(),
-        driver_name: "",
-        driver_code: 0,
-        truck_plate: "",
-        trailer_plate: null,
-
-        product_code: 0,
-        product_name: "",
-
-        route_code: 0,
-        origin: "",
-        destination: "",
-        price: "",
-        payroll_price: "",
-
-        dispatch_code: "",
-        receipt_code: "",
-        origin_weight: 0,
-        destination_weight: 0,
-        shipment_payroll_code: payrollCode,
-        driver_payroll_code: null,
-    }),
-
-    shipmentToFormSchema: (shipment: Shipment, payrollCode: number): ShipmentFormSchema => ({
-        shipment_code: shipment?.shipment_code ?? null,
-        shipment_date: DateTime.fromHTTP(shipment.shipment_date).toJSDate(),
-        driver_name: shipment.driver_name ?? "",
-        driver_code: shipment?.driver_code ?? 0,
-        truck_plate: shipment?.truck_plate ?? "",
-        trailer_plate: shipment.trailer_plate ?? null,
-
-        product_code: shipment?.product_code ?? 0,
-        product_name: shipment?.product_name ?? "",
-
-        route_code: shipment?.route_code ?? 0,
-        origin: shipment?.origin ?? "",
-        destination: shipment?.destination ?? "",
-        price: numberFormatter(parseFloat(shipment?.price ?? "0") || 0),
-        payroll_price: numberFormatter(parseFloat(shipment?.payroll_price ?? "0") || 0),
-
-        dispatch_code: shipment?.dispatch_code ?? "",
-        receipt_code: shipment?.receipt_code ?? "",
-        origin_weight: parseInt(shipment?.origin_weight ?? "0") || 0,
-        destination_weight: parseInt(shipment?.destination_weight ?? "0") || 0,
-        shipment_payroll_code: shipment?.shipment_payroll_code ?? payrollCode,
-        driver_payroll_code: shipment?.driver_payroll_code ?? null,
-    }),
-
-    formSchemaToShipment: (formSchema: ShipmentFormSchema): Shipment => ({
-        shipment_code: formSchema.shipment_code,
-        shipment_date: DateTime.fromJSDate(formSchema.shipment_date).toHTTP() ?? "",
-
-        driver_name: formSchema.driver_name,
-        truck_plate: formSchema.truck_plate,
-        trailer_plate: formSchema.trailer_plate,
-        driver_code: formSchema.driver_code,
-
-        product_code: formSchema.product_code,
-        product_name: formSchema.product_name,
-
-        route_code: formSchema.route_code,
-        origin: formSchema.origin,
-        destination: formSchema.destination,
-        price: formSchema.price,
-        payroll_price: formSchema.payroll_price,
-
-        dispatch_code: formSchema.dispatch_code,
-        receipt_code: formSchema.receipt_code,
-        origin_weight: formSchema.origin_weight.toString(),
-        destination_weight: formSchema.destination_weight.toString(),
-        shipment_payroll_code: formSchema.shipment_payroll_code,
-        driver_payroll_code: formSchema.driver_payroll_code,
-        deleted: false,
-    }),
 };

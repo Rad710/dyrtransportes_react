@@ -12,19 +12,22 @@ import Stack from "@mui/material/Stack";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { Route } from "../types";
+import { RouteType, getRouteFormDefaultValue, getRouteFormSchema } from "../schema";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { routeTranslationNamespace } from "../translations";
-import { numberFormatter } from "@/utils/i18n";
-import { getRouteFormSchema, type RouteFormSchema } from "../schema";
+import {
+    defaultToLocaleNumberString,
+    localeToDefaultNumberString,
+    numberToLocaleString,
+} from "@/utils/i18n";
 
 interface RouteFormDialogProps extends FormDialogProps {
     loadRouteList: () => Promise<void>;
-    routeToEdit?: Route | null;
-    setRouteToEdit?: React.Dispatch<React.SetStateAction<Route | null>>;
+    routeToEdit?: RouteType | null;
+    setRouteToEdit?: React.Dispatch<React.SetStateAction<RouteType | null>>;
 }
 
 export const RouteFormDialog = ({
@@ -40,14 +43,6 @@ export const RouteFormDialog = ({
     // Create schema with translations
     const routeFormSchema = useMemo(() => getRouteFormSchema(t), [t]);
 
-    const ROUTE_FORM_DEFAULT_VALUE: RouteFormSchema = {
-        route_code: null,
-        origin: "",
-        destination: "",
-        price: "",
-        payroll_price: "",
-    };
-
     // state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -57,14 +52,13 @@ export const RouteFormDialog = ({
 
     // react form
     const {
-        register,
         formState: { errors },
         reset,
         handleSubmit,
         control,
-    } = useForm<RouteFormSchema>({
+    } = useForm<RouteType>({
         resolver: zodResolver(routeFormSchema),
-        defaultValues: ROUTE_FORM_DEFAULT_VALUE,
+        defaultValues: getRouteFormDefaultValue(),
     });
 
     // use Effect
@@ -74,11 +68,11 @@ export const RouteFormDialog = ({
                 route_code: routeToEdit?.route_code ?? null,
                 origin: routeToEdit?.origin ?? "",
                 destination: routeToEdit?.destination ?? "",
-                price: numberFormatter(parseFloat(routeToEdit?.price ?? "") || 0),
-                payroll_price: numberFormatter(parseFloat(routeToEdit?.payroll_price ?? "") || 0),
+                price: routeToEdit?.price ?? "",
+                payroll_price: routeToEdit?.payroll_price ?? "",
             });
         } else {
-            reset(ROUTE_FORM_DEFAULT_VALUE);
+            reset(getRouteFormDefaultValue());
         }
     }, [routeToEdit, reset]);
 
@@ -89,14 +83,14 @@ export const RouteFormDialog = ({
 
     // after exited reset form to empty and clean Route being edited
     const handleExited = () => {
-        reset(ROUTE_FORM_DEFAULT_VALUE);
+        reset(getRouteFormDefaultValue());
         if (setRouteToEdit) {
             setRouteToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postForm = async (formData: Route) => {
+    const postForm = async (formData: RouteType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Posting Route...", { formData });
         }
@@ -107,7 +101,7 @@ export const RouteFormDialog = ({
         return resp;
     };
 
-    const putForm = async (formData: Route) => {
+    const putForm = async (formData: RouteType) => {
         if (!formData.route_code) {
             setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
@@ -124,7 +118,7 @@ export const RouteFormDialog = ({
     };
 
     // submit form as post or put
-    const onSubmit = async (payload: RouteFormSchema) => {
+    const onSubmit = async (payload: RouteType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting route formData...", { payload });
         }
@@ -145,7 +139,7 @@ export const RouteFormDialog = ({
         await loadRouteList();
 
         if (!routeToEdit) {
-            reset(ROUTE_FORM_DEFAULT_VALUE);
+            reset(getRouteFormDefaultValue());
         }
     };
 
@@ -201,19 +195,32 @@ export const RouteFormDialog = ({
                 <Box sx={{ mt: 2 }}>
                     <Stack spacing={2}>
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                            <TextField
-                                {...register("origin")}
-                                label={t("formDialog.fields.origin")}
-                                fullWidth
-                                error={!!errors.origin}
-                                helperText={errors.origin?.message}
+                            <Controller
+                                name="origin"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label={t("formDialog.fields.origin")}
+                                        fullWidth
+                                        error={!!errors.origin}
+                                        helperText={errors.origin?.message}
+                                    />
+                                )}
                             />
-                            <TextField
-                                {...register("destination")}
-                                label={t("formDialog.fields.destination")}
-                                fullWidth
-                                error={!!errors.destination}
-                                helperText={errors.destination?.message}
+
+                            <Controller
+                                name="destination"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label={t("formDialog.fields.destination")}
+                                        fullWidth
+                                        error={!!errors.destination}
+                                        helperText={errors.destination?.message}
+                                    />
+                                )}
                             />
                         </Stack>
                         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
@@ -223,21 +230,29 @@ export const RouteFormDialog = ({
                                 render={({ field }) => (
                                     <TextField
                                         {...field}
+                                        type="text"
                                         label={t("formDialog.fields.price", {
                                             priceNoVat:
-                                                numberFormatter(
-                                                    parseFloat(field.value || "0") * (10 / 11)
+                                                numberToLocaleString(
+                                                    Number.parseFloat(field.value || "0") *
+                                                        (10 / 11)
                                                 ) || 0,
                                         })}
                                         fullWidth
                                         error={!!errors.price}
                                         helperText={errors.price?.message}
-                                        value={field.value}
-                                        onChange={(e) =>
-                                            field.onChange(
-                                                e.target.value ? e.target.value : undefined
-                                            )
+                                        value={
+                                            field.value
+                                                ? defaultToLocaleNumberString(field.value)
+                                                : ""
                                         }
+                                        onChange={(e) => {
+                                            field.onChange(
+                                                e.target.value
+                                                    ? localeToDefaultNumberString(e.target.value)
+                                                    : undefined
+                                            );
+                                        }}
                                     />
                                 )}
                             />
@@ -252,12 +267,18 @@ export const RouteFormDialog = ({
                                         type="text"
                                         error={!!errors.payroll_price}
                                         helperText={errors.payroll_price?.message}
-                                        value={field.value}
-                                        onChange={(e) =>
-                                            field.onChange(
-                                                e.target.value ? e.target.value : undefined
-                                            )
+                                        value={
+                                            field.value
+                                                ? defaultToLocaleNumberString(field.value)
+                                                : ""
                                         }
+                                        onChange={(e) => {
+                                            field.onChange(
+                                                e.target.value
+                                                    ? localeToDefaultNumberString(e.target.value)
+                                                    : undefined
+                                            );
+                                        }}
                                     />
                                 )}
                             />

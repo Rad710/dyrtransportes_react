@@ -22,10 +22,10 @@ export const ProfitsTabContent = () => {
     const [profitData, setProfitData] = useState<ProfitData | null>(null);
 
     const [startDate, setStartDate] = useState<DateTime>(
-        DateTime.now().minus({ month: 1 }).startOf("day"),
+        DateTime.now().minus({ month: 1 }).startOf("day")
     );
     const [endDate, setEndDate] = useState<DateTime>(
-        DateTime.now().plus({ day: 1 }).startOf("day"),
+        DateTime.now().plus({ day: 1 }).startOf("day")
     );
 
     // context
@@ -39,22 +39,23 @@ export const ProfitsTabContent = () => {
         if (!isAxiosError(resp) && resp) {
             const totals = resp.reduce(
                 (acc, item) => {
-                    const totalShipmentPayroll = parseFloat(item.total_shipment_payroll);
-                    const totalDriverPayroll = parseFloat(item.total_driver_payroll);
-                    const totalExpensesAmount = parseFloat(item.total_expenses_amount);
+                    const totalShipmentPayroll = Number.parseFloat(item.total_shipment_payroll);
+                    const totalDriverPayroll = Number.parseFloat(item.total_driver_payroll);
+                    const totalExpensesAmount = Number.parseFloat(item.total_expenses_amount);
 
                     const totalLosses = totalExpensesAmount - totalDriverPayroll;
 
                     // Add current item's values to the accumulator
                     acc.shipments += item.shipments || 0;
-                    acc.totalOriginWeight += parseFloat(item.total_origin_weight) || 0;
-                    acc.totalDestinationWeight += parseFloat(item.total_destination_weight) || 0;
+                    acc.totalOriginWeight += Number.parseFloat(item.total_origin_weight) || 0;
+                    acc.totalDestinationWeight +=
+                        Number.parseFloat(item.total_destination_weight) || 0;
                     acc.totalShipmentPayroll += totalShipmentPayroll || 0;
                     acc.totalDriverPayroll += totalDriverPayroll || 0;
                     acc.totalExpensesAmountReceipt +=
-                        parseFloat(item.total_expenses_amount_receipt) || 0;
+                        Number.parseFloat(item.total_expenses_amount_receipt) || 0;
                     acc.totalExpensesAmountNoReceipt +=
-                        parseFloat(item.total_expenses_amount_no_receipt) || 0;
+                        Number.parseFloat(item.total_expenses_amount_no_receipt) || 0;
                     acc.totalLosses += totalLosses > 0 ? totalLosses : 0;
                     acc.totalProfits += totalShipmentPayroll - totalDriverPayroll || 0;
 
@@ -70,7 +71,7 @@ export const ProfitsTabContent = () => {
                     totalExpensesAmountNoReceipt: 0,
                     totalLosses: 0,
                     totalProfits: 0,
-                },
+                }
             );
 
             setProfitData(totals);
@@ -127,7 +128,7 @@ export const ProfitsTabContent = () => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("profits.fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("profits.notifications.exportSuccess"));

@@ -13,13 +13,16 @@ import TextField from "@mui/material/TextField";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { DriverPayroll } from "../types";
 import { DriverPayrollApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { DateTime } from "luxon";
 import { driverPayrollListTranslationNamespace } from "../translations";
-import { getDriverPayrollFormSchema, type DriverPayrollFormSchema } from "../schema";
+import {
+    getDriverPayrollFormDefaultValue,
+    getDriverPayrollFormSchema,
+    DriverPayrollType,
+} from "../schema";
 
 // Styled component for the dialog content with better scroll handling
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
@@ -29,10 +32,10 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
 
 interface DriverPayrollDialogProps extends FormDialogProps {
     driverCode: number;
-    setDriverPayrollList: React.Dispatch<React.SetStateAction<DriverPayroll[]>>;
+    setDriverPayrollList: React.Dispatch<React.SetStateAction<DriverPayrollType[]>>;
     setSelectedPayrollList: React.Dispatch<React.SetStateAction<number[]>>;
-    payrollToEdit?: DriverPayroll | null;
-    setPayrollToEdit?: React.Dispatch<React.SetStateAction<DriverPayroll | null>>;
+    payrollToEdit?: DriverPayrollType | null;
+    setPayrollToEdit?: React.Dispatch<React.SetStateAction<DriverPayrollType | null>>;
 }
 
 export const DriverPayrollFormDialog = ({
@@ -69,24 +72,16 @@ export const DriverPayrollFormDialog = ({
         }
     );
 
-    // Default values
-    const PAYROLL_FORM_DEFAULT_VALUE: DriverPayrollFormSchema = {
-        payroll_code: null,
-        payroll_timestamp: startDate.toJSDate(),
-        paid: false,
-        deleted: false,
-    };
-
     // Form setup
     const {
         control,
         formState: { errors },
         reset,
         handleSubmit,
-        getValues,
-    } = useForm<DriverPayrollFormSchema>({
+        watch,
+    } = useForm<DriverPayrollType>({
         resolver: zodResolver(driverPayrollFormSchema),
-        defaultValues: PAYROLL_FORM_DEFAULT_VALUE,
+        defaultValues: getDriverPayrollFormDefaultValue(startDate, driverCode),
     });
 
     // Use Effect for form data
@@ -94,14 +89,12 @@ export const DriverPayrollFormDialog = ({
         if (payrollToEdit) {
             reset({
                 payroll_code: payrollToEdit?.payroll_code ?? null,
-                payroll_timestamp: payrollToEdit?.payroll_timestamp
-                    ? DateTime.fromHTTP(payrollToEdit.payroll_timestamp).toJSDate()
-                    : startDate.toJSDate(),
+                payroll_timestamp: payrollToEdit?.payroll_timestamp,
                 paid: payrollToEdit?.paid ?? false,
                 deleted: payrollToEdit?.deleted ?? false,
             });
         } else {
-            reset(PAYROLL_FORM_DEFAULT_VALUE);
+            reset(getDriverPayrollFormDefaultValue(startDate, driverCode));
         }
     }, [payrollToEdit]);
 
@@ -112,14 +105,14 @@ export const DriverPayrollFormDialog = ({
 
     // After exited reset form to empty and clean payroll being edited
     const handleExited = () => {
-        reset(PAYROLL_FORM_DEFAULT_VALUE);
+        reset(getDriverPayrollFormDefaultValue(startDate, driverCode));
         if (setPayrollToEdit) {
             setPayrollToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postForm = async (formData: DriverPayroll) => {
+    const postForm = async (formData: DriverPayrollType) => {
         if (formData.payroll_code) {
             setSubmitResult({ error: t("formDialog.errors.alreadyExists") });
             return;
@@ -135,7 +128,7 @@ export const DriverPayrollFormDialog = ({
         return resp;
     };
 
-    const putForm = async (formData: DriverPayroll) => {
+    const putForm = async (formData: DriverPayrollType) => {
         if (!formData.payroll_code) {
             setSubmitResult({ error: t("formDialog.errors.cannotEdit") });
             return;
@@ -152,26 +145,15 @@ export const DriverPayrollFormDialog = ({
     };
 
     // Submit form as post or put
-    const onSubmit = async (payload: DriverPayrollFormSchema) => {
+    const onSubmit = async (payload: DriverPayrollType) => {
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting driver payroll formData...", { payload });
-        }
-
-        const transformedPayload: DriverPayroll = {
-            ...payload,
-            driver_code: driverCode,
-            payroll_timestamp: DateTime.fromJSDate(payload.payroll_timestamp).toHTTP() || "",
-        };
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting driver payroll transformedPayload...", {
-                transformedPayload,
+            console.log("Submitting driver payroll payload...", {
+                payload,
             });
         }
 
         setIsSubmitting(true);
-        const resp = !payload.payroll_code
-            ? await postForm(transformedPayload)
-            : await putForm(transformedPayload);
+        const resp = !payload.payroll_code ? await postForm(payload) : await putForm(payload);
 
         setIsSubmitting(false);
 
@@ -190,7 +172,7 @@ export const DriverPayrollFormDialog = ({
         setDriverPayrollList(!isAxiosError(driverPayrollList) ? driverPayrollList : []);
 
         if (!payrollToEdit) {
-            reset(PAYROLL_FORM_DEFAULT_VALUE);
+            reset(getDriverPayrollFormDefaultValue(startDate, driverCode));
         }
     };
 
@@ -210,7 +192,7 @@ export const DriverPayrollFormDialog = ({
                 </Box>
             ) : (
                 <Box component="span">
-                    {!getValues("payroll_code")
+                    {!watch("payroll_code")
                         ? t("formDialog.selectNewDate")
                         : t("formDialog.selectEditDate")}
                 </Box>
@@ -245,7 +227,7 @@ export const DriverPayrollFormDialog = ({
             }}
         >
             <DialogTitle>
-                {!getValues("payroll_code") ? t("formDialog.addTitle") : t("formDialog.editTitle")}
+                {!watch("payroll_code") ? t("formDialog.addTitle") : t("formDialog.editTitle")}
             </DialogTitle>
             <StyledDialogContent>
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
@@ -265,15 +247,15 @@ export const DriverPayrollFormDialog = ({
                                 type="date"
                                 fullWidth
                                 value={
-                                    field.value
-                                        ? DateTime.fromJSDate(field.value).toFormat("yyyy-MM-dd")
+                                    DateTime.fromHTTP(field.value).isValid
+                                        ? DateTime.fromHTTP(field.value).toFormat("yyyy-MM-dd")
                                         : ""
                                 }
                                 onChange={(e) => {
-                                    const dateValue = e.target.value;
-                                    if (dateValue) {
-                                        field.onChange(DateTime.fromISO(dateValue).toJSDate());
-                                    }
+                                    const dateTime = DateTime.fromISO(e.target.value);
+                                    field.onChange(
+                                        dateTime.isValid ? dateTime.toHTTP() : undefined
+                                    );
                                 }}
                                 error={!!errors.payroll_timestamp}
                                 helperText={errors.payroll_timestamp?.message}
@@ -297,11 +279,9 @@ export const DriverPayrollFormDialog = ({
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting}
-                    color={!getValues("payroll_code") ? "primary" : "info"}
+                    color={!watch("payroll_code") ? "primary" : "info"}
                 >
-                    {!getValues("payroll_code")
-                        ? t("buttons.addPayroll")
-                        : t("buttons.editPayroll")}
+                    {!watch("payroll_code") ? t("buttons.addPayroll") : t("buttons.editPayroll")}
                 </Button>
             </DialogActions>
         </Dialog>

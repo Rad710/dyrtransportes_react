@@ -1,4 +1,4 @@
-import type { Driver, DriverApiResponse } from "./types";
+import type { DriverType, DriverApiResponse } from "./schema";
 import type { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
 import type { AxiosError, AxiosResponse } from "axios";
@@ -7,7 +7,7 @@ export const DriverApi = {
     getDriver: async (code: number | null) =>
         api
             .get(`/driver/${code}`)
-            .then((response: AxiosResponse<Driver | null>) => response.data ?? null)
+            .then((response: AxiosResponse<DriverType | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
@@ -15,12 +15,12 @@ export const DriverApi = {
     getDriverList: async () =>
         api
             .get(`/drivers`)
-            .then((response: AxiosResponse<Driver[] | null>) => response.data ?? [])
+            .then((response: AxiosResponse<DriverType[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    postDriver: async (payload: Driver) =>
+    postDriver: async (payload: DriverType) =>
         api
             .post(`/driver`, payload)
             .then((response: AxiosResponse<DriverApiResponse | null>) => {
@@ -30,7 +30,7 @@ export const DriverApi = {
                 return errorResponse ?? null;
             }),
 
-    putDriver: async (code: number, payload: Driver) =>
+    putDriver: async (code: number, payload: DriverType) =>
         api
             .put(`/driver/${code}`, payload)
             .then((response: AxiosResponse<DriverApiResponse | null>) => {

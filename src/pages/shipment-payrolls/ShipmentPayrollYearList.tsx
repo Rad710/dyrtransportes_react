@@ -7,7 +7,7 @@ import { Box, Button, List, ListItem, Checkbox, Typography, Tooltip } from "@mui
 import { isAxiosError } from "axios";
 
 import { PageProps } from "@/types";
-import { ShipmentPayroll } from "./types";
+import { ShipmentPayrollType } from "./schema";
 
 import { useToast } from "@/context/ToastContext";
 import { useConfirmation } from "@/context/ConfirmationContext";
@@ -38,11 +38,11 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                 resp
                     ?.map((item) => DateTime.fromHTTP(item.payroll_timestamp, { zone: "local" }))
                     ?.filter((item) => item?.isValid)
-                    ?.map((item) => item.year) ?? [],
+                    ?.map((item) => item.year) ?? []
             );
 
             const shipmentPayrollYearList = Array.from(shipmentPayrollYearSet).sort(
-                (a, b) => b - a,
+                (a, b) => b - a
             );
             setYearList(shipmentPayrollYearList);
         } else {
@@ -77,7 +77,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                     return;
                 }
 
-                const payload: ShipmentPayroll = {
+                const payload: ShipmentPayrollType = {
                     payroll_timestamp: newYear.toHTTP(),
                     collected: false,
                     deleted: false,
@@ -122,7 +122,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
 
                 const endDate = DateTime.fromObject(
                     { year: selectedYear + 1 },
-                    { zone: "local" },
+                    { zone: "local" }
                 ).minus({ days: 1 });
 
                 if (!startDate.isValid || !endDate.isValid) {
@@ -143,7 +143,7 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         t("fileName"),
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));
@@ -231,7 +231,11 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                                 <Checkbox
                                     checked={isChecked}
                                     onChange={(e) => handleToggleYear(year, e.target.checked)}
-                                    inputProps={{ "aria-label": t("accessibility.selectYear") }}
+                                    slotProps={{
+                                        input: {
+                                            "aria-label": t("accessibility.selectYear"),
+                                        },
+                                    }}
                                     sx={{ mr: 2 }}
                                 />
 

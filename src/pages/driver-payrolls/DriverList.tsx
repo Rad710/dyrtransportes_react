@@ -17,7 +17,7 @@ import { isAxiosError } from "axios";
 import { PageProps } from "@/types";
 
 import { useToast } from "@/context/ToastContext";
-import { Driver } from "../driver/types";
+import { DriverType } from "../driver/schema";
 import { DriverApi } from "../driver/utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { driverListTranslationNamespace } from "./translations";
@@ -28,8 +28,8 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
 
     // STATE
     const [loading, setLoading] = useState<boolean>(true);
-    const [driverList, setDriverList] = useState<Driver[]>([]);
-    const [filteredDriverList, setFilteredDriverList] = useState<Driver[]>([]);
+    const [driverList, setDriverList] = useState<DriverType[]>([]);
+    const [filteredDriverList, setFilteredDriverList] = useState<DriverType[]>([]);
 
     // CONTEXT
     const { showToastSuccess, showToastAxiosError } = useToast();
@@ -73,7 +73,7 @@ export const DriverList = ({ title }: Readonly<PageProps>) => {
         }
     };
 
-    const handleActiveToggle = async (driver: Driver, active: boolean) => {
+    const handleActiveToggle = async (driver: DriverType, active: boolean) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log(`Updating active status for driver, `, { driver });
         }

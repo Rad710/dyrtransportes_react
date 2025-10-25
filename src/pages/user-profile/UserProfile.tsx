@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { userProfileTranslationNamespace } from "./translations";
 import { UserProfileContainer } from "./components/UserProfileContainer";
 import { UserProfileCard } from "./components/UserProfileCard";
-import { getUserProfileFormSchema, type UserProfileFormSchema } from "./schema";
+import { getUserProfileFormSchema, type UserProfileType } from "./schema";
 
 const UserProfileEditApi = {
     putUserProfile: async (formData: FormData) =>
@@ -66,7 +66,7 @@ export const UserProfile = ({ title }: PageProps) => {
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<UserProfileFormSchema>({
+    } = useForm<UserProfileType>({
         resolver: zodResolver(userProfileFormSchema),
         defaultValues: {
             name: user?.name || "",
@@ -81,7 +81,7 @@ export const UserProfile = ({ title }: PageProps) => {
         document.title = title;
     }, [title]); // Add title dependency
 
-    const onSubmit = async (payload: UserProfileFormSchema) => {
+    const onSubmit = async (payload: UserProfileType) => {
         // Convert to FormData to maintain compatibility with the API
         const formData = new FormData();
         Object.entries(payload).forEach(([key, value]) => {

@@ -231,6 +231,7 @@ const driverPayrollResources = {
                             cannotEdit: "Expense cannot be edited",
                             dateRequired: "The Date field is required.",
                             invalidValue: "Invalid value.",
+                            invalidDriverCode: "Invalid Driver Code",
                             receiptRequired: "The Receipt field is required.",
                             amountRequired: "The Amount field is required.",
                             amountEmpty: "Amount cannot be empty.",
@@ -375,6 +376,7 @@ const driverPayrollResources = {
                             cannotEdit: "Gasto no puede editarse",
                             dateRequired: "El campo Fecha es obligatorio.",
                             invalidValue: "Valor inválido.",
+                            invalidDriverCode: "Código de Chofer inválido",
                             receiptRequired: "El campo Recibo es obligatorio.",
                             amountRequired: "El campo Monto es obligatorio.",
                             amountEmpty: "Monto no puede estar vacío.",
@@ -459,7 +461,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             driverListTranslationNamespace,
-            driverResources[lang].translation,
+            driverResources[lang].translation
         );
     }
 
@@ -468,7 +470,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             driverPayrollListTranslationNamespace,
-            driverPayrollListResources[lang].translation,
+            driverPayrollListResources[lang].translation
         );
     }
 
@@ -477,7 +479,7 @@ appLanguages.forEach((lang) => {
         i18n.addResourceBundle(
             lang,
             driverPayrollTranslationNamespace,
-            driverPayrollResources[lang].translation,
+            driverPayrollResources[lang].translation
         );
     }
 });

@@ -1,6 +1,6 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Route } from "../types";
+import { RouteType } from "../schema";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
@@ -8,15 +8,15 @@ import { useEffect, useState } from "react";
 import { RouteApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { routeTranslationNamespace } from "../translations";
+import { defaultToLocaleNumberString } from "@/utils/i18n";
 
 type RouteDataTableProps = {
     loading: boolean;
-    routeList: Route[];
+    routeList: RouteType[];
     loadRouteList: () => Promise<void>;
-    setRouteToEdit: React.Dispatch<React.SetStateAction<Route | null>>;
+    setRouteToEdit: React.Dispatch<React.SetStateAction<RouteType | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -50,7 +50,7 @@ export const RouteDataTable = ({
 
     const paginationModel = { page: 0, pageSize: 100 };
 
-    const handleEditRoute = (row: Route) => {
+    const handleEditRoute = (row: RouteType) => {
         setRouteToEdit(row);
         setEditFormDialogOpen(true);
     };
@@ -87,7 +87,7 @@ export const RouteDataTable = ({
         });
     };
 
-    const handleDeleteRouteItem = (row: Route) => {
+    const handleDeleteRouteItem = (row: RouteType) => {
         openConfirmDialog({
             title: t("dataTable.confirmDelete.title"),
             message: (
@@ -122,7 +122,7 @@ export const RouteDataTable = ({
         });
     };
 
-    const columns: GridColDef<Route>[] = [
+    const columns: GridColDef<RouteType>[] = [
         {
             field: "route_code",
             headerName: t("dataTable.columns.code"),
@@ -144,14 +144,14 @@ export const RouteDataTable = ({
         {
             field: "price",
             headerName: t("dataTable.columns.price"),
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.price)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.price),
             minWidth: 100,
             flex: 0.8,
         },
         {
             field: "payroll_price",
             headerName: t("dataTable.columns.payrollPrice"),
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.payroll_price)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.payroll_price),
             minWidth: 120,
             flex: 0.8,
         },
@@ -203,7 +203,7 @@ export const RouteDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Route) => row.route_code ?? 0}
+                    getRowId={(row: RouteType) => row.route_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

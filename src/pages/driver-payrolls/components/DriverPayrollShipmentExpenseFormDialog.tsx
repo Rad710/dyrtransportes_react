@@ -16,22 +16,21 @@ import { DateTime } from "luxon";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { DriverPayroll, ShipmentExpense } from "../types";
 import { ShipmentExpenseApi } from "../utils";
 import { Autocomplete } from "@mui/material";
 import { driverPayrollTranslationNamespace } from "../translations";
 import {
-    EXPENSE_FORM_DEFAULT_VALUE,
-    expenseToFormSchema,
-    formSchemaToExpense,
+    ShipmentExpenseType,
+    DriverPayrollType,
     getShipmentExpenseFormSchema,
-    type ShipmentExpenseFormSchema,
+    getShipmentExpenseFormDefaultValue,
 } from "../schema";
+import { defaultToLocaleNumberString, localeToDefaultNumberString } from "@/utils/i18n";
 
 // Form fields component
 interface ShipmentExpenseFormDialogFields {
-    form: UseFormReturn<ShipmentExpenseFormSchema>;
-    driverPayrollList?: DriverPayroll[];
+    form: UseFormReturn<ShipmentExpenseType>;
+    driverPayrollList?: DriverPayrollType[];
 }
 
 const ShipmentExpenseFormDialogFields = ({
@@ -70,15 +69,14 @@ const ShipmentExpenseFormDialogFields = ({
                                     shrink: true,
                                 },
                             }}
-                            value={DateTime.fromJSDate(
-                                field.value ?? DateTime.now().startOf("day").toJSDate()
-                            ).toFormat("yyyy-MM-dd")}
+                            value={
+                                DateTime.fromHTTP(field.value).isValid
+                                    ? DateTime.fromHTTP(field.value).toFormat("yyyy-MM-dd")
+                                    : ""
+                            }
                             onChange={(e) => {
-                                field.onChange(
-                                    e.target.value
-                                        ? DateTime.fromISO(e.target.value).toJSDate()
-                                        : DateTime.now().startOf("day").toJSDate()
-                                );
+                                const dateTime = DateTime.fromISO(e.target.value);
+                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : undefined);
                             }}
                         />
                     )}
@@ -111,7 +109,7 @@ const ShipmentExpenseFormDialogFields = ({
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
-                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                    field.onChange(Number.parseInt(newValue?.id ?? "") || 0);
                                 }}
                                 renderInput={(params) => (
                                     <TextField
@@ -143,10 +141,14 @@ const ShipmentExpenseFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.amount}
                             helperText={form.formState.errors.amount?.message}
-                            value={field.value}
-                            onChange={(e) =>
-                                field.onChange(e.target.value ? e.target.value : undefined)
-                            }
+                            value={field.value ? defaultToLocaleNumberString(field.value) : ""}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value
+                                        ? localeToDefaultNumberString(e.target.value)
+                                        : undefined
+                                );
+                            }}
                         />
                     )}
                 />
@@ -173,9 +175,9 @@ const ShipmentExpenseFormDialogFields = ({
 interface DriverPayrollShipmentExpenseFormDialogProps extends FormDialogProps {
     payrollCode: number;
     loadExpenseList: () => Promise<void>;
-    expenseToEdit?: ShipmentExpense | null;
-    setExpenseToEdit?: React.Dispatch<React.SetStateAction<ShipmentExpense | null>>;
-    driverPayrollList?: DriverPayroll[];
+    expenseToEdit?: ShipmentExpenseType | null;
+    setExpenseToEdit?: React.Dispatch<React.SetStateAction<ShipmentExpenseType | null>>;
+    driverPayrollList?: DriverPayrollType[];
 }
 
 export const DriverPayrollShipmentExpenseFormDialog = ({
@@ -194,9 +196,9 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
 
     // STATE
     // React form hook setup
-    const form = useForm<ShipmentExpenseFormSchema>({
+    const form = useForm<ShipmentExpenseType>({
         resolver: zodResolver(shipmentExpenseFormSchema),
-        defaultValues: EXPENSE_FORM_DEFAULT_VALUE(payrollCode),
+        defaultValues: getShipmentExpenseFormDefaultValue(payrollCode),
     });
 
     // Form state management
@@ -211,9 +213,9 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
     // Set form values when editing an expense
     useEffect(() => {
         if (!expenseToEdit) {
-            form.reset(EXPENSE_FORM_DEFAULT_VALUE(payrollCode));
+            form.reset(getShipmentExpenseFormDefaultValue(payrollCode));
         } else {
-            form.reset(expenseToFormSchema(expenseToEdit));
+            form.reset(expenseToEdit);
         }
     }, [expenseToEdit, form, payrollCode]);
 
@@ -224,14 +226,14 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
 
     // After exited reset form to empty and clean expense being edited
     const handleExited = () => {
-        form.reset(EXPENSE_FORM_DEFAULT_VALUE(payrollCode));
+        form.reset(getShipmentExpenseFormDefaultValue(payrollCode));
         if (setExpenseToEdit) {
             setExpenseToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postExpense = async (formData: ShipmentExpense) => {
+    const postExpense = async (formData: ShipmentExpenseType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Posting Expense...", { formData });
         }
@@ -242,7 +244,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
         return resp;
     };
 
-    const putExpense = async (formData: ShipmentExpense) => {
+    const putExpense = async (formData: ShipmentExpenseType) => {
         if (!formData.expense_code) {
             setSubmitResult({ error: t("expenses.dialogs.form.errors.cannotEdit") });
             return;
@@ -258,22 +260,13 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
         return resp;
     };
 
-    const onSubmit = async (payload: ShipmentExpenseFormSchema) => {
+    const onSubmit = async (payload: ShipmentExpenseType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting expense formData...", { payload });
         }
 
-        // Transform form data to API format
-        const transformedPayload: ShipmentExpense = formSchemaToExpense(payload);
-
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting expense transformedPayload...", { transformedPayload });
-        }
-
         setIsSubmitting(true);
-        const resp = !payload.expense_code
-            ? await postExpense(transformedPayload)
-            : await putExpense(transformedPayload);
+        const resp = !payload.expense_code ? await postExpense(payload) : await putExpense(payload);
         setIsSubmitting(false);
 
         if (isAxiosError(resp) || !resp) {
@@ -288,7 +281,7 @@ export const DriverPayrollShipmentExpenseFormDialog = ({
         await loadExpenseList();
 
         if (!expenseToEdit) {
-            form.reset(EXPENSE_FORM_DEFAULT_VALUE(payrollCode));
+            form.reset(getShipmentExpenseFormDefaultValue(payrollCode));
         }
     };
 

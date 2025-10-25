@@ -1,19 +1,19 @@
 import { AxiosError, AxiosResponse } from "axios";
 import { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
-import {
-    DriverPayroll,
-    DriverPayrollApiResponse,
-    ShipmentExpense,
-    ShipmentExpenseApiResponse,
-} from "./types";
 import { DateTime } from "luxon";
+import {
+    DriverPayrollType,
+    DriverPayrollApiResponseType,
+    ShipmentExpenseType,
+    ShipmentExpenseApiResponseType,
+} from "./schema";
 
 export const DriverPayrollApi = {
     getDriverPayroll: async (payrollCode: number) =>
         api
             .get(`/driver-payroll/${payrollCode}`)
-            .then((response: AxiosResponse<DriverPayroll | null>) => response.data ?? null)
+            .then((response: AxiosResponse<DriverPayrollType | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
@@ -21,35 +21,35 @@ export const DriverPayrollApi = {
     getDriverPayrollList: async (driverCode: number) =>
         api
             .get(`/driver/${driverCode}/payrolls`)
-            .then((response: AxiosResponse<DriverPayroll[] | null>) => response.data ?? [])
+            .then((response: AxiosResponse<DriverPayrollType[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    postDriverPayroll: async (payload: DriverPayroll) =>
+    postDriverPayroll: async (payload: DriverPayrollType) =>
         api
             .post(`/driver-payroll`, payload)
-            .then((response: AxiosResponse<DriverPayrollApiResponse | null>) => {
+            .then((response: AxiosResponse<DriverPayrollApiResponseType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    putDriverPayroll: async (code: number, payload: DriverPayroll) =>
+    putDriverPayroll: async (code: number, payload: DriverPayrollType) =>
         api
             .put(`/driver-payroll/${code}`, payload)
-            .then((response: AxiosResponse<DriverPayrollApiResponse | null>) => {
+            .then((response: AxiosResponse<DriverPayrollApiResponseType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    updateCollectionStatus: async (payroll: DriverPayroll) =>
+    updateCollectionStatus: async (payroll: DriverPayrollType) =>
         api
             .patch(`/driver-payroll/${payroll.payroll_code ?? 0}/paid-status`, payroll)
-            .then((response: AxiosResponse<DriverPayroll | null>) => {
+            .then((response: AxiosResponse<DriverPayrollApiResponseType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
@@ -84,7 +84,7 @@ export const DriverPayrollApi = {
                 `/driver-payrolls/export-excel?driver_code=${driverCode}&start_date=${startDate}&end_date=${endDate}`,
                 {
                     responseType: "blob",
-                },
+                }
             )
             .then((response: AxiosResponse<BlobPart | null>) => {
                 return response ?? null;
@@ -110,7 +110,7 @@ export const ShipmentExpenseApi = {
     getShipmentExpense: async (expenseCode: number) =>
         api
             .get(`/shipment-expense/${expenseCode}`)
-            .then((response: AxiosResponse<ShipmentExpense | null>) => response.data ?? null)
+            .then((response: AxiosResponse<ShipmentExpenseType | null>) => response.data ?? null)
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
@@ -118,25 +118,25 @@ export const ShipmentExpenseApi = {
     getShipmentExpenseList: async (driverPayrollCode?: number | null) =>
         api
             .get(`/shipment-expenses?driver_payroll_code=${driverPayrollCode}`)
-            .then((response: AxiosResponse<ShipmentExpense[] | null>) => response.data ?? [])
+            .then((response: AxiosResponse<ShipmentExpenseType[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    postShipmentExpense: async (payload: ShipmentExpense) =>
+    postShipmentExpense: async (payload: ShipmentExpenseType) =>
         api
             .post(`/shipment-expense`, payload)
-            .then((response: AxiosResponse<ShipmentExpenseApiResponse | null>) => {
+            .then((response: AxiosResponse<ShipmentExpenseApiResponseType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    putShipmentExpense: async (code: number, payload: ShipmentExpense) =>
+    putShipmentExpense: async (code: number, payload: ShipmentExpenseType) =>
         api
             .put(`/shipment-expense/${code}`, payload)
-            .then((response: AxiosResponse<ShipmentExpenseApiResponse | null>) => {
+            .then((response: AxiosResponse<ShipmentExpenseApiResponseType | null>) => {
                 return response.data ?? null;
             })
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
@@ -145,12 +145,12 @@ export const ShipmentExpenseApi = {
 
     changeShipmentListDriverPayroll: async (
         driverPayrollCode: number,
-        shipmentExpenseCodeList: number[],
+        shipmentExpenseCodeList: number[]
     ) =>
         api
             .patch(
                 `/shipment-expenses/change-driver-payroll?driver_payroll_code=${driverPayrollCode}`,
-                shipmentExpenseCodeList,
+                shipmentExpenseCodeList
             )
             .then((response: AxiosResponse<ApiResponse | null>) => {
                 return response.data ?? null;

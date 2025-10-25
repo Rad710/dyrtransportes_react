@@ -6,9 +6,7 @@ import { DriverApi } from "../driver/utils";
 import { DriverPayrollApi, ShipmentExpenseApi } from "./utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
-import { DriverPayroll as DriverPayrollType, ShipmentExpense } from "./types";
-import { Driver } from "../driver/types";
-import { Shipment } from "../shipment-payrolls/types";
+import { DriverType } from "../driver/schema";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
 import { TabPanel } from "@/components/TabPanel";
 
@@ -19,12 +17,14 @@ import { DateTime } from "luxon";
 import { DriverPayrollShipmentDataTable } from "./components/DriverPayrollShipmentDataTable";
 import { ShipmentFormDialog } from "../shipment-payrolls/components/ShipmentFormDialog";
 import { ProductApi, RouteApi } from "../route-product/utils";
-import { Product, Route } from "../route-product/types";
 import { DriverPayrollShipmentExpenseFormDialog } from "./components/DriverPayrollShipmentExpenseFormDialog";
 import { DriverPayrollShipmentExpenseDataTable } from "./components/DriverPayrollShipmentExpenseDataTable";
 import { downloadFile } from "@/utils/file";
 import { driverPayrollTranslationNamespace } from "./translations";
 import { ShipmentApi } from "../shipment-payrolls/utils";
+import { ShipmentType } from "../shipment-payrolls/schema";
+import type { ProductType, RouteType } from "../route-product/schema";
+import { DriverPayrollType, ShipmentExpenseType } from "./schema";
 
 interface DriverPayrollShipmentsTabProps {
     driverPayrollCode: number;
@@ -39,15 +39,15 @@ const DriverPayrollShipmentsTab = ({
 
     const [editFormDialogOpen, setEditFormDialogOpen] = useState<boolean>(false);
 
-    const [payrollShipmentList, setPayrollShipmentList] = useState<Shipment[]>([]);
+    const [payrollShipmentList, setPayrollShipmentList] = useState<ShipmentType[]>([]);
 
     // used for autocomplete options for dialog form
     const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
-    const [productList, setProductList] = useState<Product[]>([]);
-    const [driverList, setDriverList] = useState<Driver[]>([]);
-    const [routeList, setRouteList] = useState<Route[]>([]);
+    const [productList, setProductList] = useState<ProductType[]>([]);
+    const [driverList, setDriverList] = useState<DriverType[]>([]);
+    const [routeList, setRouteList] = useState<RouteType[]>([]);
 
-    const [shipmentToEdit, setShipmentToEdit] = useState<Shipment | null>(null);
+    const [shipmentToEdit, setShipmentToEdit] = useState<ShipmentType | null>(null);
 
     // context
     const { showToastAxiosError } = useToast();
@@ -172,13 +172,13 @@ const DriverPayrollExpensesTab = ({
     // used for autocomplete options for dialog form
     const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
     const [shipmentExpenseWithReceiptList, setShipmentExpenseWithReceiptList] = useState<
-        ShipmentExpense[]
+        ShipmentExpenseType[]
     >([]);
     const [shipmentExpenseNoReceiptList, setShipmentExpenseNoReceiptList] = useState<
-        ShipmentExpense[]
+        ShipmentExpenseType[]
     >([]);
 
-    const [shipmentExpenseToEdit, setShipmentExpenseToEdit] = useState<ShipmentExpense | null>(
+    const [shipmentExpenseToEdit, setShipmentExpenseToEdit] = useState<ShipmentExpenseType | null>(
         null
     );
 
@@ -307,7 +307,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
     // state
     const [tabValue, setTabValue] = useState(0);
 
-    const [driver, setDriver] = useState<Driver | null>(null);
+    const [driver, setDriver] = useState<DriverType | null>(null);
     const [driverPayroll, setDriverPayroll] = useState<DriverPayrollType | null>(null);
 
     const [addExpenseFormDialogOpen, setAddExpenseFormDialogOpen] = useState<boolean>(false);
@@ -451,7 +451,7 @@ export const DriverPayroll = ({ title }: PageProps) => {
 
                     <Box display="flex" gap={2} sx={{ flexWrap: { xs: "wrap", md: "nowrap" } }}>
                         <CustomSwitch
-                            checked={driverPayroll?.paid}
+                            checked={driverPayroll?.paid ?? false}
                             onChange={
                                 driverPayroll
                                     ? (e) => handlePaidToggle(driverPayroll, e.target.checked)

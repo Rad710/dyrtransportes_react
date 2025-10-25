@@ -13,26 +13,35 @@ import Stack from "@mui/material/Stack";
 
 import { DateTime } from "luxon";
 import { AutocompleteOption, FormDialogProps, FormSubmitResult } from "@/types";
-import { Product, Route } from "@/pages/route-product/types";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { Autocomplete } from "@mui/material";
-import { Driver } from "@/pages/driver/types";
-import { DriverPayroll } from "@/pages/driver-payrolls/types";
-import { numberFormatter } from "@/utils/i18n";
+import { DriverType } from "@/pages/driver/schema";
+import {
+    localeToDefaultNumberString,
+    defaultToLocaleNumberString,
+    numberToLocaleString,
+} from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
-import type { AutocompleteOptionDriver, Shipment, ShipmentPayroll } from "../types";
-import { ShipmentApi, ShipmentUtils } from "../utils";
-import { getShipmentFormSchema, type ShipmentFormSchema } from "../schema";
+import type { AutocompleteOptionDriver } from "../types";
+import { ShipmentApi } from "../utils";
+import {
+    getShipmentFormDefaultValue,
+    getShipmentFormSchema,
+    ShipmentPayrollType,
+    ShipmentType,
+} from "../schema";
+import type { ProductType, RouteType } from "../../route-product/schema";
+import { DriverPayrollType } from "../../driver-payrolls/schema";
 
 interface ShipmentFormDialogFields {
-    form: UseFormReturn<ShipmentFormSchema>;
-    productList: Product[];
-    driverList: Driver[];
-    routeList: Route[];
-    shipmentPayrollList?: ShipmentPayroll[];
-    driverPayrollList?: DriverPayroll[];
+    form: UseFormReturn<ShipmentType>;
+    productList: ProductType[];
+    driverList: DriverType[];
+    routeList: RouteType[];
+    shipmentPayrollList?: ShipmentPayrollType[];
+    driverPayrollList?: DriverPayrollType[];
 }
 
 const ShipmentFormDialogFields = ({
@@ -141,15 +150,14 @@ const ShipmentFormDialogFields = ({
                                     shrink: true,
                                 },
                             }}
-                            value={DateTime.fromJSDate(
-                                field.value ?? DateTime.now().startOf("day").toJSDate()
-                            ).toFormat("yyyy-MM-dd")}
+                            value={
+                                DateTime.fromHTTP(field.value).isValid
+                                    ? DateTime.fromHTTP(field.value).toFormat("yyyy-MM-dd")
+                                    : ""
+                            }
                             onChange={(e) => {
-                                field.onChange(
-                                    e.target.value
-                                        ? DateTime.fromISO(e.target.value).toJSDate()
-                                        : DateTime.now().startOf("day").toJSDate()
-                                );
+                                const dateTime = DateTime.fromISO(e.target.value);
+                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : undefined);
                             }}
                         />
                     )}
@@ -167,7 +175,7 @@ const ShipmentFormDialogFields = ({
                                 ) || null
                             }
                             onChange={(_, newValue) => {
-                                field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                field.onChange(Number.parseInt(newValue?.id ?? "") || 0);
                                 form.setValue("driver_name", newValue?.label ?? "");
                                 form.setValue("truck_plate", newValue?.truck_plate ?? "");
                             }}
@@ -231,7 +239,7 @@ const ShipmentFormDialogFields = ({
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
-                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                    field.onChange(Number.parseInt(newValue?.id ?? "") || 0);
                                 }}
                                 renderInput={(params) => (
                                     <TextField
@@ -263,7 +271,7 @@ const ShipmentFormDialogFields = ({
                                     ) || null
                                 }
                                 onChange={(_, newValue) => {
-                                    field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                    field.onChange(Number.parseInt(newValue?.id ?? "") || 0);
                                 }}
                                 renderInput={(params) => (
                                     <TextField
@@ -297,7 +305,7 @@ const ShipmentFormDialogFields = ({
                                 ) || null
                             }
                             onChange={(_, newValue) => {
-                                field.onChange(parseInt(newValue?.id ?? "") || 0);
+                                field.onChange(Number.parseInt(newValue?.id ?? "") || 0);
                                 form.setValue("product_name", newValue?.label ?? "");
                             }}
                             renderInput={(params) => (
@@ -381,16 +389,8 @@ const ShipmentFormDialogFields = ({
                                     ) ?? null;
 
                                 form.setValue("route_code", selectedRoute?.route_code ?? 0);
-                                form.setValue(
-                                    "price",
-                                    numberFormatter(parseFloat(selectedRoute?.price ?? "") || 0)
-                                );
-                                form.setValue(
-                                    "payroll_price",
-                                    numberFormatter(
-                                        parseFloat(selectedRoute?.payroll_price ?? "") || 0
-                                    )
-                                );
+                                form.setValue("price", selectedRoute?.price ?? "");
+                                form.setValue("payroll_price", selectedRoute?.payroll_price ?? "");
                             }}
                             disabled={!watchedOrigin}
                             renderInput={(params) => (
@@ -452,16 +452,22 @@ const ShipmentFormDialogFields = ({
                             {...field}
                             label={t("formDialog.fields.price", {
                                 priceNoVat:
-                                    numberFormatter(parseFloat(field.value || "0") * (10 / 11)) ||
-                                    0,
+                                    numberToLocaleString(
+                                        Number.parseFloat(field.value || "0") * (10 / 11)
+                                    ) || 0,
                             })}
+                            type="text"
                             fullWidth
                             error={!!form.formState.errors.price}
                             helperText={form.formState.errors.price?.message}
-                            value={field.value}
-                            onChange={(e) =>
-                                field.onChange(e.target.value ? e.target.value : undefined)
-                            }
+                            value={field.value ? defaultToLocaleNumberString(field.value) : ""}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value
+                                        ? localeToDefaultNumberString(e.target.value)
+                                        : undefined
+                                );
+                            }}
                         />
                     )}
                 />
@@ -479,10 +485,14 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.payroll_price}
                             helperText={form.formState.errors.payroll_price?.message}
-                            value={field.value}
-                            onChange={(e) =>
-                                field.onChange(e.target.value ? e.target.value : undefined)
-                            }
+                            value={field.value ? defaultToLocaleNumberString(field.value) : ""}
+                            onChange={(e) => {
+                                field.onChange(
+                                    e.target.value
+                                        ? localeToDefaultNumberString(e.target.value)
+                                        : undefined
+                                );
+                            }}
                         />
                     )}
                 />
@@ -494,14 +504,16 @@ const ShipmentFormDialogFields = ({
                         <TextField
                             {...field}
                             label={t("formDialog.fields.origin_weight")}
-                            type="number"
+                            type="text"
                             fullWidth
                             error={!!form.formState.errors.origin_weight}
                             helperText={form.formState.errors.origin_weight?.message}
-                            value={field.value}
+                            value={field.value ? defaultToLocaleNumberString(field.value) : ""}
                             onChange={(e) => {
                                 field.onChange(
-                                    e.target.value ? parseFloat(e.target.value) : undefined
+                                    e.target.value
+                                        ? localeToDefaultNumberString(e.target.value)
+                                        : undefined
                                 );
                             }}
                         />
@@ -515,14 +527,16 @@ const ShipmentFormDialogFields = ({
                         <TextField
                             {...field}
                             label={t("formDialog.fields.destination_weight")}
-                            type="number"
+                            type="text"
                             fullWidth
                             error={!!form.formState.errors.destination_weight}
                             helperText={form.formState.errors.destination_weight?.message}
-                            value={field.value}
+                            value={field.value ? defaultToLocaleNumberString(field.value) : ""}
                             onChange={(e) => {
                                 field.onChange(
-                                    e.target.value ? parseFloat(e.target.value) : undefined
+                                    e.target.value
+                                        ? localeToDefaultNumberString(e.target.value)
+                                        : undefined
                                 );
                             }}
                         />
@@ -536,13 +550,13 @@ const ShipmentFormDialogFields = ({
 interface ShipmentFormDialogProps extends FormDialogProps {
     payrollCode: number;
     loadShipmentList: () => Promise<void>;
-    productList: Product[];
-    driverList: Driver[];
-    routeList: Route[];
-    shipmentToEdit?: Shipment | null;
-    setShipmentToEdit?: React.Dispatch<React.SetStateAction<Shipment | null>>;
-    shipmentPayrollList?: ShipmentPayroll[];
-    driverPayrollList?: DriverPayroll[];
+    productList: ProductType[];
+    driverList: DriverType[];
+    routeList: RouteType[];
+    shipmentToEdit?: ShipmentType | null;
+    setShipmentToEdit?: React.Dispatch<React.SetStateAction<ShipmentType | null>>;
+    shipmentPayrollList?: ShipmentPayrollType[];
+    driverPayrollList?: DriverPayrollType[];
 }
 
 export const ShipmentFormDialog = ({
@@ -565,9 +579,9 @@ export const ShipmentFormDialog = ({
 
     // STATE
     // React form hook setup
-    const form = useForm<ShipmentFormSchema>({
+    const form = useForm<ShipmentType>({
         resolver: zodResolver(shipmentFormSchema),
-        defaultValues: ShipmentUtils.SHIPMENT_FORM_DEFAULT_VALUE(payrollCode),
+        defaultValues: getShipmentFormDefaultValue(payrollCode),
     });
 
     // Form state management
@@ -582,9 +596,9 @@ export const ShipmentFormDialog = ({
     // Set form values when editing a shipment
     useEffect(() => {
         if (!shipmentToEdit) {
-            form.reset(ShipmentUtils.SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+            form.reset(getShipmentFormDefaultValue(payrollCode));
         } else {
-            form.reset(ShipmentUtils.shipmentToFormSchema(shipmentToEdit, payrollCode));
+            form.reset(shipmentToEdit);
         }
     }, [shipmentToEdit, form, payrollCode]);
 
@@ -594,14 +608,14 @@ export const ShipmentFormDialog = ({
     };
     // after exited reset form to empty and clean Shipment being edited
     const handleExited = () => {
-        form.reset(ShipmentUtils.SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+        form.reset(getShipmentFormDefaultValue(payrollCode));
         if (setShipmentToEdit) {
             setShipmentToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postShipment = async (formData: Shipment) => {
+    const postShipment = async (formData: ShipmentType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Posting Shipment...", { formData });
         }
@@ -611,7 +625,7 @@ export const ShipmentFormDialog = ({
         }
         return resp;
     };
-    const putShipment = async (formData: Shipment) => {
+    const putShipment = async (formData: ShipmentType) => {
         if (!formData.shipment_code) {
             setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
@@ -626,22 +640,15 @@ export const ShipmentFormDialog = ({
         }
         return resp;
     };
-    const onSubmit = async (payload: ShipmentFormSchema) => {
+    const onSubmit = async (payload: ShipmentType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting shipment formData...", { payload });
         }
 
-        // Transform form data to API format
-        const transformedPayload: Shipment = ShipmentUtils.formSchemaToShipment(payload);
-
-        if (import.meta.env.VITE_DEBUG) {
-            console.log("Submitting shipment transformedPayload...", { transformedPayload });
-        }
-
         setIsSubmitting(true);
         const resp = !payload.shipment_code
-            ? await postShipment(transformedPayload)
-            : await putShipment(transformedPayload);
+            ? await postShipment(payload)
+            : await putShipment(payload);
         setIsSubmitting(false);
 
         if (isAxiosError(resp) || !resp) {
@@ -656,7 +663,7 @@ export const ShipmentFormDialog = ({
         await loadShipmentList();
 
         if (!shipmentToEdit) {
-            form.reset(ShipmentUtils.SHIPMENT_FORM_DEFAULT_VALUE(payrollCode));
+            form.reset(getShipmentFormDefaultValue(payrollCode));
         }
     };
 

@@ -1,18 +1,18 @@
 import { AxiosError, AxiosResponse } from "axios";
-import { Product, ProductApiResponse, Route, RouteApiResponse } from "./types";
 import { ApiResponse } from "@/types";
 import { api } from "@/utils/axios";
+import { ProductApiResponse, RouteApiResponse, ProductType, RouteType } from "./schema";
 
 export const RouteApi = {
     getRouteList: async () =>
         api
             .get(`/routes`)
-            .then((response: AxiosResponse<Route[] | null>) => response.data ?? [])
+            .then((response: AxiosResponse<RouteType[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
 
-    postRoute: async (payload: Route) =>
+    postRoute: async (payload: RouteType) =>
         api
             .post(`/route`, payload)
             .then((response: AxiosResponse<RouteApiResponse | null>) => {
@@ -22,7 +22,7 @@ export const RouteApi = {
                 return errorResponse ?? null;
             }),
 
-    putRoute: async (code: number, payload: Route) =>
+    putRoute: async (code: number, payload: RouteType) =>
         api
             .put(`/route/${code}`, payload)
             .then((response: AxiosResponse<RouteApiResponse | null>) => {
@@ -71,11 +71,11 @@ export const ProductApi = {
     getProductList: async () =>
         api
             .get(`/products`)
-            .then((response: AxiosResponse<Product[] | null>) => response.data ?? [])
+            .then((response: AxiosResponse<ProductType[] | null>) => response.data ?? [])
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse ?? null;
             }),
-    postProduct: async (payload: Product) =>
+    postProduct: async (payload: ProductType) =>
         api
             .post(`/product`, payload)
             .then((response: AxiosResponse<ProductApiResponse | null>) => {
@@ -85,7 +85,7 @@ export const ProductApi = {
                 return errorResponse ?? null;
             }),
 
-    putProduct: async (code: number, payload: Product) =>
+    putProduct: async (code: number, payload: ProductType) =>
         api
             .put(`/product/${code}`, payload)
             .then((response: AxiosResponse<ProductApiResponse | null>) => {

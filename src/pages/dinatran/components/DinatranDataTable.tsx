@@ -3,7 +3,7 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { type DinatranRow } from "../types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useState } from "react";
-import { numberFormatter } from "@/utils/i18n";
+import { defaultToLocaleNumberString } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { dinatranTranslationNamespace } from "../translations";
 
@@ -40,35 +40,35 @@ export const DinatranDataTable = ({ loading, dinatranRows }: DinatranDataTablePr
             headerName: t("dataTable.columns.originWeight"),
             flex: 1,
             minWidth: 130,
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_origin_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_origin_weight),
         },
         {
             field: "totalDestinationWeight",
             headerName: t("dataTable.columns.destinationWeight"),
             flex: 1,
             minWidth: 130,
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_destination_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_destination_weight),
         },
         {
             field: "diff",
             headerName: t("dataTable.columns.difference"),
             flex: 1,
             minWidth: 100,
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_diff)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_diff),
         },
         {
             field: "totalShipmentPayroll",
             headerName: t("dataTable.columns.shipmentPayroll"),
             flex: 1,
             minWidth: 150,
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_shipment_payroll)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_shipment_payroll),
         },
         {
             field: "totalDriverPayroll",
             headerName: t("dataTable.columns.driverPayroll"),
             flex: 1,
             minWidth: 170,
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_driver_payroll)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_driver_payroll),
         },
     ];
 

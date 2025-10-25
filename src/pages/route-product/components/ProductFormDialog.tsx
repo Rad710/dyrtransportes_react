@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -12,18 +12,17 @@ import Stack from "@mui/material/Stack";
 
 import { FormDialogProps, FormSubmitResult } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { Product } from "../types";
+import { ProductType, getProductFormDefaultValue, getProductFormSchema } from "../schema";
 import { ProductApi } from "../utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { productTranslationNamespace } from "../translations";
-import { getProductFormSchema, type ProductFormSchema } from "../schema";
 
 interface ProductFormDialogProps extends FormDialogProps {
     loadProductList: () => Promise<void>;
-    productToEdit?: Product | null;
-    setProductToEdit?: React.Dispatch<React.SetStateAction<Product | null>>;
+    productToEdit?: ProductType | null;
+    setProductToEdit?: React.Dispatch<React.SetStateAction<ProductType | null>>;
 }
 
 export const ProductFormDialog = ({
@@ -39,11 +38,6 @@ export const ProductFormDialog = ({
     // Create schema with translations
     const productFormSchema = useMemo(() => getProductFormSchema(t), [t]);
 
-    const PRODUCT_FORM_DEFAULT_VALUE: ProductFormSchema = {
-        product_code: null,
-        product_name: "",
-    };
-
     // state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<FormSubmitResult | null>(null);
@@ -53,13 +47,13 @@ export const ProductFormDialog = ({
 
     // react form
     const {
-        register,
         formState: { errors },
         reset,
         handleSubmit,
-    } = useForm<ProductFormSchema>({
+        control,
+    } = useForm<ProductType>({
         resolver: zodResolver(productFormSchema),
-        defaultValues: PRODUCT_FORM_DEFAULT_VALUE,
+        defaultValues: getProductFormDefaultValue(),
     });
 
     // use Effect
@@ -70,7 +64,7 @@ export const ProductFormDialog = ({
                 product_name: productToEdit?.product_name ?? "",
             });
         } else {
-            reset(PRODUCT_FORM_DEFAULT_VALUE);
+            reset(getProductFormDefaultValue());
         }
     }, [productToEdit, reset]);
 
@@ -81,14 +75,14 @@ export const ProductFormDialog = ({
 
     // after exited reset form to empty and clean Product being edited
     const handleExited = () => {
-        reset(PRODUCT_FORM_DEFAULT_VALUE);
+        reset(getProductFormDefaultValue());
         if (setProductToEdit) {
             setProductToEdit(null);
         }
         setSubmitResult(null);
     };
 
-    const postForm = async (formData: Product) => {
+    const postForm = async (formData: ProductType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Posting Product...", { formData });
         }
@@ -99,7 +93,7 @@ export const ProductFormDialog = ({
         return resp;
     };
 
-    const putForm = async (formData: Product) => {
+    const putForm = async (formData: ProductType) => {
         if (!formData.product_code) {
             setSubmitResult({ error: t("formDialog.cannotEdit") });
             return;
@@ -116,7 +110,7 @@ export const ProductFormDialog = ({
     };
 
     // submit form as post or put
-    const onSubmit = async (payload: ProductFormSchema) => {
+    const onSubmit = async (payload: ProductType) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log("Submitting product formData...", { payload });
         }
@@ -137,7 +131,7 @@ export const ProductFormDialog = ({
         await loadProductList();
 
         if (!productToEdit) {
-            reset(PRODUCT_FORM_DEFAULT_VALUE);
+            reset(getProductFormDefaultValue());
         }
     };
 
@@ -192,12 +186,18 @@ export const ProductFormDialog = ({
                 <DialogContentText>{getDialogDescription()}</DialogContentText>
                 <Box sx={{ mt: 2 }}>
                     <Stack spacing={2}>
-                        <TextField
-                            {...register("product_name")}
-                            label={t("formDialog.fields.productName")}
-                            fullWidth
-                            error={!!errors.product_name}
-                            helperText={errors.product_name?.message}
+                        <Controller
+                            name="product_name"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    label={t("formDialog.fields.productName")}
+                                    fullWidth
+                                    error={!!errors.product_name}
+                                    helperText={errors.product_name?.message}
+                                />
+                            )}
                         />
                     </Stack>
                 </Box>

@@ -2,7 +2,6 @@ import { PageProps } from "@/types";
 import { useEffect, useState } from "react";
 import { Link, useMatch } from "react-router";
 import { useTranslation } from "react-i18next";
-import { DriverPayroll } from "./types";
 import { DriverPayrollApi } from "./utils";
 import { isAxiosError } from "axios";
 import { useToast } from "@/context/ToastContext";
@@ -13,25 +12,26 @@ import {
     TableChart as TableChartIcon,
     Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { Driver } from "../driver/types";
+import { DriverType } from "../driver/schema";
 import { DriverApi } from "../driver/utils";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
 import { downloadFile } from "@/utils/file";
 import { DriverPayrollFormDialog } from "./components/DriverPayrollFormDialog";
 import { driverPayrollListTranslationNamespace } from "./translations";
+import { DriverPayrollType } from "./schema";
 
 export const DriverPayrollList = ({ title }: PageProps) => {
     // i18n
     const { t } = useTranslation(driverPayrollListTranslationNamespace);
 
     const match = useMatch("/driver-payrolls/:driver_code/");
-    const driverCode = parseInt(match?.params?.driver_code ?? "") || 0;
+    const driverCode = Number.parseInt(match?.params?.driver_code ?? "") || 0;
 
     // state
     const [loading, setLoading] = useState<boolean>(false);
-    const [driver, setDriver] = useState<Driver | null>(null);
-    const [driverPayrollList, setDriverPayrollList] = useState<DriverPayroll[]>([]);
+    const [driver, setDriver] = useState<DriverType | null>(null);
+    const [driverPayrollList, setDriverPayrollList] = useState<DriverPayrollType[]>([]);
     const [selectedPayrollList, setSelectedPayrollList] = useState<number[]>([]);
     const [addFormDialogOpen, setAddFormDialogOpen] = useState<boolean>(false);
 
@@ -73,12 +73,12 @@ export const DriverPayrollList = ({ title }: PageProps) => {
     }, []);
 
     // handlers
-    const handlePaidToggle = async (payroll: DriverPayroll, paid: boolean) => {
+    const handlePaidToggle = async (payroll: DriverPayrollType, paid: boolean) => {
         if (import.meta.env.VITE_DEBUG) {
             console.log(`Updating paid status for payroll, `, { payroll });
         }
 
-        const newPayload: DriverPayroll = {
+        const newPayload: DriverPayrollType = {
             ...payroll,
             paid: paid,
         };
@@ -92,7 +92,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
         const payrollResp = await DriverPayrollApi.getDriverPayroll(payroll.payroll_code ?? 0);
         if (!isAxiosError(payrollResp) && payrollResp) {
             const updatedPayrollList = driverPayrollList.map((item) =>
-                item.payroll_code !== payroll.payroll_code ? item : payrollResp,
+                item.payroll_code !== payroll.payroll_code ? item : payrollResp
             );
             setDriverPayrollList(updatedPayrollList);
         } else {
@@ -103,7 +103,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
             t("notifications.statusChanged", {
                 code: payroll.payroll_code ?? 0,
                 status: paid ? t("payroll.status.paid") : t("payroll.status.unpaid"),
-            }),
+            })
         );
     };
 
@@ -142,7 +142,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                 const payrollsToExport =
                     selectedPayrollList.length > 0
                         ? driverPayrollList.filter((p) =>
-                              selectedPayrollList.includes(p.payroll_code || 0),
+                              selectedPayrollList.includes(p.payroll_code || 0)
                           )
                         : driverPayrollList;
 
@@ -153,7 +153,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                 // Sort by timestamp to get first and last
                 const startDate = DateTime.fromHTTP(
                     payrollsToExport[payrollsToExport.length - 1].payroll_timestamp,
-                    { zone: "local" },
+                    { zone: "local" }
                 );
                 const endDate = DateTime.fromHTTP(payrollsToExport[0].payroll_timestamp, {
                     zone: "local",
@@ -170,7 +170,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                 const resp = await DriverPayrollApi.exportDriverPayrollList(
                     driverCode,
                     startDate,
-                    endDate,
+                    endDate
                 );
 
                 if (import.meta.env.VITE_DEBUG) {
@@ -181,7 +181,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
                         "driver_payroll_list.xlsx",
-                        resp.headers?.["content-disposition"],
+                        resp.headers?.["content-disposition"]
                     );
 
                     showToastSuccess(t("notifications.exportSuccess"));
@@ -304,7 +304,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                     ) : (
                         driverPayrollList.map((payroll) => {
                             const isChecked = selectedPayrollList.includes(
-                                payroll.payroll_code || 0,
+                                payroll.payroll_code || 0
                             );
 
                             return (
@@ -342,10 +342,14 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                                 onChange={(e) =>
                                                     handleCheckPayroll(
                                                         payroll.payroll_code ?? null,
-                                                        e.target.checked,
+                                                        e.target.checked
                                                     )
                                                 }
-                                                inputProps={{ "aria-label": "Select payroll" }}
+                                                slotProps={{
+                                                    input: {
+                                                        "aria-label": "Select payroll",
+                                                    },
+                                                }}
                                             />
                                             <Typography
                                                 variant="body2"
@@ -373,7 +377,9 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                             >
                                                 <Button
                                                     component={Link}
-                                                    to={`/driver-payrolls/${driver?.driver_code ?? 0}/payroll/${payroll?.payroll_code ?? 0}`}
+                                                    to={`/driver-payrolls/${
+                                                        driver?.driver_code ?? 0
+                                                    }/payroll/${payroll?.payroll_code ?? 0}`}
                                                     variant="contained"
                                                     color="info"
                                                     sx={{
@@ -391,7 +397,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                                     }}
                                                 >
                                                     {DateTime.fromHTTP(
-                                                        payroll.payroll_timestamp,
+                                                        payroll.payroll_timestamp
                                                     ).toLocaleString({
                                                         year: "numeric",
                                                         month: "long",
@@ -429,7 +435,7 @@ export const DriverPayrollList = ({ title }: PageProps) => {
                                             }}
                                         >
                                             <CustomSwitch
-                                                checked={payroll.paid}
+                                                checked={payroll.paid ?? false}
                                                 onChange={(e) =>
                                                     handlePaidToggle(payroll, e.target.checked)
                                                 }

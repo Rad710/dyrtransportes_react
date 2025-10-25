@@ -19,16 +19,17 @@ import { DateTime } from "luxon";
 import { ActionsMenu } from "@/components/ActionsMenu";
 import { AutocompleteOption } from "@/types";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
-import { numberFormatter } from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import { shipmentTranslationNamespace } from "../translations"; // Adjust path as needed
-import type { GroupedShipments, Shipment, ShipmentPayroll } from "../types";
+import type { GroupedShipments } from "../types";
 import { ShipmentApi } from "../utils";
+import { ShipmentPayrollType, ShipmentType } from "../schema";
+import { defaultToLocaleNumberString, numberToLocaleString } from "@/utils/i18n";
 
 type Column = {
-    id: keyof Shipment | "diff" | "total" | "checkbox";
+    id: keyof ShipmentType | "diff" | "total" | "checkbox";
     label: string;
-    rowValue: (row: Shipment) => string;
+    rowValue: (row: ShipmentType) => string;
     groupedRowValue: (row: GroupedShipments) => string;
     minWidth?: number;
     align?: "right" | "left";
@@ -68,12 +69,14 @@ const ShipmentTableHead = ({
                                 indeterminate={numSelected > 0 && numSelected < rowCount}
                                 checked={rowCount > 0 && numSelected === rowCount}
                                 onChange={onSelectAllClick}
-                                inputProps={{
-                                    "aria-label": "select all desserts",
+                                slotProps={{
+                                    input: {
+                                        "aria-label": "select all desserts",
+                                    },
                                 }}
                             />
                         </TableCell>
-                    ),
+                    )
                 )}
                 <TableCell>{t("dataTable.columns.actions")}</TableCell>
             </TableRow>
@@ -83,12 +86,12 @@ const ShipmentTableHead = ({
 
 interface TableShipmentRowProps {
     selectedRows: number[];
-    handleSelect: (row: Shipment) => void;
-    handleEditShipment: (row: Shipment) => void;
-    handleDeleteShipmentItem: (row: Shipment) => void;
+    handleSelect: (row: ShipmentType) => void;
+    handleEditShipment: (row: ShipmentType) => void;
+    handleDeleteShipmentItem: (row: ShipmentType) => void;
     indexGroupedShipment: number;
     indexShipment: number;
-    row: Shipment;
+    row: ShipmentType;
     columns: readonly Column[];
 }
 
@@ -128,12 +131,14 @@ const TableShipmentRow = ({
                             color="primary"
                             checked={isItemSelected}
                             onClick={() => handleSelect(row)}
-                            inputProps={{
-                                "aria-labelledby": labelId,
+                            slotProps={{
+                                input: {
+                                    "aria-labelledby": labelId,
+                                },
                             }}
                         />
                     </TableCell>
-                ),
+                )
             )}
             <TableCell>
                 <ActionsMenu
@@ -200,16 +205,16 @@ const TableGroupedShipmentsTableTotalRow = ({
     // Calculate totals with useMemo inside the component
     const totals = useMemo(() => {
         const totalOrigin = groupedShipmentsList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotal_origin_weight),
-            0,
+            (sum, item) => sum + Number.parseFloat(item.subtotal_origin_weight),
+            0
         );
         const totalDestination = groupedShipmentsList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotal_destination_weight),
-            0,
+            (sum, item) => sum + Number.parseFloat(item.subtotal_destination_weight),
+            0
         );
         const totalMoney = groupedShipmentsList.reduce(
-            (sum, item) => sum + parseFloat(item.subtotal_money),
-            0,
+            (sum, item) => sum + Number.parseFloat(item.subtotal_money),
+            0
         );
         return { totalOrigin, totalDestination, totalMoney };
     }, [groupedShipmentsList]);
@@ -243,7 +248,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {numberFormatter(totals.totalOrigin)}
+                {numberToLocaleString(totals.totalOrigin)}
             </TableCell>
             <TableCell
                 align="right"
@@ -252,7 +257,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {numberFormatter(totals.totalDestination)}
+                {numberToLocaleString(totals.totalDestination)}
             </TableCell>
             <TableCell></TableCell>
             <TableCell
@@ -262,7 +267,7 @@ const TableGroupedShipmentsTableTotalRow = ({
                     fontWeight: "bold",
                 }}
             >
-                {numberFormatter(totals.totalMoney)}
+                {numberToLocaleString(totals.totalMoney)}
             </TableCell>
             <TableCell></TableCell>
         </TableRow>
@@ -274,9 +279,9 @@ type GroupedShipmentsDataTableProps = {
     groupedShipmentsList: GroupedShipments[];
     loadShipmentList: () => Promise<void>;
     payrollCode: number;
-    setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    setShipmentToEdit: React.Dispatch<React.SetStateAction<ShipmentType | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    shipmentPayrollList: ShipmentPayroll[];
+    shipmentPayrollList: ShipmentPayrollType[];
 };
 
 export function GroupedShipmentsDataTable({
@@ -358,23 +363,23 @@ export function GroupedShipmentsDataTable({
         {
             id: "origin_weight",
             label: t("dataTable.columns.origin_weight"),
-            rowValue: (row) => numberFormatter(parseInt(row.origin_weight)),
+            rowValue: (row) => defaultToLocaleNumberString(row.origin_weight),
             groupedRowValue: (groupedShipments) =>
-                numberFormatter(parseInt(groupedShipments.subtotal_origin_weight)),
+                defaultToLocaleNumberString(groupedShipments.subtotal_origin_weight),
             align: "right",
         },
         {
             id: "destination_weight",
             label: t("dataTable.columns.destination_weight"),
-            rowValue: (row) => numberFormatter(parseInt(row.destination_weight)),
+            rowValue: (row) => defaultToLocaleNumberString(row.destination_weight),
             groupedRowValue: (groupedShipments) =>
-                numberFormatter(parseInt(groupedShipments.subtotal_destination_weight)),
+                defaultToLocaleNumberString(groupedShipments.subtotal_destination_weight),
             align: "right",
         },
         {
             id: "price",
             label: t("dataTable.columns.price"),
-            rowValue: (row) => numberFormatter(parseFloat(row.price)),
+            rowValue: (row) => defaultToLocaleNumberString(row.price),
             groupedRowValue: () => "",
             align: "right",
         },
@@ -382,9 +387,11 @@ export function GroupedShipmentsDataTable({
             id: "total",
             label: t("dataTable.columns.total"),
             rowValue: (row) =>
-                numberFormatter(parseInt(row.destination_weight) * parseFloat(row.price)),
+                numberToLocaleString(
+                    Number.parseInt(row.destination_weight) * Number.parseFloat(row.price)
+                ),
             groupedRowValue: (groupedShipments) =>
-                numberFormatter(parseFloat(groupedShipments.subtotal_money)),
+                numberToLocaleString(Number.parseFloat(groupedShipments.subtotal_money)),
             align: "right",
         },
     ];
@@ -402,9 +409,11 @@ export function GroupedShipmentsDataTable({
         () =>
             shipmentPayrollList?.map((item) => ({
                 id: item.payroll_code?.toString() ?? "",
-                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${item.payroll_code ?? 0}]`,
+                label: `${DateTime.fromHTTP(item.payroll_timestamp).toFormat("dd/MM/yy")} [#${
+                    item.payroll_code ?? 0
+                }]`,
             })) ?? [],
-        [shipmentPayrollList],
+        [shipmentPayrollList]
     );
 
     // USE EFFECT
@@ -446,18 +455,16 @@ export function GroupedShipmentsDataTable({
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelected = groupedShipmentsList
-                .map((shipmentList) =>
-                    shipmentList.shipments.map((n: Shipment): number => n.shipment_code ?? 0),
-                )
-                .flat();
+            const newSelected = groupedShipmentsList.flatMap((shipmentList) =>
+                shipmentList.shipments.map((n: ShipmentType): number => n.shipment_code ?? 0)
+            );
             setSelectedRows(newSelected);
             return;
         }
         setSelectedRows([]);
     };
 
-    const handleSelect = (row: Shipment) => {
+    const handleSelect = (row: ShipmentType) => {
         if (!row.shipment_code) {
             return;
         }
@@ -474,18 +481,18 @@ export function GroupedShipmentsDataTable({
         } else if (selectedIndex > 0) {
             newSelected = newSelected.concat(
                 selectedRows.slice(0, selectedIndex),
-                selectedRows.slice(selectedIndex + 1),
+                selectedRows.slice(selectedIndex + 1)
             );
         }
         setSelectedRows(newSelected);
     };
 
-    const handleEditShipment = (row: Shipment) => {
+    const handleEditShipment = (row: ShipmentType) => {
         setShipmentToEdit(row);
         setEditFormDialogOpen(true);
     };
 
-    const handleDeleteShipmentItem = (row: Shipment) => {
+    const handleDeleteShipmentItem = (row: ShipmentType) => {
         openConfirmDialog({
             title: t("dataTable.confirmDelete.title"),
             message: (
@@ -543,7 +550,7 @@ export function GroupedShipmentsDataTable({
                             )}
                             onChange={(_, newValue) => {
                                 // Update the captured value in the closure
-                                selectedPayroll = parseInt(newValue?.id ?? "") || 0;
+                                selectedPayroll = Number.parseInt(newValue?.id ?? "") || 0;
                             }}
                             defaultValue={currentShipmentPayrollOption}
                             fullWidth
@@ -564,7 +571,7 @@ export function GroupedShipmentsDataTable({
                 const resp = await ShipmentApi.changeShipmentListShipmentPayroll(
                     selectedRows,
                     selectedPayroll,
-                    null,
+                    null
                 );
                 if (import.meta.env.VITE_DEBUG) {
                     console.log("Moving Shipment resp: ", { resp });
@@ -643,7 +650,7 @@ export function GroupedShipmentsDataTable({
                                                         columns={columns}
                                                         key={row.shipment_code ?? 0}
                                                     />
-                                                ),
+                                                )
                                             )}
                                             <TableShipmentAggregatedRow
                                                 key={`${groupedShipments.product}|${groupedShipments.origin}|${groupedShipments.destination}`}
@@ -651,7 +658,7 @@ export function GroupedShipmentsDataTable({
                                                 columns={columns}
                                             />
                                         </React.Fragment>
-                                    ),
+                                    )
                                 )}
 
                             {!loading && groupedShipmentsList.length ? (

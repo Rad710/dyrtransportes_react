@@ -18,13 +18,17 @@ import { useToast } from "@/context/ToastContext";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { AutocompleteOption } from "@/types";
-import { DriverPayroll } from "../types";
-import type { Shipment } from "@/pages/shipment-payrolls/types";
+import { DriverPayrollType } from "../schema";
 import { ShipmentApi } from "@/pages/shipment-payrolls/utils";
 import { driverPayrollTranslationNamespace } from "../translations";
-import { numberFormatter } from "@/utils/i18n";
+import { defaultToLocaleNumberString, numberToLocaleString } from "@/utils/i18n";
+import { ShipmentType } from "@/pages/shipment-payrolls/schema";
 
-const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: Shipment[] }) => {
+const DriverPayrollShipmentDataTableFooter = ({
+    shipmentList,
+}: {
+    shipmentList: ShipmentType[];
+}) => {
     const { t } = useTranslation(driverPayrollTranslationNamespace);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -32,16 +36,17 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
     // Calculate totals with useMemo inside the component
     const totals = useMemo(() => {
         const totalOrigin = shipmentList.reduce(
-            (sum, item) => sum + parseFloat(item.origin_weight),
+            (sum, item) => sum + Number.parseFloat(item.origin_weight),
             0
         );
         const totalDestination = shipmentList.reduce(
-            (sum, item) => sum + parseFloat(item.destination_weight),
+            (sum, item) => sum + Number.parseFloat(item.destination_weight),
             0
         );
         const totalMoney = shipmentList.reduce(
             (sum, item) =>
-                sum + parseFloat(item.destination_weight) * parseFloat(item.payroll_price),
+                sum +
+                Number.parseFloat(item.destination_weight) * Number.parseFloat(item.payroll_price),
             0
         );
         return { totalOrigin, totalDestination, totalMoney };
@@ -78,7 +83,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {numberFormatter(totals.totalOrigin)}
+                    {numberToLocaleString(totals.totalOrigin)}
                 </Typography>
             </Box>
 
@@ -101,7 +106,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {numberFormatter(totals.totalDestination)}
+                    {numberToLocaleString(totals.totalDestination)}
                 </Typography>
             </Box>
 
@@ -124,7 +129,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {numberFormatter(totals.totalDestination - totals.totalOrigin)}
+                    {numberToLocaleString(totals.totalDestination - totals.totalOrigin)}
                 </Typography>
             </Box>
 
@@ -147,7 +152,7 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
                         fontWeight: "bold",
                     }}
                 >
-                    {numberFormatter(totals.totalMoney)}
+                    {numberToLocaleString(totals.totalMoney)}
                 </Typography>
             </Box>
         </Box>
@@ -157,11 +162,11 @@ const DriverPayrollShipmentDataTableFooter = ({ shipmentList }: { shipmentList: 
 type DriverPayrollShipmentDataTableProps = {
     loading: boolean;
     loadDriverPayrollShipmentList: () => Promise<void>;
-    shipmentList: Shipment[];
-    setShipmentToEdit: React.Dispatch<React.SetStateAction<Shipment | null>>;
+    shipmentList: ShipmentType[];
+    setShipmentToEdit: React.Dispatch<React.SetStateAction<ShipmentType | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
     driverPayrollCode: number;
-    driverPayrollList: DriverPayroll[];
+    driverPayrollList: DriverPayrollType[];
 };
 
 export const DriverPayrollShipmentDataTable = ({
@@ -206,7 +211,7 @@ export const DriverPayrollShipmentDataTable = ({
         });
     }, [shipmentList]);
 
-    const handleEditShipment = (row: Shipment) => {
+    const handleEditShipment = (row: ShipmentType) => {
         setShipmentToEdit(row);
         setEditFormDialogOpen(true);
     };
@@ -243,7 +248,7 @@ export const DriverPayrollShipmentDataTable = ({
         });
     };
 
-    const handleDeleteShipmentItem = (row: Shipment) => {
+    const handleDeleteShipmentItem = (row: ShipmentType) => {
         openConfirmDialog({
             title: t("shipments.dialogs.delete.title"),
             message: t("shipments.dialogs.delete.messageSingle", {
@@ -301,7 +306,7 @@ export const DriverPayrollShipmentDataTable = ({
                             )}
                             onChange={(_, newValue) => {
                                 // Update the captured value in the closure
-                                selectedPayroll = parseInt(newValue?.id ?? "") || 0;
+                                selectedPayroll = Number.parseInt(newValue?.id ?? "") || 0;
                             }}
                             defaultValue={currentDriverPayrollOption}
                             fullWidth
@@ -338,7 +343,7 @@ export const DriverPayrollShipmentDataTable = ({
         });
     };
 
-    const columns: GridColDef<Shipment>[] = [
+    const columns: GridColDef<ShipmentType>[] = [
         {
             field: "shipment_payroll_code",
             headerName: t("shipments.columns.payrollCode"),
@@ -401,7 +406,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "origin_weight",
             headerName: t("shipments.columns.originWeight"),
-            renderCell: ({ row }) => numberFormatter(parseInt(row.origin_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.origin_weight),
             minWidth: 100,
             flex: 1,
             headerClassName: "wrap-header",
@@ -410,7 +415,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "destination_weight",
             headerName: t("shipments.columns.destinationWeight"),
-            renderCell: ({ row }) => numberFormatter(parseInt(row.destination_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.destination_weight),
             minWidth: 100,
             flex: 1,
             headerClassName: "wrap-header",
@@ -419,7 +424,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "price",
             headerName: t("shipments.columns.price"),
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.price)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.price),
             minWidth: 100,
             flex: 1,
             headerClassName: "wrap-header",
@@ -428,7 +433,7 @@ export const DriverPayrollShipmentDataTable = ({
         {
             field: "payroll_price",
             headerName: t("shipments.columns.payrollPrice"),
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.payroll_price)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.payroll_price),
             minWidth: 100,
             flex: 1,
             headerClassName: "wrap-header",
@@ -438,7 +443,9 @@ export const DriverPayrollShipmentDataTable = ({
             field: "total",
             headerName: t("shipments.columns.total"),
             renderCell: ({ row }) =>
-                numberFormatter(parseInt(row.destination_weight) * parseFloat(row.payroll_price)),
+                numberToLocaleString(
+                    Number.parseInt(row.destination_weight) * Number.parseFloat(row.payroll_price)
+                ),
             minWidth: 120,
             flex: 0.8,
             align: "right",
@@ -503,7 +510,7 @@ export const DriverPayrollShipmentDataTable = ({
                         },
                     }}
                     loading={loading}
-                    getRowId={(row: Shipment) => row.shipment_code ?? 0}
+                    getRowId={(row: ShipmentType) => row.shipment_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

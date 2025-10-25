@@ -34,4 +34,4 @@ export const getUserProfileFormSchema = (t: TFunction) => {
         );
 };
 
-export type UserProfileFormSchema = z.infer<ReturnType<typeof getUserProfileFormSchema>>;
+export type UserProfileType = z.infer<ReturnType<typeof getUserProfileFormSchema>>;

@@ -1,27 +1,80 @@
+import type { ApiResponse } from "@/types";
 import type { TFunction } from "i18next";
 import { z } from "zod";
 
 export const getDriverFormSchema = (t: TFunction<"driver">) => {
-    // Create a reusable string validation for fields with similar requirements
-    const createRequiredStringSchema = (fieldName: string) =>
-        z
+    return z.object({
+        driver_code: z.number().positive(t("formDialog.validation.invalidDriverCode")).nullish(),
+        driver_id: z
             .string({
-                error: t("formDialog.validation.fieldRequired", { field: fieldName }),
+                error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.driverId"),
+                }),
             })
             .min(1, {
                 message: t("formDialog.validation.fieldEmpty", {
-                    field: fieldName.toLowerCase(),
+                    field: t("formDialog.fields.driverId").toLowerCase(),
                 }),
-            });
+            }),
+        driver_name: z
+            .string({
+                error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.name"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.name").toLowerCase(),
+                }),
+            }),
+        driver_surname: z
+            .string({
+                error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.surname"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.surname").toLowerCase(),
+                }),
+            }),
+        truck_plate: z
+            .string({
+                error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.truckPlate"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.truckPlate").toLowerCase(),
+                }),
+            }),
+        trailer_plate: z
+            .string({
+                error: t("formDialog.validation.fieldRequired", {
+                    field: t("formDialog.fields.trailerPlate"),
+                }),
+            })
+            .min(1, {
+                message: t("formDialog.validation.fieldEmpty", {
+                    field: t("formDialog.fields.trailerPlate").toLowerCase(),
+                }),
+            }),
 
-    return z.object({
-        driver_code: z.number().positive(t("formDialog.validation.invalidDriverCode")).nullish(),
-        driver_id: createRequiredStringSchema(t("formDialog.fields.driverId")),
-        driver_name: createRequiredStringSchema(t("formDialog.fields.name")),
-        driver_surname: createRequiredStringSchema(t("formDialog.fields.surname")),
-        truck_plate: createRequiredStringSchema(t("formDialog.fields.truckPlate")),
-        trailer_plate: createRequiredStringSchema(t("formDialog.fields.trailerPlate")),
+        deleted: z.boolean().nullish(),
+        modification_user: z.string().nullish(),
+        modification_timestamp: z.string().nullish(),
     });
 };
 
-export type DriverFormSchema = z.infer<ReturnType<typeof getDriverFormSchema>>;
+export type DriverType = z.infer<ReturnType<typeof getDriverFormSchema>>;
+export type DriverApiResponse = DriverType & ApiResponse;
+
+export const getDriverFormDefaultValue = (): DriverType => ({
+    driver_code: null,
+    driver_id: "",
+    driver_name: "",
+    driver_surname: "",
+    truck_plate: "",
+    trailer_plate: "",
+});

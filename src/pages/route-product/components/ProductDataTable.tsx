@@ -1,6 +1,6 @@
 import { Box, Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Product } from "../types";
+import { ProductType } from "../schema";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { ActionsMenu } from "@/components/ActionsMenu";
@@ -13,9 +13,9 @@ import { productTranslationNamespace } from "../translations";
 
 type ProductDataTableProps = {
     loading: boolean;
-    productList: Product[];
+    productList: ProductType[];
     loadProductList: () => Promise<void>;
-    setProductToEdit: React.Dispatch<React.SetStateAction<Product | null>>;
+    setProductToEdit: React.Dispatch<React.SetStateAction<ProductType | null>>;
     setEditFormDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -49,7 +49,7 @@ export const ProductDataTable = ({
 
     const paginationModel = { page: 0, pageSize: 100 };
 
-    const handleEditProduct = (row: Product) => {
+    const handleEditProduct = (row: ProductType) => {
         setProductToEdit(row);
         setEditFormDialogOpen(true);
     };
@@ -86,7 +86,7 @@ export const ProductDataTable = ({
         });
     };
 
-    const handleDeleteProductItem = (row: Product) => {
+    const handleDeleteProductItem = (row: ProductType) => {
         openConfirmDialog({
             title: t("dataTable.confirmDelete.title"),
             message: (
@@ -121,7 +121,7 @@ export const ProductDataTable = ({
         });
     };
 
-    const columns: GridColDef<Product>[] = [
+    const columns: GridColDef<ProductType>[] = [
         {
             field: "product_code",
             headerName: t("dataTable.columns.code"),
@@ -182,7 +182,7 @@ export const ProductDataTable = ({
                         border: 0,
                     }}
                     loading={loading}
-                    getRowId={(row: Product) => row.product_code ?? 0}
+                    getRowId={(row: ProductType) => row.product_code ?? 0}
                     onRowSelectionModelChange={(newSelection: GridRowSelectionModel) =>
                         setSelectedRows(newSelection)
                     }

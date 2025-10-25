@@ -1,10 +1,10 @@
 import { Box, Paper, useTheme } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
-import { numberFormatter } from "@/utils/i18n";
 import type { StatisticRow } from "../types";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "../translations";
+import { defaultToLocaleNumberString, numberToLocaleString } from "@/utils/i18n";
 
 type StatisticsDataTableProps = {
     loading: boolean;
@@ -39,7 +39,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_origin_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_origin_weight),
         },
         {
             field: "total_destination_weight",
@@ -47,7 +47,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_destination_weight)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_destination_weight),
         },
         {
             field: "total_diff",
@@ -55,7 +55,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 50,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_diff)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_diff),
         },
         {
             field: "total_shipment_payroll",
@@ -63,7 +63,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_shipment_payroll)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_shipment_payroll),
         },
         {
             field: "total_driver_payroll",
@@ -71,7 +71,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_driver_payroll)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_driver_payroll),
         },
         {
             field: "total_expenses_amount_receipt",
@@ -79,7 +79,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_expenses_amount_receipt)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_expenses_amount_receipt),
         },
         {
             field: "total_expenses_amount_no_receipt",
@@ -88,7 +88,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             minWidth: 100,
             headerClassName: "wrap-header",
             renderCell: ({ row }) =>
-                numberFormatter(parseFloat(row.total_expenses_amount_no_receipt)),
+                defaultToLocaleNumberString(row.total_expenses_amount_no_receipt),
         },
         {
             field: "total_expenses_amount",
@@ -96,7 +96,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
-            renderCell: ({ row }) => numberFormatter(parseFloat(row.total_expenses_amount)),
+            renderCell: ({ row }) => defaultToLocaleNumberString(row.total_expenses_amount),
         },
         {
             field: "total_losses",
@@ -105,8 +105,8 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
             minWidth: 100,
             headerClassName: "wrap-header",
             renderCell: ({ row }) => {
-                const totalDriverPayroll = parseFloat(row.total_driver_payroll);
-                const totalExpensesAmount = parseFloat(row.total_expenses_amount);
+                const totalDriverPayroll = Number.parseFloat(row.total_driver_payroll);
+                const totalExpensesAmount = Number.parseFloat(row.total_expenses_amount);
                 const totalLosses = totalExpensesAmount - totalDriverPayroll;
 
                 return (
@@ -114,7 +114,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
                         component="span"
                         sx={{ color: theme.palette.error.main, fontWeight: "bold" }}
                     >
-                        {numberFormatter(totalLosses > 0 ? totalLosses : 0)}
+                        {numberToLocaleString(totalLosses > 0 ? totalLosses : 0)}
                     </Box>
                 );
             },
@@ -130,9 +130,9 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
                     component="span"
                     sx={{ color: theme.palette.success.main, fontWeight: "bold" }}
                 >
-                    {numberFormatter(
-                        parseFloat(row.total_shipment_payroll) -
-                            parseFloat(row.total_driver_payroll)
+                    {numberToLocaleString(
+                        Number.parseFloat(row.total_shipment_payroll) -
+                            Number.parseFloat(row.total_driver_payroll)
                     )}
                 </Box>
             ),
