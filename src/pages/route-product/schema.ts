@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/types";
 import type { TFunction } from "i18next";
 import z from "zod";
+import { zodFloatString } from "@/utils/zod-utils";
 
 // ROUTE
 export const getRouteFormSchema = (t: TFunction) => {
@@ -29,53 +30,24 @@ export const getRouteFormSchema = (t: TFunction) => {
                 }),
             }),
 
-        price: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.price"),
-                }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.price"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseFloat(arg);
-                if (!val || val < 0) {
-                    return ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseFloat(arg).toFixed(2)),
-
-        payroll_price: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.payrollPrice"),
-                }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.payrollPrice"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseFloat(arg);
-                if (!val || val < 0) {
-                    return ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseFloat(arg).toFixed(2)),
+        price: zodFloatString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.price"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.price"),
+            }),
+            t("formDialog.validation.invalidNumber")
+        ),
+        payroll_price: zodFloatString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.payrollPrice"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.payrollPrice"),
+            }),
+            t("formDialog.validation.invalidNumber")
+        ),
 
         deleted: z.boolean().nullish(),
         modification_user: z.string().nullish(),

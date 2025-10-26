@@ -2,6 +2,7 @@ import type { ApiResponse } from "@/types";
 import type { TFunction } from "i18next";
 import { DateTime } from "luxon";
 import z from "zod";
+import { zodDateHTTPString, zodFloatString, zodIntString } from "@/utils/zod-utils";
 
 // SHIPMENT
 export const getShipmentFormSchema = (t: TFunction) =>
@@ -11,41 +12,12 @@ export const getShipmentFormSchema = (t: TFunction) =>
             .positive(t("formDialog.validation.invalidShipmentCode"))
             .nullish(),
 
-        shipment_date: z
-            .string()
-            .min(
-                1,
-                t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.shipment_date"),
-                })
-            )
-            .superRefine((arg, ctx) => {
-                const val = DateTime.fromHTTP(arg);
-                if (!val.isValid) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() < DateTime.fromHTTP("2000-01-01").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() > DateTime.fromHTTP("2100-12-31").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
+        shipment_date: zodDateHTTPString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.shipment_date"),
             }),
+            t("formDialog.validation.invalidValue")
+        ),
 
         driver_name: z
             .string({
@@ -136,52 +108,24 @@ export const getShipmentFormSchema = (t: TFunction) =>
                 })
             ),
 
-        price: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.price"),
-                }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.price"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseFloat(arg);
-                if (!val || val < 0) {
-                    return ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseFloat(arg).toFixed(2)),
-        payroll_price: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.payroll_price"),
-                }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.payroll_price"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseFloat(arg);
-                if (!val || val < 0) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseFloat(arg).toFixed(2)),
+        price: zodFloatString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.price"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.price"),
+            }),
+            t("formDialog.validation.invalidNumber")
+        ),
+        payroll_price: zodFloatString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.payroll_price"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.payroll_price"),
+            }),
+            t("formDialog.validation.invalidNumber")
+        ),
 
         dispatch_code: z
             .string({
@@ -205,77 +149,31 @@ export const getShipmentFormSchema = (t: TFunction) =>
                     field: t("formDialog.fields.receipt_code"),
                 }),
             }),
-        origin_weight: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.origin_weight"),
-                }),
-            })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.origin_weight"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseInt(arg);
-                if (!val || val < 0) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
 
-                const floatVal = Number.parseFloat(arg);
-                if (floatVal.toString().includes(".")) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.noDecimals", {
-                            field: t("formDialog.fields.origin_weight"),
-                        }),
-                        expected: "int",
-                        received: "float",
-                    });
-                }
+        origin_weight: zodIntString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.origin_weight"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.origin_weight"),
+            }),
+            t("formDialog.validation.invalidNumber"),
+            t("formDialog.validation.noDecimals", {
+                field: t("formDialog.fields.origin_weight"),
             })
-            .transform((arg) => Number.parseInt(arg).toString()),
-
-        destination_weight: z
-            .string({
-                error: t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.destination_weight"),
-                }),
+        ),
+        destination_weight: zodIntString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.destination_weight"),
+            }),
+            t("formDialog.validation.fieldEmpty", {
+                field: t("formDialog.fields.destination_weight"),
+            }),
+            t("formDialog.validation.invalidNumber"),
+            t("formDialog.validation.noDecimals", {
+                field: t("formDialog.fields.destination_weight"),
             })
-            .min(1, {
-                message: t("formDialog.validation.fieldEmpty", {
-                    field: t("formDialog.fields.destination_weight"),
-                }),
-            })
-            .superRefine((arg, ctx) => {
-                const val = Number.parseInt(arg);
-                if (!val || val < 0) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidNumber"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-
-                const floatVal = Number.parseFloat(arg);
-                if (floatVal.toString().includes(".")) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.noDecimals", {
-                            field: t("formDialog.fields.destination_weight"),
-                        }),
-                        expected: "int",
-                        received: "float",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseInt(arg).toString()),
+        ),
         shipment_payroll_code: z
             .number({
                 error: t("formDialog.validation.fieldRequired", {
@@ -328,41 +226,13 @@ export const getShipmentFormDefaultValue = (payrollCode: number): ShipmentType =
 export const getShipmentPayrollFormSchema = (t: TFunction) => {
     return z.object({
         payroll_code: z.number().positive(t("formDialog.validation.invalidPayrollCode")).nullish(),
-        payroll_timestamp: z
-            .string()
-            .min(
-                1,
-                t("formDialog.validation.fieldRequired", {
-                    field: t("formDialog.fields.payroll_timestamp"),
-                })
-            )
-            .superRefine((arg, ctx) => {
-                const val = DateTime.fromHTTP(arg);
-                if (!val.isValid) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() < DateTime.fromHTTP("2000-01-01").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() > DateTime.fromHTTP("2100-12-31").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.validation.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
+
+        payroll_timestamp: zodDateHTTPString(
+            t("formDialog.validation.fieldRequired", {
+                field: t("formDialog.fields.payroll_timestamp"),
             }),
+            t("formDialog.validation.invalidValue")
+        ),
         collected: z.boolean(),
         collection_timestamp: z.string().nullish(),
 

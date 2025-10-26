@@ -131,6 +131,10 @@ export const SignUp = ({ title }: PageProps) => {
                                     variant="outlined"
                                     error={!!errors.name}
                                     helperText={errors.name?.message}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -150,6 +154,10 @@ export const SignUp = ({ title }: PageProps) => {
                                     variant="outlined"
                                     error={!!errors.email}
                                     helperText={errors.email?.message}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -161,6 +169,7 @@ export const SignUp = ({ title }: PageProps) => {
                             control={control}
                             render={({ field }) => (
                                 <TextField
+                                    {...field}
                                     id="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder={t("passwordPlaceholder")}
@@ -169,7 +178,6 @@ export const SignUp = ({ title }: PageProps) => {
                                     variant="outlined"
                                     error={!!errors.password}
                                     helperText={errors.password?.message}
-                                    {...field}
                                     slotProps={{
                                         input: {
                                             endAdornment: (
@@ -189,6 +197,10 @@ export const SignUp = ({ title }: PageProps) => {
                                             ),
                                         },
                                     }}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />

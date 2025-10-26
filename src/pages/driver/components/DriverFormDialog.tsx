@@ -201,6 +201,10 @@ export const DriverFormDialog = ({
                                         fullWidth
                                         error={!!errors.driver_id}
                                         helperText={errors.driver_id?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -216,6 +220,10 @@ export const DriverFormDialog = ({
                                         fullWidth
                                         error={!!errors.driver_name}
                                         helperText={errors.driver_name?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -229,6 +237,10 @@ export const DriverFormDialog = ({
                                         fullWidth
                                         error={!!errors.driver_surname}
                                         helperText={errors.driver_surname?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -244,6 +256,10 @@ export const DriverFormDialog = ({
                                         fullWidth
                                         error={!!errors.truck_plate}
                                         helperText={errors.truck_plate?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -257,6 +273,10 @@ export const DriverFormDialog = ({
                                         fullWidth
                                         error={!!errors.trailer_plate}
                                         helperText={errors.trailer_plate?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />

@@ -196,6 +196,10 @@ export const ProductFormDialog = ({
                                     fullWidth
                                     error={!!errors.product_name}
                                     helperText={errors.product_name?.message}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />

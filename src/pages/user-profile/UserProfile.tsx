@@ -175,6 +175,10 @@ export const UserProfile = ({ title }: PageProps) => {
                                     error={!!errors.name}
                                     helperText={errors.name?.message}
                                     color={errors.name ? "error" : "primary"}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -197,6 +201,10 @@ export const UserProfile = ({ title }: PageProps) => {
                                     error={!!errors.email}
                                     helperText={errors.email?.message}
                                     color={errors.email ? "error" : "primary"}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -244,6 +252,10 @@ export const UserProfile = ({ title }: PageProps) => {
                                             ),
                                         },
                                     }}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -287,6 +299,10 @@ export const UserProfile = ({ title }: PageProps) => {
                                             ),
                                         },
                                     }}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />

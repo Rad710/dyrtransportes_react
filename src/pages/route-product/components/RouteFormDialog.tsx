@@ -205,6 +205,10 @@ export const RouteFormDialog = ({
                                         fullWidth
                                         error={!!errors.origin}
                                         helperText={errors.origin?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -219,6 +223,10 @@ export const RouteFormDialog = ({
                                         fullWidth
                                         error={!!errors.destination}
                                         helperText={errors.destination?.message}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                            field.onChange(e.target.value ? e.target.value : "")
+                                        }
                                     />
                                 )}
                             />
@@ -250,7 +258,7 @@ export const RouteFormDialog = ({
                                             field.onChange(
                                                 e.target.value
                                                     ? localeToDefaultNumberString(e.target.value)
-                                                    : undefined
+                                                    : ""
                                             );
                                         }}
                                     />
@@ -276,7 +284,7 @@ export const RouteFormDialog = ({
                                             field.onChange(
                                                 e.target.value
                                                     ? localeToDefaultNumberString(e.target.value)
-                                                    : undefined
+                                                    : ""
                                             );
                                         }}
                                     />

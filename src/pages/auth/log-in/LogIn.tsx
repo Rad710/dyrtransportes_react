@@ -146,6 +146,10 @@ export const LogIn = ({ title }: PageProps) => {
                                     variant="outlined"
                                     error={!!errors.email}
                                     helperText={errors.email?.message}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -186,6 +190,10 @@ export const LogIn = ({ title }: PageProps) => {
                                             ),
                                         },
                                     }}
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                        field.onChange(e.target.value ? e.target.value : "")
+                                    }
                                 />
                             )}
                         />
@@ -195,7 +203,14 @@ export const LogIn = ({ title }: PageProps) => {
                             <Controller
                                 name="remember_me"
                                 control={control}
-                                render={({ field }) => <Checkbox {...field} color="primary" />}
+                                render={({ field }) => (
+                                    <Checkbox
+                                        {...field}
+                                        color="primary"
+                                        value={field.value || false}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                    />
+                                )}
                             />
                         }
                         label={t("rememberMe")}

@@ -76,7 +76,7 @@ const ShipmentExpenseFormDialogFields = ({
                             }
                             onChange={(e) => {
                                 const dateTime = DateTime.fromISO(e.target.value);
-                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : undefined);
+                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : "");
                             }}
                         />
                     )}
@@ -92,6 +92,8 @@ const ShipmentExpenseFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.receipt}
                             helperText={form.formState.errors.receipt?.message}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value ? e.target.value : "")}
                         />
                     )}
                 />
@@ -146,7 +148,7 @@ const ShipmentExpenseFormDialogFields = ({
                                 field.onChange(
                                     e.target.value
                                         ? localeToDefaultNumberString(e.target.value)
-                                        : undefined
+                                        : ""
                                 );
                             }}
                         />
@@ -163,6 +165,8 @@ const ShipmentExpenseFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.reason}
                             helperText={form.formState.errors.reason?.message}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value ? e.target.value : "")}
                         />
                     )}
                 />

@@ -157,7 +157,7 @@ const ShipmentFormDialogFields = ({
                             }
                             onChange={(e) => {
                                 const dateTime = DateTime.fromISO(e.target.value);
-                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : undefined);
+                                field.onChange(dateTime.isValid ? dateTime.toHTTP() : "");
                             }}
                         />
                     )}
@@ -426,6 +426,8 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.dispatch_code}
                             helperText={form.formState.errors.dispatch_code?.message}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value ? e.target.value : "")}
                         />
                     )}
                 />
@@ -440,6 +442,8 @@ const ShipmentFormDialogFields = ({
                             fullWidth
                             error={!!form.formState.errors.receipt_code}
                             helperText={form.formState.errors.receipt_code?.message}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value ? e.target.value : "")}
                         />
                     )}
                 />
@@ -465,7 +469,7 @@ const ShipmentFormDialogFields = ({
                                 field.onChange(
                                     e.target.value
                                         ? localeToDefaultNumberString(e.target.value)
-                                        : undefined
+                                        : ""
                                 );
                             }}
                         />
@@ -490,7 +494,7 @@ const ShipmentFormDialogFields = ({
                                 field.onChange(
                                     e.target.value
                                         ? localeToDefaultNumberString(e.target.value)
-                                        : undefined
+                                        : ""
                                 );
                             }}
                         />
@@ -513,7 +517,7 @@ const ShipmentFormDialogFields = ({
                                 field.onChange(
                                     e.target.value
                                         ? localeToDefaultNumberString(e.target.value)
-                                        : undefined
+                                        : ""
                                 );
                             }}
                         />
@@ -536,7 +540,7 @@ const ShipmentFormDialogFields = ({
                                 field.onChange(
                                     e.target.value
                                         ? localeToDefaultNumberString(e.target.value)
-                                        : undefined
+                                        : ""
                                 );
                             }}
                         />

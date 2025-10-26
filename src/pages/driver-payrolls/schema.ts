@@ -2,68 +2,30 @@ import { z } from "zod";
 import type { TFunction } from "i18next";
 import { DateTime } from "luxon";
 import type { ApiResponse } from "@/types";
+import { zodDateHTTPString, zodIntString } from "@/utils/zod-utils";
 
 // Define schema for form validation
 export const getShipmentExpenseFormSchema = (t: TFunction) =>
     z.object({
         expense_code: z.number().nullable(),
-        expense_date: z
-            .string()
-            .min(1, t("expenses.dialogs.form.errors.dateRequired"))
-            .superRefine((arg, ctx) => {
-                const val = DateTime.fromHTTP(arg);
-                if (!val.isValid) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("expenses.dialogs.form.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() < DateTime.fromHTTP("2000-01-01").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("expenses.dialogs.form.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() > DateTime.fromHTTP("2100-12-31").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("expenses.dialogs.form.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-            }),
+        expense_date: zodDateHTTPString(
+            t("expenses.dialogs.form.errors.dateRequired"),
+            t("expenses.dialogs.form.errors.invalidValue")
+        ),
         receipt: z
             .string({
                 error: t("expenses.dialogs.form.errors.receiptRequired"),
             })
-            .transform((val) => {
-                if (val === null || val === undefined) {
-                    return val;
-                }
-                const trimmed = val.trim();
-                return trimmed === "" ? null : trimmed;
-            })
+            .trim()
+            .transform((val) => val || null)
             .nullish(),
-        amount: z
-            .string()
-            .min(1, t("expenses.dialogs.form.errors.amountRequired"))
-            .superRefine((arg, ctx) => {
-                const val = Number.parseFloat(arg);
-                if (!val || val < 0) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("expenses.dialogs.form.errors.invalidValue"),
-                        expected: "number",
-                        received: "unknown",
-                    });
-                }
-            })
-            .transform((arg) => Number.parseFloat(arg).toFixed(2)),
+
+        amount: zodIntString(
+            t("expenses.dialogs.form.errors.amountRequired"),
+            t("expenses.dialogs.form.errors.amountRequired"),
+            t("expenses.dialogs.form.errors.invalidValue"),
+            t("expenses.dialogs.form.errors.noDecimals")
+        ),
         reason: z.string({
             error: t("expenses.dialogs.form.errors.reasonRequired"),
         }),
@@ -92,36 +54,10 @@ export const getShipmentExpenseFormDefaultValue = (payrollCode: number): Shipmen
 export const getDriverPayrollFormSchema = (t: TFunction) =>
     z.object({
         payroll_code: z.number().positive(t("formDialog.errors.invalidCode")).nullish(),
-        payroll_timestamp: z
-            .string()
-            .min(1, t("formDialog.errors.dateRequired"))
-            .superRefine((arg, ctx) => {
-                const val = DateTime.fromHTTP(arg);
-                if (!val.isValid) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() < DateTime.fromHTTP("2000-01-01").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-                if (val.toMillis() > DateTime.fromHTTP("2100-12-31").toMillis()) {
-                    ctx.addIssue({
-                        code: "invalid_type",
-                        message: t("formDialog.errors.invalidValue"),
-                        expected: "date",
-                        received: "unknown",
-                    });
-                }
-            }),
+        payroll_timestamp: zodDateHTTPString(
+            t("formDialog.errors.dateRequired"),
+            t("formDialog.errors.invalidValue")
+        ),
         driver_code: z.number().positive(t("formDialog.errors.invalidDriverCode")),
         paid: z.boolean().nullish(),
         paid_timestamp: z.string().nullish(),

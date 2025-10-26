@@ -253,9 +253,7 @@ export const DriverPayrollFormDialog = ({
                                 }
                                 onChange={(e) => {
                                     const dateTime = DateTime.fromISO(e.target.value);
-                                    field.onChange(
-                                        dateTime.isValid ? dateTime.toHTTP() : undefined
-                                    );
+                                    field.onChange(dateTime.isValid ? dateTime.toHTTP() : "");
                                 }}
                                 error={!!errors.payroll_timestamp}
                                 helperText={errors.payroll_timestamp?.message}
