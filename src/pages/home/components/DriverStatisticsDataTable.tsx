@@ -1,17 +1,17 @@
 import { Box, Paper, useTheme } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { DataTableToolbar } from "@/components/DataTableToolbar";
-import type { StatisticRow } from "../types";
+import type { DriverStatisticRow } from "../types";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "../translations";
 import { defaultToLocaleNumberString, numberToLocaleString } from "@/utils/i18n";
 
 type StatisticsDataTableProps = {
     loading: boolean;
-    statisticRows: StatisticRow[];
+    statisticRows: DriverStatisticRow[];
 };
 
-export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTableProps) => {
+export const DriverStatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTableProps) => {
     const theme = useTheme();
 
     // Add translation hook
@@ -19,23 +19,23 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
 
     const paginationModel = { page: 0, pageSize: 100 };
 
-    const columns: GridColDef<StatisticRow>[] = [
+    const columns: GridColDef<DriverStatisticRow>[] = [
         {
             field: "driver_name",
-            headerName: t("statistics.dataTable.columns.driverName"),
+            headerName: t("driverStatistics.dataTable.columns.driverName"),
             flex: 1,
             minWidth: 150,
             headerClassName: "wrap-header",
         },
         {
             field: "shipments",
-            headerName: t("statistics.dataTable.columns.shipments"),
+            headerName: t("driverStatistics.dataTable.columns.shipments"),
             flex: 1,
             headerClassName: "wrap-header",
         },
         {
             field: "total_origin_weight",
-            headerName: t("statistics.dataTable.columns.totalOriginWeight"),
+            headerName: t("driverStatistics.dataTable.columns.totalOriginWeight"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -43,7 +43,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_destination_weight",
-            headerName: t("statistics.dataTable.columns.totalDestinationWeight"),
+            headerName: t("driverStatistics.dataTable.columns.totalDestinationWeight"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -51,7 +51,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_diff",
-            headerName: t("statistics.dataTable.columns.diff"),
+            headerName: t("driverStatistics.dataTable.columns.diff"),
             flex: 1,
             minWidth: 50,
             headerClassName: "wrap-header",
@@ -59,7 +59,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_shipment_payroll",
-            headerName: t("statistics.dataTable.columns.totalShipmentPayroll"),
+            headerName: t("driverStatistics.dataTable.columns.totalShipmentPayroll"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -67,7 +67,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_driver_payroll",
-            headerName: t("statistics.dataTable.columns.totalDriverPayroll"),
+            headerName: t("driverStatistics.dataTable.columns.totalDriverPayroll"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -75,7 +75,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_expenses_amount_receipt",
-            headerName: t("statistics.dataTable.columns.totalExpensesAmountReceipt"),
+            headerName: t("driverStatistics.dataTable.columns.totalExpensesAmountReceipt"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -83,7 +83,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_expenses_amount_no_receipt",
-            headerName: t("statistics.dataTable.columns.totalExpensesAmountNoReceipt"),
+            headerName: t("driverStatistics.dataTable.columns.totalExpensesAmountNoReceipt"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -92,7 +92,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_expenses_amount",
-            headerName: t("statistics.dataTable.columns.totalExpensesAmount"),
+            headerName: t("driverStatistics.dataTable.columns.totalExpensesAmount"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -100,7 +100,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_losses",
-            headerName: t("statistics.dataTable.columns.totalLosses"),
+            headerName: t("driverStatistics.dataTable.columns.totalLosses"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -121,7 +121,7 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
         },
         {
             field: "total_profits",
-            headerName: t("statistics.dataTable.columns.totalProfits"),
+            headerName: t("driverStatistics.dataTable.columns.totalProfits"),
             flex: 1,
             minWidth: 100,
             headerClassName: "wrap-header",
@@ -141,12 +141,12 @@ export const StatisticsDataTable = ({ loading, statisticRows }: StatisticsDataTa
 
     return (
         <Box component="div" sx={{ height: "100%", width: "100%" }}>
-            <DataTableToolbar tableTitle={t("statistics.dataTable.tableTitle")} />
+            <DataTableToolbar tableTitle={t("driverStatistics.dataTable.tableTitle")} />
             <Paper sx={{ height: "100%", width: "100%" }}>
                 <DataGrid
                     rows={statisticRows}
                     columns={columns}
-                    getRowId={(row: StatisticRow) => row.driver_name ?? ""}
+                    getRowId={(row: DriverStatisticRow) => row.driver_name ?? ""}
                     initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[25, 50, 100]}
                     disableRowSelectionOnClick

@@ -4,8 +4,8 @@ import i18n, { appLanguages } from "@/utils/i18n";
 const resources = {
     en: {
         translation: {
-            statistics: {
-                tabs: "Statistics",
+            driverStatistics: {
+                tabs: "Driver Statistics",
                 searchControls: {
                     startDate: "Start Date",
                     endDate: "End Date",
@@ -21,7 +21,7 @@ const resources = {
                     exportSuccess: "Report exported successfully.",
                     exportError: "Error exporting report.",
                 },
-                fileName: "statistics.xlsx",
+                fileName: "driverStatistics.xlsx",
                 dataTable: {
                     tableTitle: "Statistics",
                     columns: {
@@ -38,6 +38,36 @@ const resources = {
                         totalExpensesAmount: "Total Expenses",
                         totalLosses: "Losses",
                         totalProfits: "Profits",
+                    },
+                },
+            },
+            productStatistics: {
+                tabs: "Product Statistics",
+                searchControls: {
+                    startDate: "Start Date",
+                    endDate: "End Date",
+                    search: "Search",
+                    export: "Export",
+                },
+                exportDialog: {
+                    title: "Confirm Export",
+                    message: "The report will be exported for {{startDate}} - {{endDate}}",
+                    confirmText: "Confirm Export",
+                },
+                notifications: {
+                    exportSuccess: "Report exported successfully.",
+                    exportError: "Error exporting report.",
+                },
+                fileName: "productStatistics.xlsx",
+                dataTable: {
+                    tableTitle: "Statistics",
+                    columns: {
+                        productCode: "Product Code",
+                        productName: "Product",
+                        shipments: "Shipments",
+                        totalOriginWeight: "Total Origin Weight",
+                        totalDestinationWeight: "Total Destination Weight",
+                        diff: "Diff",
                     },
                 },
             },
@@ -98,8 +128,8 @@ const resources = {
     },
     es: {
         translation: {
-            statistics: {
-                tabs: "Estadísticas",
+            driverStatistics: {
+                tabs: "Estadísticas de Choferes",
                 searchControls: {
                     startDate: "Fecha Inicio",
                     endDate: "Fecha Fin",
@@ -115,7 +145,7 @@ const resources = {
                     exportSuccess: "Informe exportado exitosamente.",
                     exportError: "Error al exportar Informe.",
                 },
-                fileName: "estadisticas.xlsx",
+                fileName: "estadisticasChoferes.xlsx",
                 dataTable: {
                     tableTitle: "Estadísticas",
                     columns: {
@@ -132,6 +162,36 @@ const resources = {
                         totalExpensesAmount: "Gastos (Gs.)",
                         totalLosses: "Pérdidas (Gs.)",
                         totalProfits: "Ganancias (Gs.)",
+                    },
+                },
+            },
+            productStatistics: {
+                tabs: "Estadísticas de Productos",
+                searchControls: {
+                    startDate: "Fecha Inicio",
+                    endDate: "Fecha Fin",
+                    search: "Buscar",
+                    export: "Exportar",
+                },
+                exportDialog: {
+                    title: "Confirmar Exportación",
+                    message: "Se exportará el informe {{startDate}} - {{endDate}}",
+                    confirmText: "Confirmar Exportación",
+                },
+                notifications: {
+                    exportSuccess: "Informe exportado exitosamente.",
+                    exportError: "Error al exportar Informe.",
+                },
+                fileName: "estadisticasProductos.xlsx",
+                dataTable: {
+                    tableTitle: "Estadísticas",
+                    columns: {
+                        productCode: "Código",
+                        productName: "Producto",
+                        shipments: "Viajes",
+                        totalOriginWeight: "Total Kg. Origen",
+                        totalDestinationWeight: "Total Kg. Destino",
+                        diff: "Dif.",
                     },
                 },
             },

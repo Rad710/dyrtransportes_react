@@ -1,4 +1,4 @@
-export type StatisticRow = {
+export type DriverStatisticRow = {
     driver_code: number;
     driver_name: string;
     shipments: number;
@@ -10,6 +10,14 @@ export type StatisticRow = {
     total_expenses_amount_receipt: string;
     total_expenses_amount_no_receipt: string;
     total_expenses_amount: string;
+};
+export type ProductStatisticRow = {
+    product_code: number;
+    product_name: string;
+    shipments: number;
+    total_origin_weight: string;
+    total_destination_weight: string;
+    total_diff: string;
 };
 
 export type ProfitData = {

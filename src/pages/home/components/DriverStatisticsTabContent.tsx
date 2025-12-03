@@ -1,25 +1,46 @@
-import { Box, Button, TextField, CircularProgress, Typography } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { DateTime } from "luxon";
-import { isAxiosError } from "axios";
+import { api } from "@/utils/axios";
+import { isAxiosError, type AxiosError, type AxiosResponse } from "axios";
+import type { ApiResponse } from "@/types";
 import { useToast } from "@/context/ToastContext";
 import { TableChart as TableChartIcon } from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { downloadFile } from "@/utils/file";
+import type { DriverStatisticRow } from "../types";
+import { DriverStatisticsDataTable } from "./DriverStatisticsDataTable";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "../translations";
-import { exportStatisticData, getStatisticsData } from "./DriverStatisticsTabContent";
-import type { ProfitData } from "../types";
-import { ProfitsChart } from "./ProfitsChart";
 
-export const ProfitsTabContent = () => {
+export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
+    api
+        .get(`/statistics/driver?start_date=${startDate}&end_date=${endDate}`)
+        .then((response: AxiosResponse<DriverStatisticRow[] | null>) => response.data ?? [])
+        .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+            return errorResponse ?? null;
+        });
+
+export const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
+    api
+        .get(`/statistics/driver/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+            responseType: "blob",
+        })
+        .then((response: AxiosResponse<BlobPart | null>) => {
+            return response ?? null;
+        })
+        .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+            return errorResponse;
+        });
+
+export const DriverStatisticsTabContent = () => {
     // Add translation hook with home namespace
     const { t } = useTranslation(homeTranslationNamespace);
 
     // state
     const [loading, setLoading] = useState<boolean>(true);
-    const [profitData, setProfitData] = useState<ProfitData | null>(null);
+    const [statisticRows, setStatisticRows] = useState<DriverStatisticRow[]>([]);
 
     const [startDate, setStartDate] = useState<DateTime>(
         DateTime.now().minus({ month: 1 }).startOf("day")
@@ -32,68 +53,32 @@ export const ProfitsTabContent = () => {
     const { showToastSuccess, showToastError, showToastAxiosError } = useToast();
     const { openConfirmDialog } = useConfirmation();
 
-    const loadProfitData = async () => {
+    const loadStatisticsRows = async () => {
         setLoading(true);
         const resp = await getStatisticsData(startDate, endDate);
         setLoading(false);
         if (!isAxiosError(resp) && resp) {
-            const totals = resp.reduce(
-                (acc, item) => {
-                    const totalShipmentPayroll = Number.parseFloat(item.total_shipment_payroll);
-                    const totalDriverPayroll = Number.parseFloat(item.total_driver_payroll);
-                    const totalExpensesAmount = Number.parseFloat(item.total_expenses_amount);
-
-                    const totalLosses = totalExpensesAmount - totalDriverPayroll;
-
-                    // Add current item's values to the accumulator
-                    acc.shipments += item.shipments || 0;
-                    acc.totalOriginWeight += Number.parseFloat(item.total_origin_weight) || 0;
-                    acc.totalDestinationWeight +=
-                        Number.parseFloat(item.total_destination_weight) || 0;
-                    acc.totalShipmentPayroll += totalShipmentPayroll || 0;
-                    acc.totalDriverPayroll += totalDriverPayroll || 0;
-                    acc.totalExpensesAmountReceipt +=
-                        Number.parseFloat(item.total_expenses_amount_receipt) || 0;
-                    acc.totalExpensesAmountNoReceipt +=
-                        Number.parseFloat(item.total_expenses_amount_no_receipt) || 0;
-                    acc.totalLosses += totalLosses > 0 ? totalLosses : 0;
-                    acc.totalProfits += totalShipmentPayroll - totalDriverPayroll || 0;
-
-                    return acc;
-                },
-                {
-                    shipments: 0,
-                    totalOriginWeight: 0,
-                    totalDestinationWeight: 0,
-                    totalShipmentPayroll: 0,
-                    totalDriverPayroll: 0,
-                    totalExpensesAmountReceipt: 0,
-                    totalExpensesAmountNoReceipt: 0,
-                    totalLosses: 0,
-                    totalProfits: 0,
-                }
-            );
-
-            setProfitData(totals);
+            setStatisticRows(resp);
         } else {
             showToastAxiosError(resp);
-            setProfitData(null);
+            setStatisticRows([]);
         }
 
         if (import.meta.env.VITE_DEBUG) {
-            console.log("Loaded Profit rows: ", { resp });
+            console.log("Loaded statistics rows: ", { resp });
         }
     };
 
     useEffect(() => {
-        loadProfitData();
+        loadStatisticsRows();
     }, []);
 
     const onSearch = async () => {
-        await loadProfitData();
+        setLoading(true);
+        await loadStatisticsRows();
     };
 
-    const handleExportarProfit = () => {
+    const handleExportarStatistics = () => {
         const startDateString = startDate.toLocaleString({
             year: "numeric",
             month: "long",
@@ -106,34 +91,34 @@ export const ProfitsTabContent = () => {
         });
 
         openConfirmDialog({
-            title: t("profits.exportDialog.title"),
-            message: t("profits.exportDialog.message", {
+            title: t("driverStatistics.exportDialog.title"),
+            message: t("driverStatistics.exportDialog.message", {
                 startDate: startDateString,
                 endDate: endDateString,
             }),
-            confirmText: t("profits.exportDialog.confirmText"),
+            confirmText: t("driverStatistics.exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting profits...");
+                    console.log("Exporting driverStatistics...");
                 }
                 const resp = await exportStatisticData(startDate, endDate);
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting profits resp: ", { resp });
+                    console.log("Exporting statistics resp: ", { resp });
                 }
 
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        t("profits.fileName"),
+                        t("driverStatistics.fileName"),
                         resp.headers?.["content-disposition"]
                     );
 
-                    showToastSuccess(t("profits.notifications.exportSuccess"));
+                    showToastSuccess(t("driverStatistics.notifications.exportSuccess"));
                 } else {
-                    showToastError(t("profits.notifications.exportError"));
+                    showToastError(t("driverStatistics.notifications.exportError"));
                 }
             },
         });
@@ -152,7 +137,7 @@ export const ProfitsTabContent = () => {
             >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("profits.searchControls.startDate")}
+                        label={t("driverStatistics.searchControls.startDate")}
                         type="date"
                         fullWidth
                         value={startDate.toFormat("yyyy-MM-dd")}
@@ -172,7 +157,7 @@ export const ProfitsTabContent = () => {
 
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("profits.searchControls.endDate")}
+                        label={t("driverStatistics.searchControls.endDate")}
                         type="date"
                         fullWidth
                         value={endDate.toFormat("yyyy-MM-dd")}
@@ -201,31 +186,20 @@ export const ProfitsTabContent = () => {
                         height: "40px",
                     }}
                 >
-                    <Box>{t("profits.searchControls.search")}</Box>
+                    <Box>{t("driverStatistics.searchControls.search")}</Box>
                 </Button>
 
                 <Button
                     variant="contained"
                     color="success"
                     startIcon={<TableChartIcon />}
-                    onClick={handleExportarProfit}
+                    onClick={handleExportarStatistics}
                 >
-                    {t("profits.searchControls.export")}
+                    {t("driverStatistics.searchControls.export")}
                 </Button>
             </Box>
 
-            <Box sx={{ mt: 4, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                {loading ? (
-                    <>
-                        <CircularProgress />
-                        <Typography variant="body1" sx={{ ml: 2 }}>
-                            {t("profits.loading")}
-                        </Typography>
-                    </>
-                ) : (
-                    <ProfitsChart profitData={profitData} startDate={startDate} endDate={endDate} />
-                )}
-            </Box>
+            <DriverStatisticsDataTable loading={loading} statisticRows={statisticRows} />
         </Box>
     );
 };

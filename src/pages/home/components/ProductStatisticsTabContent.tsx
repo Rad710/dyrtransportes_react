@@ -9,22 +9,22 @@ import { useToast } from "@/context/ToastContext";
 import { TableChart as TableChartIcon } from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { downloadFile } from "@/utils/file";
-import type { StatisticRow } from "../types";
-import { StatisticsDataTable } from "./StatisticsDataTable";
+import type { ProductStatisticRow } from "../types";
 import { useTranslation } from "react-i18next";
 import { homeTranslationNamespace } from "../translations";
+import { ProductStatisticsDataTable } from "./ProductStatisticsDataTable";
 
 export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics?start_date=${startDate}&end_date=${endDate}`)
-        .then((response: AxiosResponse<StatisticRow[] | null>) => response.data ?? [])
+        .get(`/statistics/product?start_date=${startDate}&end_date=${endDate}`)
+        .then((response: AxiosResponse<ProductStatisticRow[] | null>) => response.data ?? [])
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
         });
 
 export const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+        .get(`/statistics/product/export-excel?start_date=${startDate}&end_date=${endDate}`, {
             responseType: "blob",
         })
         .then((response: AxiosResponse<BlobPart | null>) => {
@@ -34,19 +34,19 @@ export const exportStatisticData = async (startDate: DateTime, endDate: DateTime
             return errorResponse;
         });
 
-export const StatisticsTabContent = () => {
+export const ProductStatisticsTabContent = () => {
     // Add translation hook with home namespace
     const { t } = useTranslation(homeTranslationNamespace);
 
     // state
     const [loading, setLoading] = useState<boolean>(true);
-    const [statisticRows, setStatisticRows] = useState<StatisticRow[]>([]);
+    const [statisticRows, setStatisticRows] = useState<ProductStatisticRow[]>([]);
 
     const [startDate, setStartDate] = useState<DateTime>(
-        DateTime.now().minus({ month: 1 }).startOf("day"),
+        DateTime.now().minus({ month: 1 }).startOf("day")
     );
     const [endDate, setEndDate] = useState<DateTime>(
-        DateTime.now().plus({ day: 1 }).startOf("day"),
+        DateTime.now().plus({ day: 1 }).startOf("day")
     );
 
     // context
@@ -91,18 +91,18 @@ export const StatisticsTabContent = () => {
         });
 
         openConfirmDialog({
-            title: t("statistics.exportDialog.title"),
-            message: t("statistics.exportDialog.message", {
+            title: t("productStatistics.exportDialog.title"),
+            message: t("productStatistics.exportDialog.message", {
                 startDate: startDateString,
                 endDate: endDateString,
             }),
-            confirmText: t("statistics.exportDialog.confirmText"),
+            confirmText: t("productStatistics.exportDialog.confirmText"),
             confirmButtonProps: {
                 color: "success",
             },
             onConfirm: async () => {
                 if (import.meta.env.VITE_DEBUG) {
-                    console.log("Exporting statistics...");
+                    console.log("Exporting productStatistics...");
                 }
                 const resp = await exportStatisticData(startDate, endDate);
                 if (import.meta.env.VITE_DEBUG) {
@@ -112,13 +112,13 @@ export const StatisticsTabContent = () => {
                 if (!isAxiosError(resp)) {
                     downloadFile(
                         new Blob([resp.data ?? ""]),
-                        t("statistics.fileName"),
-                        resp.headers?.["content-disposition"],
+                        t("productStatistics.fileName"),
+                        resp.headers?.["content-disposition"]
                     );
 
-                    showToastSuccess(t("statistics.notifications.exportSuccess"));
+                    showToastSuccess(t("productStatistics.notifications.exportSuccess"));
                 } else {
-                    showToastError(t("statistics.notifications.exportError"));
+                    showToastError(t("productStatistics.notifications.exportError"));
                 }
             },
         });
@@ -137,7 +137,7 @@ export const StatisticsTabContent = () => {
             >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("statistics.searchControls.startDate")}
+                        label={t("productStatistics.searchControls.startDate")}
                         type="date"
                         fullWidth
                         value={startDate.toFormat("yyyy-MM-dd")}
@@ -157,7 +157,7 @@ export const StatisticsTabContent = () => {
 
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <TextField
-                        label={t("statistics.searchControls.endDate")}
+                        label={t("productStatistics.searchControls.endDate")}
                         type="date"
                         fullWidth
                         value={endDate.toFormat("yyyy-MM-dd")}
@@ -186,7 +186,7 @@ export const StatisticsTabContent = () => {
                         height: "40px",
                     }}
                 >
-                    <Box>{t("statistics.searchControls.search")}</Box>
+                    <Box>{t("productStatistics.searchControls.search")}</Box>
                 </Button>
 
                 <Button
@@ -195,11 +195,11 @@ export const StatisticsTabContent = () => {
                     startIcon={<TableChartIcon />}
                     onClick={handleExportarStatistics}
                 >
-                    {t("statistics.searchControls.export")}
+                    {t("productStatistics.searchControls.export")}
                 </Button>
             </Box>
 
-            <StatisticsDataTable loading={loading} statisticRows={statisticRows} />
+            <ProductStatisticsDataTable loading={loading} statisticRows={statisticRows} />
         </Box>
     );
 };
