@@ -6,7 +6,9 @@
 
 FROM node:22.14.0-slim AS builder
 
-RUN npm install -g pnpm
+# Pin pnpm to 9 to match the v9.0 lockfile (pnpm 10 skips dependency build
+# scripts like esbuild's by default, which breaks the vite build).
+RUN npm install -g pnpm@9
 
 COPY . .
 RUN rm -rf dist/ node_modules/ && \
