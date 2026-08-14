@@ -11,6 +11,8 @@ FROM node:22.14.0-slim AS builder
 RUN npm install -g pnpm@9
 
 COPY . .
+ARG VITE_API_URL=""
+ENV VITE_API_URL=$VITE_API_URL
 RUN rm -rf dist/ node_modules/ && \
     pnpm install --frozen-lockfile && \
     pnpm run build
