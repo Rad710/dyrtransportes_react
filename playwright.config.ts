@@ -30,10 +30,12 @@ export default defineConfig({
     webServer: {
         // The preview server serves the production build, the same bundle
         // that gets deployed
-        command: "pnpm build && pnpm preview --port 4173",
+        // --host is load bearing: without it preview binds to localhost only,
+        // which on a CI runner may resolve to ::1 and never answer on 127.0.0.1
+        command: "pnpm build && pnpm preview --host 127.0.0.1 --port 4173",
         url: "http://127.0.0.1:4173",
         reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
+        timeout: 240_000,
         env: {
             VITE_API_URL: "http://127.0.0.1:4173/stub",
         },
