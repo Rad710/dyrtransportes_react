@@ -10,7 +10,11 @@ import { DriverType } from "../driver/schema";
 import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
 import { TabPanel } from "@/components/TabPanel";
 
-import { Add as AddIcon, TableChart as TableChartIcon } from "@mui/icons-material";
+import {
+    Add as AddIcon,
+    PictureAsPdf as PictureAsPdfIcon,
+    TableChart as TableChartIcon,
+} from "@mui/icons-material";
 import { useConfirmation } from "@/context/ConfirmationContext";
 import { CustomSwitch } from "@/components/CustomSwitch";
 import { DateTime } from "luxon";
@@ -417,6 +421,38 @@ export const DriverPayroll = ({ title }: PageProps) => {
         });
     };
 
+    const handleExportDriverPayrollPdf = () => {
+        openConfirmDialog({
+            title: t("confirmations.exportPdf.title"),
+            message: t("confirmations.exportPdf.message"),
+            confirmText: t("confirmations.exportPdf.confirmText"),
+            confirmButtonProps: {
+                color: "error",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Driver Payroll as PDF...");
+                }
+                const resp = await DriverPayrollApi.exportDriverPayrollPdf(driverPayrollCode);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Driver Payroll as PDF resp: ", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        t("fileNamePdf"),
+                        resp.headers?.["content-disposition"]
+                    );
+
+                    showToastSuccess(t("notifications.exportPdfSuccess"));
+                } else {
+                    showToastError(t("notifications.exportPdfError"));
+                }
+            },
+        });
+    };
+
     const tabShipments = 0;
     const tabExpenses = 1;
 
@@ -499,6 +535,15 @@ export const DriverPayroll = ({ title }: PageProps) => {
                             onClick={handleExportDriverPayroll}
                         >
                             {t("buttons.export")}
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<PictureAsPdfIcon />}
+                            onClick={handleExportDriverPayrollPdf}
+                        >
+                            {t("buttons.exportPdf")}
                         </Button>
                     </Box>
                 </Box>

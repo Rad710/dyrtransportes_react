@@ -205,4 +205,17 @@ export const ShipmentApi = {
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
             }),
+
+    // Same document as the Excel export, the API converts it to PDF
+    exportShipmentListPdf: async (shipmentPayrollCode: number) =>
+        api
+            .get(`/shipments/export-pdf?shipment_payroll_code=${shipmentPayrollCode}`, {
+                responseType: "blob",
+            })
+            .then((response: AxiosResponse<BlobPart | null>) => {
+                return response ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
+            }),
 };

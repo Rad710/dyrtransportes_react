@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMatch } from "react-router";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { PageProps } from "@/types";
@@ -139,6 +140,38 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
         });
     };
 
+    const handleExportShipmentListPdf = () => {
+        openConfirmDialog({
+            title: t("shipmentPayroll.exportPdfDialog.title"),
+            message: t("shipmentPayroll.exportPdfDialog.message"),
+            confirmText: t("shipmentPayroll.exportPdfDialog.confirmText"),
+            confirmButtonProps: {
+                color: "error",
+            },
+            onConfirm: async () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Shipments as PDF...");
+                }
+                const resp = await ShipmentApi.exportShipmentListPdf(payrollCode);
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log("Exporting Shipments as PDF resp: ", { resp });
+                }
+
+                if (!isAxiosError(resp)) {
+                    downloadFile(
+                        new Blob([resp.data ?? ""]),
+                        "cobranzas.pdf",
+                        resp.headers?.["content-disposition"]
+                    );
+
+                    showToastSuccess(t("shipmentPayroll.exportPdfDialog.successMessage"));
+                } else {
+                    showToastError(t("shipmentPayroll.exportPdfDialog.errorMessage"));
+                }
+            },
+        });
+    };
+
     const handleCollectionToggle = async (payroll: ShipmentPayrollType, collected: boolean) => {
         const newPayroll: ShipmentPayrollType = {
             ...payroll,
@@ -271,6 +304,15 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         onClick={handleExportShipmentList}
                     >
                         {t("shipmentPayroll.buttons.export")}
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<PictureAsPdfIcon />}
+                        onClick={handleExportShipmentListPdf}
+                    >
+                        {t("shipmentPayroll.buttons.exportPdf")}
                     </Button>
                 </Box>
             </Box>

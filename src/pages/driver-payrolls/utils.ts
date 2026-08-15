@@ -104,6 +104,19 @@ export const DriverPayrollApi = {
             .catch((errorResponse: AxiosError<ApiResponse | null>) => {
                 return errorResponse;
             }),
+
+    // Same document as the Excel export, the API converts it to PDF
+    exportDriverPayrollPdf: async (driverPayrollCode: number) =>
+        api
+            .get(`/driver-payroll/export-pdf/${driverPayrollCode}`, {
+                responseType: "blob",
+            })
+            .then((response: AxiosResponse<BlobPart | null>) => {
+                return response ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
+            }),
 };
 
 export const ShipmentExpenseApi = {
