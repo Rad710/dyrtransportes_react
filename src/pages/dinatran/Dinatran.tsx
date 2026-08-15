@@ -16,7 +16,9 @@ import { dinatranTranslationNamespace } from "./translations";
 
 const getDinatranData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/dinatran?start_date=${startDate}&end_date=${endDate}`)
+        .get(`/dinatran`, {
+            params: { start_date: startDate, end_date: endDate },
+        })
         .then((response: AxiosResponse<DinatranRow[] | null>) => response.data ?? [])
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
@@ -24,7 +26,8 @@ const getDinatranData = async (startDate: DateTime, endDate: DateTime) =>
 
 const exportDinatranData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/dinatran/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+        .get(`/dinatran/export-excel`, {
+            params: { start_date: startDate, end_date: endDate },
             responseType: "blob",
         })
         .then((response: AxiosResponse<BlobPart | null>) => {

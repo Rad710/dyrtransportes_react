@@ -80,12 +80,14 @@ export const DriverPayrollApi = {
 
     exportDriverPayrollList: async (driverCode: number, startDate: DateTime, endDate: DateTime) =>
         api
-            .get(
-                `/driver-payrolls/export-excel?driver_code=${driverCode}&start_date=${startDate}&end_date=${endDate}`,
-                {
-                    responseType: "blob",
-                }
-            )
+            .get(`/driver-payrolls/export-excel`, {
+                params: {
+                    driver_code: driverCode,
+                    start_date: startDate,
+                    end_date: endDate,
+                },
+                responseType: "blob",
+            })
             .then((response: AxiosResponse<BlobPart | null>) => {
                 return response ?? null;
             })

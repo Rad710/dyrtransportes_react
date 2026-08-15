@@ -85,7 +85,8 @@ export const ShipmentPayrollApi = {
 
     exportShipmentPayrollList: async (startDate: DateTime, endDate: DateTime) =>
         api
-            .get(`/shipment-payrolls/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+            .get(`/shipment-payrolls/export-excel`, {
+                params: { start_date: startDate, end_date: endDate },
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {

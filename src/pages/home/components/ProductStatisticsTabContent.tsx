@@ -16,7 +16,9 @@ import { ProductStatisticsDataTable } from "./ProductStatisticsDataTable";
 
 export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics/product?start_date=${startDate}&end_date=${endDate}`)
+        .get(`/statistics/product`, {
+            params: { start_date: startDate, end_date: endDate },
+        })
         .then((response: AxiosResponse<ProductStatisticRow[] | null>) => response.data ?? [])
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
@@ -24,7 +26,8 @@ export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) 
 
 export const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics/product/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+        .get(`/statistics/product/export-excel`, {
+            params: { start_date: startDate, end_date: endDate },
             responseType: "blob",
         })
         .then((response: AxiosResponse<BlobPart | null>) => {
