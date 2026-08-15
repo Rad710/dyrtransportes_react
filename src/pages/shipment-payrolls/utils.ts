@@ -85,7 +85,8 @@ export const ShipmentPayrollApi = {
 
     exportShipmentPayrollList: async (startDate: DateTime, endDate: DateTime) =>
         api
-            .get(`/shipment-payrolls/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+            .get(`/shipment-payrolls/export-excel`, {
+                params: { start_date: startDate, end_date: endDate },
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {
@@ -197,6 +198,19 @@ export const ShipmentApi = {
     exportShipmentList: async (shipmentPayrollCode: number) =>
         api
             .get(`/shipments/export-excel?shipment_payroll_code=${shipmentPayrollCode}`, {
+                responseType: "blob",
+            })
+            .then((response: AxiosResponse<BlobPart | null>) => {
+                return response ?? null;
+            })
+            .catch((errorResponse: AxiosError<ApiResponse | null>) => {
+                return errorResponse;
+            }),
+
+    // Same document as the Excel export, the API converts it to PDF
+    exportShipmentListPdf: async (shipmentPayrollCode: number) =>
+        api
+            .get(`/shipments/export-pdf?shipment_payroll_code=${shipmentPayrollCode}`, {
                 responseType: "blob",
             })
             .then((response: AxiosResponse<BlobPart | null>) => {

@@ -28,19 +28,24 @@ interface DialogState extends ConfirmationOptions {
     open: boolean;
 }
 
+const defaultDialogState: DialogState = {
+    open: false,
+    title: "",
+    message: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    confirmButtonProps: {},
+    onConfirm: () => {},
+};
+
 export const ConfirmationProvider = ({ children }: ConfirmationProviderProps) => {
-    const [dialogState, setDialogState] = useState<DialogState>({
-        open: false,
-        title: "",
-        message: "",
-        confirmText: "Confirm",
-        cancelText: "Cancel",
-        confirmButtonProps: {},
-        onConfirm: () => {},
-    });
+    const [dialogState, setDialogState] = useState<DialogState>(defaultDialogState);
 
     const openConfirmDialog = (options: ConfirmationOptions) => {
+        // Starting from the defaults keeps the cancel label, which no caller
+        // passes, and drops anything left by the previous dialog
         setDialogState({
+            ...defaultDialogState,
             ...options,
             open: true,
         });

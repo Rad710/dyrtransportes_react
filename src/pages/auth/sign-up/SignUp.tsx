@@ -93,7 +93,10 @@ export const SignUp = ({ title }: PageProps) => {
     };
 
     return (
-        <AuthContainer direction="column" justifyContent="space-between" overflow="auto">
+        <AuthContainer
+            direction="column"
+            sx={{ justifyContent: "space-between", overflow: "auto" }}
+        >
             <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
 
             <AuthCard variant="outlined" sx={{ overflowY: "visible" }}>

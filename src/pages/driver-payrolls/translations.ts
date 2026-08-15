@@ -171,6 +171,7 @@ const driverPayrollResources = {
             buttons: {
                 add: "Add",
                 export: "Export",
+                exportPdf: "PDF",
                 edit: "Edit",
                 delete: "Delete",
                 move: "Move",
@@ -297,13 +298,21 @@ const driverPayrollResources = {
                     message: "All Routes will be exported.",
                     confirmText: "Export",
                 },
+                exportPdf: {
+                    title: "Confirm PDF Export",
+                    message: "The settlement will be exported as a PDF.",
+                    confirmText: "Export PDF",
+                },
             },
             notifications: {
                 statusChanged: "Driver Payroll #{{code}} marked as {{status}}",
                 exportSuccess: "Spreadsheet exported successfully.",
                 exportError: "Error exporting spreadsheet.",
+                exportPdfSuccess: "PDF exported successfully.",
+                exportPdfError: "Error exporting PDF.",
             },
             fileName: "payroll.xlsx",
+            fileNamePdf: "payroll.pdf",
         },
     },
     es: {
@@ -316,6 +325,7 @@ const driverPayrollResources = {
             buttons: {
                 add: "Agregar",
                 export: "Exportar",
+                exportPdf: "PDF",
                 edit: "Editar",
                 delete: "Eliminar",
                 move: "Mover",
@@ -399,7 +409,7 @@ const driverPayrollResources = {
                 columns: {
                     payrollCode: "Planilla #",
                     date: "Fecha",
-                    dispatch: "Despacho",
+                    dispatch: "Remisión",
                     receipt: "Recibo",
                     product: "Producto",
                     origin: "Origen",
@@ -444,13 +454,21 @@ const driverPayrollResources = {
                     message: "Todas las rutas serán exportadas.",
                     confirmText: "Exportar",
                 },
+                exportPdf: {
+                    title: "Confirmar Exportación a PDF",
+                    message: "La liquidación se exportará en PDF.",
+                    confirmText: "Exportar PDF",
+                },
             },
             notifications: {
                 statusChanged: "Liquidación de Chofer #{{code}} marcada como {{status}}",
                 exportSuccess: "Planilla exportada exitosamente.",
                 exportError: "Error al exportar planilla",
+                exportPdfSuccess: "PDF exportado exitosamente.",
+                exportPdfError: "Error al exportar el PDF.",
             },
             fileName: "liquidacion.xlsx",
+            fileNamePdf: "liquidacion.pdf",
         },
     },
 };

@@ -93,49 +93,46 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                     width: { xs: "100%", md: "40%" },
                 }}
             >
-                <Typography variant="h5" fontWeight="900">
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
                     {t("profits.chart.totals.income")}{" "}
                     <Typography
                         component="em"
                         variant="h5"
-                        fontWeight="900"
-                        sx={{ color: theme.palette.primary.main }}
+                        sx={{ fontWeight: 900, color: theme.palette.primary.main }}
                     >
                         {numberToLocaleString(profitData?.totalShipmentPayroll ?? 0)}
                     </Typography>
                 </Typography>
 
-                <Typography variant="h5" fontWeight="900">
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
                     {t("profits.chart.totals.expenses")}{" "}
                     <Typography
                         component="em"
                         variant="h5"
-                        fontWeight="900"
-                        sx={{ color: theme.palette.warning.main }}
+                        sx={{ fontWeight: 900, color: theme.palette.warning.main }}
                     >
                         {numberToLocaleString(profitData?.totalDriverPayroll ?? 0)}
                     </Typography>
                 </Typography>
 
-                <Typography variant="h5" fontWeight="900">
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
                     {t("profits.chart.totals.losses")}{" "}
                     <Typography
                         component="em"
                         variant="h5"
-                        fontWeight="900"
-                        sx={{ color: theme.palette.error.main }}
+                        sx={{ fontWeight: 900, color: theme.palette.error.main }}
                     >
                         {numberToLocaleString(profitData?.totalLosses ?? 0)}
                     </Typography>
                 </Typography>
 
-                <Typography variant="h5" fontWeight="900">
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
                     {t("profits.chart.totals.profits")}{" "}
                     <Typography
                         component="em"
                         variant="h5"
-                        fontWeight="900"
                         sx={{
+                            fontWeight: 900,
                             color:
                                 (profitData?.totalProfits ?? 0) >= 0
                                     ? theme.palette.success.main
@@ -146,7 +143,7 @@ export const ProfitsChart = ({ profitData, startDate, endDate }: ProfitsChartPro
                     </Typography>
                 </Typography>
 
-                <Typography variant="h5" fontWeight="900">
+                <Typography variant="h5" sx={{ fontWeight: 900 }}>
                     {t("profits.chart.totals.shipments")} {profitData?.shipments ?? 0}
                 </Typography>
             </Stack>

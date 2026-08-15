@@ -64,7 +64,14 @@ const Dinatran = lazy(() =>
 
 // Loading component for Suspense
 const LoadingFallback = () => (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+    <Box
+        sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+        }}
+    >
         <CircularProgress />
     </Box>
 );

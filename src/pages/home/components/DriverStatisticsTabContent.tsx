@@ -16,7 +16,9 @@ import { homeTranslationNamespace } from "../translations";
 
 export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics/driver?start_date=${startDate}&end_date=${endDate}`)
+        .get(`/statistics/driver`, {
+            params: { start_date: startDate, end_date: endDate },
+        })
         .then((response: AxiosResponse<DriverStatisticRow[] | null>) => response.data ?? [])
         .catch((errorResponse: AxiosError<ApiResponse | null>) => {
             return errorResponse ?? null;
@@ -24,7 +26,8 @@ export const getStatisticsData = async (startDate: DateTime, endDate: DateTime) 
 
 export const exportStatisticData = async (startDate: DateTime, endDate: DateTime) =>
     api
-        .get(`/statistics/driver/export-excel?start_date=${startDate}&end_date=${endDate}`, {
+        .get(`/statistics/driver/export-excel`, {
+            params: { start_date: startDate, end_date: endDate },
             responseType: "blob",
         })
         .then((response: AxiosResponse<BlobPart | null>) => {

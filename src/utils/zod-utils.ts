@@ -15,7 +15,9 @@ export const zodDateHTTPString = (fieldRequiredMessage: string, invalidValueMess
                     received: "unknown",
                 });
             }
-            if (val.toMillis() < DateTime.fromHTTP("2000-01-01").toMillis()) {
+            // fromHTTP does not parse an ISO date, it answered an invalid
+            // DateTime whose toMillis() is NaN, so this bound never rejected
+            if (val.toMillis() < DateTime.fromISO("2000-01-01").toMillis()) {
                 ctx.addIssue({
                     code: "invalid_type",
                     message: invalidValueMessage,
@@ -23,7 +25,7 @@ export const zodDateHTTPString = (fieldRequiredMessage: string, invalidValueMess
                     received: "unknown",
                 });
             }
-            if (val.toMillis() > DateTime.fromHTTP("2100-12-31").toMillis()) {
+            if (val.toMillis() > DateTime.fromISO("2100-12-31").toMillis()) {
                 ctx.addIssue({
                     code: "invalid_type",
                     message: invalidValueMessage,

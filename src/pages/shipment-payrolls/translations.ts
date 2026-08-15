@@ -161,6 +161,7 @@ const shipmentResources = {
                 buttons: {
                     add: "Add",
                     export: "Export",
+                    exportPdf: "PDF",
                 },
                 exportDialog: {
                     title: "Confirm Export",
@@ -168,6 +169,13 @@ const shipmentResources = {
                     confirmText: "Export",
                     successMessage: "Spreadsheet exported successfully.",
                     errorMessage: "Error exporting spreadsheet.",
+                },
+                exportPdfDialog: {
+                    title: "Confirm PDF Export",
+                    message: "The collection sheet will be exported as a PDF.",
+                    confirmText: "Export PDF",
+                    successMessage: "PDF exported successfully.",
+                    errorMessage: "Error exporting PDF.",
                 },
                 notification: {
                     markedAsCollected: "Payroll #{{code}} marked as collected",
@@ -265,6 +273,14 @@ const shipmentResources = {
                 buttons: {
                     add: "Agregar",
                     export: "Exportar",
+                    exportPdf: "PDF",
+                },
+                exportPdfDialog: {
+                    title: "Confirmar Exportación a PDF",
+                    message: "La planilla de cobranza se exportará en PDF.",
+                    confirmText: "Exportar PDF",
+                    successMessage: "PDF exportado exitosamente.",
+                    errorMessage: "Error al exportar el PDF.",
                 },
                 exportDialog: {
                     title: "Confirmar Exportación",
