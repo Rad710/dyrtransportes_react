@@ -477,7 +477,6 @@ export const DriverPayrollShipmentDataTable = ({
 
     const columnVisibilityModel = {
         price: false,
-        dispatch_code: false,
     };
 
     return (

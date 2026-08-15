@@ -409,7 +409,7 @@ const driverPayrollResources = {
                 columns: {
                     payrollCode: "Planilla #",
                     date: "Fecha",
-                    dispatch: "Despacho",
+                    dispatch: "Remisión",
                     receipt: "Recibo",
                     product: "Producto",
                     origin: "Origen",
