@@ -5,6 +5,10 @@ import pluginReact from "eslint-plugin-react";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 const configs = [
+    // Build output, linting the minified bundles reports thousands of errors
+    {
+        ignores: ["dist/**", "coverage/**"],
+    },
     pluginReact.configs.flat.recommended,
     pluginJs.configs.recommended,
     ...tseslint.configs.recommended,
