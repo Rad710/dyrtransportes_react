@@ -101,9 +101,9 @@ export const ErrorPage = () => {
                     <Typography
                         variant="h5"
                         color="error"
-                        textAlign="center"
                         gutterBottom
                         sx={{
+                            textAlign: "center",
                             fontWeight: "medium",
                             display: "flex",
                             alignItems: "center",
@@ -117,9 +117,8 @@ export const ErrorPage = () => {
                     <Typography
                         variant="h6"
                         color="text.primary"
-                        textAlign="center"
                         gutterBottom
-                        sx={{ mb: 2 }}
+                        sx={{ textAlign: "center", mb: 2 }}
                     >
                         {getErrorMessage()}
                     </Typography>
@@ -128,8 +127,8 @@ export const ErrorPage = () => {
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            textAlign="center"
                             sx={{
+                                textAlign: "center",
                                 mb: 3,
                                 p: 1,
                                 bgcolor: theme.palette.action.hover,

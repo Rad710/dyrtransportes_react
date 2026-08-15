@@ -59,15 +59,15 @@ export const CustomSwitch = React.forwardRef<HTMLDivElement, CustomSwitchProps>(
         return (
             <StyledBox ref={ref} sx={sx} {...other}>
                 <StyledSwitch checked={checked || false} onChange={onChange} />
-                <Box ml={1}>
+                <Box sx={{ ml: 1 }}>
                     <Typography
                         variant="body2"
                         color={checked ? "success.main" : "error.main"}
-                        fontWeight="bold"
+                        sx={{ fontWeight: "bold" }}
                     >
                         {checked ? textChecked : textUnchecked}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                         {checked ? checkedDescription : uncheckedDescription}
                     </Typography>
                 </Box>

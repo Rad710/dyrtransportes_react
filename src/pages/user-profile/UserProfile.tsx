@@ -130,9 +130,12 @@ export const UserProfile = ({ title }: PageProps) => {
     return (
         <UserProfileContainer
             direction="column"
-            justifyContent="space-between"
-            overflow="auto"
-            sx={{ position: "relative", maxWidth: "100%" }}
+            sx={{
+                justifyContent: "space-between",
+                overflow: "auto",
+                position: "relative",
+                maxWidth: "100%",
+            }}
         >
             <ColorModeSelect sx={{ position: "absolute", top: "1rem", right: "1rem" }} />
 

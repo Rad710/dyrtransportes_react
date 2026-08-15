@@ -78,7 +78,9 @@ export const ShipmentPayrollYearList = ({ title }: Readonly<PageProps>) => {
                 }
 
                 const payload: ShipmentPayrollType = {
-                    payroll_timestamp: newYear.toHTTP(),
+                    // toHTTP() is typed as nullable, the isValid guard above already
+                    // rules that out, this keeps the same shape used in schema.ts
+                    payroll_timestamp: newYear.toHTTP() ?? "",
                     collected: false,
                     deleted: false,
                 };

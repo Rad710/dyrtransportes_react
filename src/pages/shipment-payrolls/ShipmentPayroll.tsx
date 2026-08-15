@@ -201,7 +201,13 @@ export const ShipmentPayroll = ({ title }: Readonly<PageProps>) => {
                         : ""}
                 </Typography>
 
-                <Box display="flex" gap={2} sx={{ flexWrap: { xs: "wrap", md: "nowrap" } }}>
+                <Box
+                        sx={{
+                            display: "flex",
+                            gap: 2,
+                            flexWrap: { xs: "wrap", md: "nowrap" },
+                        }}
+                    >
                     <CustomSwitch
                         checked={currentShipmentPayroll?.collected}
                         onChange={
